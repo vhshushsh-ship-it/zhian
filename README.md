@@ -17,13 +17,13 @@
 
 ```
 .
-├── .env.example          # 环境变量模板（不含真实值）
 ├── .gitignore            # 排除 .env、node_modules、dist 等
 ├── backend/              # FastAPI 后端
+│   ├── .env.example      # 后端环境变量模板（不含真实值）
 │   ├── requirements.txt
 │   └── app/
 │       ├── main.py       # 应用入口
-│       ├── config.py     # 读取 .env 配置
+│       ├── config.py     # 读取 backend/.env 配置
 │       ├── database.py   # SQLAlchemy 引擎/会话
 │       ├── models.py     # ORM 模型（User / Note）
 │       ├── schemas.py    # Pydantic 模型
@@ -33,6 +33,7 @@
 ├── deploy/
 │   └── login-demo.service  # systemd 服务
 ├── frontend/             # React 前端
+│   ├── .env.example      # 前端环境变量模板（当前无变量）
 │   ├── vite.config.ts    # 含 /api 代理
 │   └── src/
 │       ├── api/client.ts     # Axios 封装（自动带 token）
@@ -44,7 +45,12 @@
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env` 并填写真实值（`.env` 已被 `.gitignore` 排除，请勿提交）：
+环境变量按前后端分文件存放，`.env` 均已被 `.gitignore` 排除，请勿提交：
+
+- 后端：复制 `backend/.env.example` 为 `backend/.env` 并填写真实值
+- 前端：复制 `frontend/.env.example` 为 `frontend/.env`（当前无需变量）
+
+后端变量如下：
 
 | 变量 | 说明 |
 | --- | --- |
@@ -60,7 +66,7 @@
 本地启动 MySQL，并创建数据库：
 
 ```sql
-CREATE DATABASE login_demo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE zhian CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### 2. 启动后端
@@ -100,7 +106,7 @@ npm run dev
    git clone <你的仓库地址> /opt/login-demo
    ```
 
-3. **配置 `.env`**：在 `/opt/login-demo/.env` 填入生产环境真实值（手动完成，不提交）。
+3. **配置 `.env`**：复制 `/opt/login-demo/backend/.env.example` 为 `/opt/login-demo/backend/.env`，填入生产环境真实值（手动完成，不提交）。
 4. **后端**：
 
    ```bash
