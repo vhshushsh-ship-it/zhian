@@ -2,13 +2,14 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# 项目根目录：backend/app/config.py -> 上溯两级到项目根
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# 后端目录：backend/app/config.py -> 上溯两级到 backend/
+# 后端环境变量文件位于 backend/.env
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=str(BASE_DIR / ".env"),
+        env_file=str(BACKEND_DIR / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
