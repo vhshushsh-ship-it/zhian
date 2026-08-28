@@ -1,20 +1,12 @@
-# login-demo 后端 systemd 服务
-# 用法：
-#   1. 复制到 /etc/systemd/system/login-demo.service
-#   2. 按实际路径修改 WorkingDirectory / ExecStart / User
-#   3. systemctl daemon-reload && systemctl enable --now login-demo
-
 [Unit]
 Description=login-demo FastAPI backend
-After=network.target
+After=network.target mysql.service
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
-# 后端目录（uvicorn 从这里启动，app 包位于 backend/app）
+User=root
+Group=root
 WorkingDirectory=/opt/login-demo/backend
-# 虚拟环境里的 uvicorn；生产只监听 127.0.0.1，由 Nginx 反代
 ExecStart=/opt/login-demo/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=3

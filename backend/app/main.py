@@ -5,15 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models  # noqa: F401  确保模型注册到 metadata
 from .config import settings
-from .database import Base, engine
+from .database import engine
 from .routers import auth, notes
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # 启动时自动建表（幂等，不会覆盖已有数据）
-    Base.metadata.create_all(bind=engine)
-    yield
+
 
 
 app = FastAPI(title="login-demo API", lifespan=lifespan)
