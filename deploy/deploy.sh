@@ -15,6 +15,7 @@ git pull
 cd "$BACKEND_DIR"
 source .venv/bin/activate
 pip install -r requirements.txt
+alembic upgrade head
 sudo systemctl restart login-demo
 
 # 前端：安装依赖并构建（产物写入 frontend/dist，供 Nginx 托管）
