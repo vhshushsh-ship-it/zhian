@@ -12,7 +12,7 @@ from .routers import auth, notes
 
 
 
-app = FastAPI(title="login-demo API", lifespan=lifespan)
+app = FastAPI(title="login-demo API")
 
 app.add_middleware(
     CORSMiddleware,
