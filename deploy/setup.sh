@@ -55,7 +55,7 @@ systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 
 echo "=== 11. 配置 Nginx ==="
-cp "$PROJECT_DIR/nginx/login-demo.conf" /etc/nginx/conf.d/
+cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/login-demo.conf
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
 
