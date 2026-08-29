@@ -29,7 +29,7 @@ systemctl start mysql
 
 echo "=== 6. 创建数据库和用户 ==="
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS zhian CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -e "CREATE USER IF NOT EXISTS 'zhian'@'localhost' IDENTIFIED BY 'Zxw200403149893@';"
+mysql -u root -e "CREATE USER IF NOT EXISTS 'zhian'@'localhost' IDENTIFIED BY '123456';"
 mysql -u root -e "GRANT ALL PRIVILEGES ON zhian.* TO 'zhian'@'localhost';"
 mysql -u root -e "FLUSH PRIVILEGES;"
 
