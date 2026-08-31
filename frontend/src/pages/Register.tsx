@@ -18,7 +18,7 @@ export default function Register() {
     setSubmitting(true)
     try {
       await register(username, email, password)
-      navigate('/')
+      navigate('/notes')
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {

@@ -1,0 +1,297 @@
+/* 欢迎页样式 */
+
+.welcome {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+  overflow-x: hidden;
+  /* 页面加载淡入动画 */
+  animation: welcome-fade-in 0.6s ease-out;
+}
+
+@keyframes welcome-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 顶部导航 */
+.welcome-nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+}
+
+.welcome-logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+}
+
+.welcome-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.welcome-nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+.welcome-nav-links a:hover {
+  color: #e60012;
+}
+
+.welcome-nav-login {
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-size: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.welcome-nav-login:hover {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* 主内容：左右分栏 */
+.welcome-hero {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+}
+
+.welcome-left {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 50%;
+}
+
+.welcome-title {
+  margin: 0 0 24px;
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 2px;
+  color: #1a1a1a;
+}
+
+.welcome-subtitle {
+  margin: 0 0 40px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #333;
+}
+
+.welcome-cta {
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  padding: 16px 44px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.welcome-cta:hover {
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* 右侧产品展示：笔记本 mockup */
+.welcome-right {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 50%;
+  display: flex;
+  justify-content: center;
+}
+
+.laptop {
+  width: 100%;
+  max-width: 560px;
+}
+
+.laptop-screen {
+  background: #fff;
+  border: 10px solid #1a1a1a;
+  border-radius: 16px 16px 0 0;
+  height: 360px;
+  padding: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.laptop-base {
+  width: 110%;
+  height: 16px;
+  margin-left: -5%;
+  background: #1a1a1a;
+  border-radius: 0 0 16px 16px;
+}
+
+/* 屏幕内 AI 学习界面示意图 */
+.ai-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ai-bubble-user {
+  align-self: flex-end;
+  background: #e60012;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.ai-bubble-bot {
+  align-self: flex-start;
+  background: #f0f0f0;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+.ai-cards {
+  display: flex;
+  gap: 12px;
+}
+
+.ai-card {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.ai-card-title {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.ai-card-line {
+  height: 8px;
+  margin-bottom: 8px;
+  background: #e6e6e6;
+  border-radius: 4px;
+}
+
+.ai-card-line.short {
+  width: 60%;
+}
+
+/* 装饰几何色块 */
+.deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.deco-red {
+  top: -20px;
+  right: 0;
+  width: 160px;
+  height: 160px;
+  background: #e60012;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0.9;
+}
+
+.deco-yellow {
+  right: 20px;
+  bottom: 20px;
+  width: 90px;
+  height: 90px;
+  background: #ffc107;
+  border-radius: 20px;
+  transform: rotate(18deg);
+}
+
+/* 底部横幅 */
+.welcome-footer {
+  position: relative;
+  z-index: 2;
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.welcome-footer p {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* 响应式：窄屏时上下布局，隐藏右侧展示图 */
+@media (max-width: 768px) {
+  .welcome-nav {
+    padding: 16px 20px;
+  }
+
+  .welcome-nav-links {
+    gap: 16px;
+  }
+
+  .welcome-hero {
+    flex-direction: column;
+    gap: 32px;
+    padding: 24px 20px 60px;
+    text-align: center;
+  }
+
+  .welcome-title {
+    font-size: 48px;
+  }
+
+  .welcome-subtitle {
+    font-size: 17px;
+  }
+
+  .welcome-right {
+    display: none;
+  }
+}
