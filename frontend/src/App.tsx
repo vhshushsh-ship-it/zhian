@@ -4,6 +4,7 @@ import { useAuth } from './auth/AuthContext'
 import Login from './pages/Login'
 import Notes from './pages/Notes'
 import Register from './pages/Register'
+import Welcome from './pages/Welcome'
 
 function Protected({ children }: { children: ReactElement }) {
   const { user, loading } = useAuth()
@@ -15,10 +16,11 @@ function Protected({ children }: { children: ReactElement }) {
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
-        path="/"
+        path="/notes"
         element={
           <Protected>
             <Notes />
