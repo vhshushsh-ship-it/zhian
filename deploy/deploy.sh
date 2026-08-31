@@ -37,4 +37,10 @@ echo "=== 5. 复制构建产物到 Nginx 目录 ==="
 rm -rf /var/www/login-demo/dist
 cp -r dist /var/www/login-demo/
 
+echo "=== 6. 更新 Nginx 配置 ==="
+cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/login-demo.conf
+nginx -t
+systemctl reload nginx
+
+
 echo "=== 部署完成 ==="
