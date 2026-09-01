@@ -1,0 +1,37 @@
+import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import './Navbar.css'
+
+interface NavbarProps {
+  /** 当前高亮的导航项 */
+  active?: 'home' | 'features' | 'about'
+  /** 右侧尾部内容（登录按钮，或用户邮箱 + 退出登录） */
+  trailing?: ReactNode
+}
+
+/**
+ * 全站通用顶部导航栏：logo「知岸」+ 首页/功能/关于 + 可选尾部内容。
+ * 欢迎页、登录注册页、Dashboard、学科页共用。
+ */
+export default function Navbar({ active, trailing }: NavbarProps) {
+  return (
+    <header className="navbar">
+      <Link to="/" className="navbar-logo">知岸</Link>
+      <div className="navbar-right">
+        <Link to="/" className={active === 'home' ? 'navbar-active' : undefined}>
+          首页
+        </Link>
+        <a
+          href="#features"
+          className={active === 'features' ? 'navbar-active' : undefined}
+        >
+          功能
+        </a>
+        <a href="#about" className={active === 'about' ? 'navbar-active' : undefined}>
+          关于
+        </a>
+        {trailing}
+      </div>
+    </header>
+  )
+}

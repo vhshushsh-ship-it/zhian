@@ -18,7 +18,7 @@ export default function Login() {
     setSubmitting(true)
     try {
       await login(username, password)
-      navigate('/notes')
+      navigate('/dashboard')
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {

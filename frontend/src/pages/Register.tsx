@@ -27,7 +27,7 @@ export default function Register() {
     try {
       // 邮箱为后端可选字段，本次表单未提供，传空字符串（AuthContext 会转为 null）
       await register(username, '', password)
-      navigate('/notes')
+      navigate('/dashboard')
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {

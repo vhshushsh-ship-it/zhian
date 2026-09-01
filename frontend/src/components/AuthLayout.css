@@ -9,49 +9,6 @@
   overflow-x: hidden;
 }
 
-/* 顶部导航 */
-.auth-nav {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  padding: 0 48px;
-  background: #fff;
-  border-bottom: 1px solid #eee;
-}
-
-.auth-logo {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #1a1a1a;
-  text-decoration: none;
-}
-
-.auth-nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.auth-nav-links a {
-  text-decoration: none;
-  font-size: 15px;
-  color: #333;
-  transition: color 0.2s;
-}
-
-.auth-nav-links a:hover {
-  color: #e60012;
-}
-
-.auth-nav-links a.auth-nav-active {
-  color: #e60012;
-  font-weight: 600;
-}
-
 /* 主体：左右分栏 */
 .auth-main {
   position: relative;
@@ -288,36 +245,8 @@
   transform: rotate(18deg);
 }
 
-/* 底部横幅 */
-.auth-footer {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 80px;
-  padding: 0 24px;
-  background: #1a1a1a;
-  color: #fff;
-  text-align: center;
-}
-
-.auth-footer p {
-  margin: 0;
-  font-size: 16px;
-  letter-spacing: 1px;
-}
-
 /* 响应式：窄屏隐藏品牌区，表单居中全宽 */
 @media (max-width: 768px) {
-  .auth-nav {
-    padding: 0 20px;
-  }
-
-  .auth-nav-links {
-    gap: 16px;
-  }
-
   .auth-main {
     padding: 32px 20px;
   }

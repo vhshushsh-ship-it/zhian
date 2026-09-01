@@ -20,55 +20,6 @@
   }
 }
 
-/* 顶部导航 */
-.welcome-nav {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 48px;
-}
-
-.welcome-logo {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1a1a1a;
-  letter-spacing: 2px;
-}
-
-.welcome-nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.welcome-nav-links a {
-  text-decoration: none;
-  color: #333;
-  font-size: 15px;
-  transition: color 0.2s;
-}
-
-.welcome-nav-links a:hover {
-  color: #e60012;
-}
-
-.welcome-nav-login {
-  background: #1a1a1a;
-  color: #fff;
-  border-radius: 999px;
-  padding: 10px 28px;
-  font-size: 15px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.welcome-nav-login:hover {
-  opacity: 1;
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-}
-
 /* 主内容：左右分栏 */
 .welcome-hero {
   position: relative;
@@ -250,32 +201,8 @@
   transform: rotate(18deg);
 }
 
-/* 底部横幅 */
-.welcome-footer {
-  position: relative;
-  z-index: 2;
-  background: #1a1a1a;
-  color: #fff;
-  text-align: center;
-  padding: 28px 24px;
-}
-
-.welcome-footer p {
-  margin: 0;
-  font-size: 16px;
-  letter-spacing: 1px;
-}
-
 /* 响应式：窄屏时上下布局，隐藏右侧展示图 */
 @media (max-width: 768px) {
-  .welcome-nav {
-    padding: 16px 20px;
-  }
-
-  .welcome-nav-links {
-    gap: 16px;
-  }
-
   .welcome-hero {
     flex-direction: column;
     gap: 32px;

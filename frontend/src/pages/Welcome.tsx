@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import Footer from '../components/Footer'
+import Navbar from '../components/Navbar'
 import './Welcome.css'
 
 export default function Welcome() {
@@ -6,18 +8,13 @@ export default function Welcome() {
 
   return (
     <div className="welcome">
-      {/* 顶部导航 */}
-      <header className="welcome-nav">
-        <div className="welcome-logo">知岸</div>
-        <nav className="welcome-nav-links">
-          <a href="#home">首页</a>
-          <a href="#features">功能</a>
-          <a href="#about">关于</a>
-          <button className="welcome-nav-login" onClick={() => navigate('/login')}>
+      <Navbar
+        trailing={
+          <button className="navbar-btn" onClick={() => navigate('/login')}>
             登录
           </button>
-        </nav>
-      </header>
+        }
+      />
 
       {/* 主内容：左右分栏 */}
       <main className="welcome-hero" id="home">
@@ -63,10 +60,7 @@ export default function Welcome() {
         <div className="deco deco-yellow" aria-hidden="true" />
       </main>
 
-      {/* 底部横幅 */}
-      <footer className="welcome-footer" id="about">
-        <p>全新的 AI 学习体验，助力每一位学习者高效上岸</p>
-      </footer>
+      <Footer />
     </div>
   )
 }

@@ -1,0 +1,158 @@
+/* Dashboard 学科选择页 */
+
+.dashboard {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+}
+
+.dashboard-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px 48px 80px;
+}
+
+.dashboard-title {
+  margin: 0 0 12px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.dashboard-accent {
+  display: block;
+  width: 48px;
+  height: 4px;
+  margin-bottom: 20px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+.dashboard-subtitle {
+  margin: 0 0 40px;
+  font-size: 18px;
+  color: #333;
+}
+
+/* 学科卡片网格 */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.subject-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 顶部装饰条 */
+.subject-card-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: 16px 16px 0 0;
+}
+
+.subject-card-bar-english {
+  background: #e60012;
+}
+
+.subject-card-bar-math {
+  background: #ffc107;
+}
+
+.subject-card-bar-cs {
+  background: #1a1a1a;
+}
+
+/* 图标区域 */
+.subject-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 12px 0 20px;
+  border-radius: 50%;
+  font-size: 30px;
+}
+
+.subject-icon-english {
+  background: #e60012;
+}
+
+.subject-icon-math {
+  background: #ffc107;
+}
+
+.subject-icon-cs {
+  background: #1a1a1a;
+}
+
+.subject-name {
+  margin: 0 0 12px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.subject-desc {
+  margin: 0 0 28px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.subject-btn {
+  margin-top: auto;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subject-btn:hover {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* 响应式：桌面 3 列，平板 2 列，移动 1 列 */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 32px 20px 60px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
