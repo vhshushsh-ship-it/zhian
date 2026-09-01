@@ -1,0 +1,117 @@
+/* Subject 学科占位页 */
+
+.subject-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+}
+
+.subject-main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 56px 48px 80px;
+  text-align: center;
+}
+
+.subject-title {
+  margin: 0 0 12px;
+  font-size: 40px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.subject-accent {
+  display: block;
+  width: 48px;
+  height: 4px;
+  margin: 0 auto 20px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+.subject-desc {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+/* 占位提示区 */
+.subject-placeholder {
+  margin-top: 60px;
+}
+
+.subject-placeholder-title {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.subject-placeholder-sub {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 建设中图标：黄色三角锥 + 红色警示条 */
+.subject-construction {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.subject-cone {
+  width: 88px;
+  height: 76px;
+  background: #ffc107;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.subject-cone-stripe {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 12px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+.subject-cone-base {
+  width: 96px;
+  height: 12px;
+  margin-top: 4px;
+  background: #ffc107;
+  border-radius: 4px;
+}
+
+/* 返回按钮 */
+.subject-back {
+  margin-top: 48px;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subject-back:hover {
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 768px) {
+  .subject-main {
+    padding: 32px 20px 60px;
+  }
+}

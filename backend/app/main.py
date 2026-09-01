@@ -1,16 +1,8 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import models  # noqa: F401  确保模型注册到 metadata
 from .config import settings
-from .database import engine
-from .routers import auth, notes
-
-
-
-
+from .routers import auth
 
 app = FastAPI(title="login-demo API")
 
@@ -23,7 +15,6 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api")
-app.include_router(notes.router, prefix="/api")
 
 
 @app.get("/api/health")

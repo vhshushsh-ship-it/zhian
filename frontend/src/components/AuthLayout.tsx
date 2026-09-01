@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import Footer from './Footer'
+import Navbar from './Navbar'
 import './AuthLayout.css'
 
 interface AuthLayoutProps {
@@ -23,15 +25,7 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div className="auth-page">
-      {/* 顶部导航 */}
-      <header className="auth-nav">
-        <Link to="/" className="auth-logo">知岸</Link>
-        <nav className="auth-nav-links">
-          <Link to="/" className="auth-nav-active">首页</Link>
-          <a href="#features">功能</a>
-          <a href="#about">关于</a>
-        </nav>
-      </header>
+      <Navbar active="home" />
 
       {/* 主体：左右分栏 */}
       <main className="auth-main">
@@ -59,10 +53,7 @@ export default function AuthLayout({
         </div>
       </main>
 
-      {/* 底部横幅 */}
-      <footer className="auth-footer">
-        <p>全新的 AI 学习体验，助力每一位学习者高效上岸</p>
-      </footer>
+      <Footer />
     </div>
   )
 }
