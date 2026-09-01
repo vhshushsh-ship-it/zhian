@@ -1,0 +1,334 @@
+/* 登录 / 注册页布局样式，与欢迎页 Welcome.css 视觉统一 */
+
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+  overflow-x: hidden;
+}
+
+/* 顶部导航 */
+.auth-nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 48px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.auth-logo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.auth-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.auth-nav-links a {
+  text-decoration: none;
+  font-size: 15px;
+  color: #333;
+  transition: color 0.2s;
+}
+
+.auth-nav-links a:hover {
+  color: #e60012;
+}
+
+.auth-nav-links a.auth-nav-active {
+  color: #e60012;
+  font-weight: 600;
+}
+
+/* 主体：左右分栏 */
+.auth-main {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px;
+}
+
+/* 左侧表单卡片 */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 420px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  /* 淡入 + 上移动画 */
+  animation: auth-card-in 0.5s ease-out;
+}
+
+@keyframes auth-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card-title {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.auth-card-accent {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-bottom: 28px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+/* 表单 */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-error {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: #fdeaea;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #e60012;
+}
+
+.auth-form label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.auth-form input {
+  height: 44px;
+  padding: 0 14px;
+  margin-bottom: 18px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #e60012;
+  box-shadow: 0 0 0 3px rgba(230, 0, 18, 0.12);
+}
+
+.auth-submit {
+  width: 100%;
+  height: 48px;
+  margin-top: 6px;
+  padding: 0;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-submit:hover {
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* 底部切换链接 */
+.auth-switch {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.auth-switch a {
+  color: #e60012;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* 右侧品牌展示区 */
+.auth-brand {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.auth-brand-title {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 16px;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #1a1a1a;
+}
+
+.auth-brand-subtitle {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 40px;
+  font-size: 18px;
+  color: #333;
+}
+
+/* AI 学习插画（CSS 绘制） */
+.auth-illustration {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.auth-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-bubble-user {
+  align-self: flex-end;
+  background: #e60012;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.auth-bubble-bot {
+  align-self: flex-start;
+  background: #fff;
+  color: #333;
+  border: 1px solid #eee;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.auth-chip {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 8px 18px;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+/* 装饰几何色块 */
+.auth-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-deco-red {
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: #e60012;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0.9;
+}
+
+.auth-deco-yellow {
+  right: 20px;
+  bottom: 20px;
+  width: 80px;
+  height: 80px;
+  background: #ffc107;
+  border-radius: 18px;
+  transform: rotate(18deg);
+}
+
+/* 底部横幅 */
+.auth-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  padding: 0 24px;
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+}
+
+.auth-footer p {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* 响应式：窄屏隐藏品牌区，表单居中全宽 */
+@media (max-width: 768px) {
+  .auth-nav {
+    padding: 0 20px;
+  }
+
+  .auth-nav-links {
+    gap: 16px;
+  }
+
+  .auth-main {
+    padding: 32px 20px;
+  }
+
+  .auth-card {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .auth-brand {
+    display: none;
+  }
+}
