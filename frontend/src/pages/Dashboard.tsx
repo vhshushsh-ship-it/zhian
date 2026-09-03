@@ -69,7 +69,7 @@ export default function Dashboard() {
               <p className="subject-desc">{s.desc}</p>
               <button
                 className="subject-btn"
-                onClick={() => navigate(`/subject/${s.id}`)}
+                onClick={() => navigate(s.id === 'english' ? '/english' : `/subject/${s.id}`)}
               >
                 进入学习
               </button>

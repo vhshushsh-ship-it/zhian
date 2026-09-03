@@ -8,13 +8,14 @@
   justify-content: center;
   height: 80px;
   padding: 0 24px;
-  background: #1a1a1a;
-  color: #fff;
+  background: #fff;
+  border-top: 3px solid #e60012;
+  color: #333;
   text-align: center;
 }
 
 .footer p {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 1px;
 }

@@ -42,6 +42,22 @@
   font-weight: 600;
 }
 
+/* 返回上一页按钮（视觉与导航链接一致，不参与高亮） */
+.navbar-back {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.navbar-back:hover {
+  opacity: 1;
+  color: #e60012;
+}
+
 /* 用户邮箱 */
 .navbar-email {
   font-size: 14px;

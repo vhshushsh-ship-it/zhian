@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { banUser, getStats, getUsers, unbanUser } from '../api/admin'
 import { getErrorMessage } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 import type { AdminStats, AdminUser } from '../types'
 import './Admin.css'
@@ -332,7 +331,6 @@ export default function Admin() {
         </div>
       )}
 
-      <Footer />
     </div>
   )
 }
