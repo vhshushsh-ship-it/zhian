@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import './Navbar.css'
 
@@ -11,19 +11,20 @@ interface NavbarProps {
 }
 
 /**
- * 全站通用顶部导航栏：logo「知岸」+ 首页/功能/关于 + 可选尾部内容。
+ * 全站通用顶部导航栏：logo「知岸」+ 返回上一页/功能/关于 + 可选尾部内容。
  * 欢迎页、登录注册页、Dashboard、学科页、管理后台共用。
  * 「管理后台」菜单仅管理员可见。
  */
 export default function Navbar({ active, trailing }: NavbarProps) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   return (
     <header className="navbar">
       <Link to="/" className="navbar-logo">知岸</Link>
       <div className="navbar-right">
-        <Link to="/" className={active === 'home' ? 'navbar-active' : undefined}>
-          首页
-        </Link>
+        <button className="navbar-back" onClick={() => navigate(-1)}>
+          ← 返回上一页
+        </button>
         <a
           href="#features"
           className={active === 'features' ? 'navbar-active' : undefined}

@@ -7,6 +7,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Subject from './pages/Subject'
 import Welcome from './pages/Welcome'
+import EnglishHome from './pages/EnglishHome'
+import Reading from './pages/english/Reading'
+import Speaking from './pages/english/Speaking'
+import Words from './pages/english/Words'
 
 function Protected({ children }: { children: ReactElement }) {
   const { user, loading } = useAuth()
@@ -43,6 +47,38 @@ export default function App() {
         element={
           <Protected>
             <Subject />
+          </Protected>
+        }
+      />
+      <Route
+        path="/english"
+        element={
+          <Protected>
+            <EnglishHome />
+          </Protected>
+        }
+      />
+      <Route
+        path="/english/words"
+        element={
+          <Protected>
+            <Words />
+          </Protected>
+        }
+      />
+      <Route
+        path="/english/speaking"
+        element={
+          <Protected>
+            <Speaking />
+          </Protected>
+        }
+      />
+      <Route
+        path="/english/reading"
+        element={
+          <Protected>
+            <Reading />
           </Protected>
         }
       />

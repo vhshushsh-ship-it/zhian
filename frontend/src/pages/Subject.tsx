@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 import './Subject.css'
 
@@ -57,12 +56,11 @@ export default function Subject() {
           </p>
         </div>
 
-        <button className="subject-back" onClick={() => navigate('/dashboard')}>
-          返回首页
-        </button>
       </main>
 
-      <Footer />
+      <button className="subject-back" onClick={() => navigate(-1)}>
+        ← 返回
+      </button>
     </div>
   )
 }
