@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -77,3 +78,41 @@ class AdminStatsResponse(BaseModel):
     total_users: int
     online_users: int
     banned_users: int
+
+
+# ---------- 英语口语练习 ----------
+
+Topic = Literal["daily", "interview", "travel", "campus"]
+Level = Literal["beginner", "intermediate", "advanced"]
+
+
+class ChatMessage(BaseModel):
+    """对话中的一条消息（user / assistant）"""
+
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class SpeakingChatRequest(BaseModel):
+    """口语对话请求：历史消息 + 话题 + 难度"""
+
+    messages: list[ChatMessage]
+    topic: Topic
+    level: Level
+
+
+class SpeakingSuggestion(BaseModel):
+    """推荐回复句子（英文 + 中文）"""
+
+    en: str
+    zh: str
+
+
+class SpeakingChatResponse(BaseModel):
+    """口语对话响应：AI 英文回复 + 中文翻译 + 推荐句子"""
+
+    ai_reply: str
+    translation: str
+    suggestions: list[SpeakingSuggestion]
+    # 用户上一条消息的中文翻译（用于中栏「翻译」与左栏对话一一对应）
+    user_translation: str = ""
