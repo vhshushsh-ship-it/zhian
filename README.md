@@ -1,4 +1,4 @@
-# login-demo
+# zhian
 
 前后端分离的登录 + 笔记 CRUD 示例项目。前端 React + Vite + TypeScript，后端 FastAPI + Uvicorn，数据库 MySQL，生产环境用 Nginx 反向代理。
 
@@ -31,7 +31,7 @@
 │       ├── deps.py       # 依赖（当前用户）
 │       └── routers/      # 路由（auth / notes）
 ├── deploy/
-│   └── login-demo.service  # systemd 服务
+│   └── zhian.service  # systemd 服务
 ├── frontend/             # React 前端
 │   ├── .env.example      # 前端环境变量模板（当前无变量）
 │   ├── vite.config.ts    # 含 /api 代理
@@ -103,14 +103,14 @@ npm run dev
 2. **克隆代码**：
 
    ```bash
-   git clone <你的仓库地址> /opt/login-demo
+   git clone <你的仓库地址> /opt/zhian
    ```
 
-3. **配置 `.env`**：复制 `/opt/login-demo/backend/.env.example` 为 `/opt/login-demo/backend/.env`，填入生产环境真实值（手动完成，不提交）。
+3. **配置 `.env`**：复制 `/opt/zhian/backend/.env.example` 为 `/opt/zhian/backend/.env`，填入生产环境真实值（手动完成，不提交）。
 4. **后端**：
 
    ```bash
-   cd /opt/login-demo/backend
+   cd /opt/zhian/backend
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
@@ -119,26 +119,26 @@ npm run dev
    安装 systemd 服务：
 
    ```bash
-   sudo cp /opt/login-demo/deploy/login-demo.service /etc/systemd/system/
+   sudo cp /opt/zhian/deploy/zhian.service /etc/systemd/system/
    # 按实际路径修改 User/WorkingDirectory/ExecStart
    sudo systemctl daemon-reload
-   sudo systemctl enable --now login-demo
+   sudo systemctl enable --now zhian
    ```
 
 5. **前端构建**：
 
    ```bash
-   cd /opt/login-demo/frontend
+   cd /opt/zhian/frontend
    npm install
    npm run build   # 产物在 frontend/dist
    ```
 
-   将 `dist` 放到 Nginx 能访问的位置（或直接改 `root` 指向 `/opt/login-demo/frontend/dist`）。
+   将 `dist` 放到 Nginx 能访问的位置（或直接改 `root` 指向 `/opt/zhian/frontend/dist`）。
 
 6. **Nginx**：
 
    ```bash
-   sudo cp /opt/login-demo/nginx/nginx.conf /etc/nginx/conf.d/login-demo.conf
+   sudo cp /opt/zhian/nginx/nginx.conf /etc/nginx/conf.d/zhian.conf
    # 修改 server_name 与 root
    sudo nginx -t && sudo systemctl reload nginx
    ```
@@ -150,7 +150,7 @@ npm run dev
 项目已内置一键部署脚本 `deploy/deploy.sh`，服务器上执行即可：
 
 ```bash
-cd /opt/login-demo && bash deploy/deploy.sh
+cd /opt/zhian && bash deploy/deploy.sh
 ```
 
 脚本会依次执行 `git pull` → 后端装依赖并重启服务 → 前端装依赖并重新构建。之后本地每次只需 `git push`，服务器执行一次该脚本即可完成更新，无需改动任何配置文件。如需全自动，可把该脚本挂到 GitHub webhook 或 crontab 定时执行。
