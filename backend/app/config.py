@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     )
 
     # 数据库
-    database_url: str = "mysql+pymysql://root:password@localhost:3306/login_demo?charset=utf8mb4"
+    database_url: str = "mysql+pymysql://root:password@localhost:3306/zhian?charset=utf8mb4"
 
     # 认证
     secret_key: str = "change-me-in-production"

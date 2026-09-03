@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .routers import auth
 
-app = FastAPI(title="login-demo API")
+app = FastAPI(title="zhian API")
 
 app.add_middleware(
     CORSMiddleware,

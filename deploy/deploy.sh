@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# login-demo 更新部署脚本（每次代码更新后执行）
+# zhian 更新部署脚本（每次代码更新后执行）
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
-SERVICE_NAME="login-demo"
+SERVICE_NAME="zhian"
 
 cd "$PROJECT_DIR"
 
@@ -34,11 +34,11 @@ npm install
 npm run build
 
 echo "=== 5. 复制构建产物到 Nginx 目录 ==="
-rm -rf /var/www/login-demo/dist
-cp -r dist /var/www/login-demo/
+rm -rf /var/www/zhian/dist
+cp -r dist /var/www/zhian/
 
 echo "=== 6. 更新 Nginx 配置 ==="
-cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/login-demo.conf
+cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/zhian.conf
 nginx -t
 systemctl reload nginx
 

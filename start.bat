@@ -1,8 +1,8 @@
 @echo off
 chcp 65001 >nul
-title login-demo 本地开发环境
+title zhian 本地开发环境
 echo ========================================
-echo   login-demo 一键启动本地开发环境
+echo   zhian 一键启动本地开发环境
 echo ========================================
 echo.
 

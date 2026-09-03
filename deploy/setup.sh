@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# login-demo 服务器环境初始化脚本（全新服务器只跑一次）
+# zhian 服务器环境初始化脚本（全新服务器只跑一次）
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
-SERVICE_NAME="login-demo"
+SERVICE_NAME="zhian"
 
 echo "=== 1. 更新系统并安装基础工具 ==="
 apt update && apt upgrade -y
@@ -40,7 +40,7 @@ ufw allow 443
 ufw --force enable
 
 echo "=== 8. 创建前端静态文件目录 ==="
-mkdir -p /var/www/login-demo
+mkdir -p /var/www/zhian
 
 echo "=== 9. 创建后端虚拟环境并安装依赖 ==="
 cd "$BACKEND_DIR"
@@ -55,7 +55,7 @@ systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 
 echo "=== 11. 配置 Nginx ==="
-cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/login-demo.conf
+cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/zhian.conf
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
 
@@ -63,8 +63,8 @@ echo "=== 12. 前端首次构建 ==="
 cd "$FRONTEND_DIR"
 npm install
 npm run build
-rm -rf /var/www/login-demo/dist
-cp -r dist /var/www/login-demo/
+rm -rf /var/www/zhian/dist
+cp -r dist /var/www/zhian/
 
 echo ""
 echo "=== 初始化完成！接下来执行：==="
