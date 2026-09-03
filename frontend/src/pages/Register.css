@@ -1,0 +1,36 @@
+/* 注册页专属样式：验证码行（输入框 + 获取验证码按钮） */
+
+.auth-code-row {
+  display: flex;
+  align-items: center;
+  gap: 4%;
+  margin-bottom: 18px;
+}
+
+.auth-code-row .auth-code-input {
+  flex: 0 0 60%;
+  margin-bottom: 0;
+}
+
+.auth-code-btn {
+  flex: 0 0 35%;
+  height: 44px;
+  padding: 0 8px;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-code-btn:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.auth-code-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -155,6 +155,18 @@ cd /opt/zhian && bash deploy/deploy.sh
 
 脚本会依次执行 `git pull` → 后端装依赖并重启服务 → 前端装依赖并重新构建。之后本地每次只需 `git push`，服务器执行一次该脚本即可完成更新，无需改动任何配置文件。如需全自动，可把该脚本挂到 GitHub webhook 或 crontab 定时执行。
 
+## 管理员账号
+
+首次使用时，手动在数据库执行以下 SQL 将某个已注册账号设为管理员：
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = '你的邮箱';
+```
+
+- 管理员登录后自动进入管理后台 `/admin`
+- 普通用户注册默认 `role = 'user'`
+- 管理后台可查看用户列表、在线状态，并对用户进行封禁 / 解封
+
 ## API 概览
 
 | 方法 | 路径 | 说明 |

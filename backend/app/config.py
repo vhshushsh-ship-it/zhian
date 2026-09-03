@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     # CORS（逗号分隔的允许来源）
     backend_cors_origins: str = "http://localhost:5173"
 
+    # SMTP 邮件（QQ 邮箱，发送注册验证码）
+    smtp_host: str = "smtp.qq.com"
+    smtp_port: int = 465
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.backend_cors_origins.split(",") if o.strip()]
