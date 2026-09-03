@@ -1,18 +1,26 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { login as apiLogin, register as apiRegister } from '../api/auth'
 import api from '../api/client'
 import type { User } from '../types'
 
 interface AuthContextValue {
   user: User | null
   loading: boolean
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
+  register: (
+    email: string,
+    code: string,
+    password: string,
+    confirmPassword: string,
+  ) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -30,28 +38,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = async (username: string, password: string) => {
-    const res = await api.post<{ access_token: string }>('/auth/login', {
-      username,
-      password,
-    })
+  const login = async (email: string, password: string) => {
+    const res = await apiLogin(email, password)
     localStorage.setItem('token', res.data.access_token)
-    const me = await api.get<User>('/auth/me')
-    setUser(me.data)
+    setUser(res.data.user)
+    // 按角色跳转：管理员进后台，普通用户进学科选择
+    navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard')
   }
 
-  const register = async (username: string, email: string, password: string) => {
-    await api.post('/auth/register', {
-      username,
-      email: email.trim() ? email.trim() : null,
-      password,
-    })
-    await login(username, password)
+  const register = async (
+    email: string,
+    code: string,
+    password: string,
+    confirmPassword: string,
+  ) => {
+    const res = await apiRegister(email, code, password, confirmPassword)
+    localStorage.setItem('token', res.data.access_token)
+    setUser(res.data.user)
+    // 注册的都是普通用户
+    navigate('/dashboard')
   }
 
   const logout = () => {
     localStorage.removeItem('token')
     setUser(null)
+    navigate('/')
   }
 
   return (

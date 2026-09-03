@@ -1,24 +1,25 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import AuthLayout from '../components/AuthLayout'
 
 export default function Login() {
   const { login } = useAuth()
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [searchParams] = useSearchParams()
+  const bannedMsg = searchParams.get('banned')
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setSubmitting(true)
     try {
-      await login(username, password)
-      navigate('/dashboard')
+      // 登录成功后的跳转由 AuthContext.login 按角色处理
+      await login(email, password)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -38,13 +39,16 @@ export default function Login() {
       }
     >
       <form className="auth-form" onSubmit={onSubmit}>
+        {bannedMsg && <p className="auth-error">{bannedMsg}</p>}
         {error && <p className="auth-error">{error}</p>}
-        <label htmlFor="username">用户名</label>
+        <label htmlFor="email">邮箱</label>
         <input
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="请输入邮箱"
+          autoComplete="email"
           required
         />
         <label htmlFor="password">密码</label>

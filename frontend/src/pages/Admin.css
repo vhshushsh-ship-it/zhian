@@ -1,0 +1,394 @@
+/* 管理后台样式，遵循知岸统一设计风格 */
+
+.admin-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+}
+
+.admin-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 48px;
+}
+
+.admin-title {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.admin-accent {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-bottom: 28px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+/* 提示条 */
+.admin-notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.admin-notice-error {
+  background: #fdeaea;
+  color: #e60012;
+}
+
+.admin-notice-ok {
+  background: #e8f7ee;
+  color: #1e8e3e;
+}
+
+/* 统计卡片 */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.admin-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  color: #1a1a1a;
+}
+
+.admin-stat-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.admin-stat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 22px;
+}
+
+.admin-stat-blue .admin-stat-icon { background: #eaf0fe; }
+.admin-stat-green .admin-stat-icon { background: #e8f7ee; }
+.admin-stat-red .admin-stat-icon { background: #fdeaea; }
+
+/* 搜索筛选栏 */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-search {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  max-width: 360px;
+}
+
+.admin-search input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.admin-search input:focus {
+  outline: none;
+  border-color: #e60012;
+  box-shadow: 0 0 0 3px rgba(230, 0, 18, 0.12);
+}
+
+.admin-search button {
+  height: 40px;
+  padding: 0 20px;
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.admin-filter {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: #fff;
+}
+
+/* 用户列表表格 */
+.admin-table-wrap {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+  font-size: 14px;
+}
+
+.admin-table thead th {
+  background: #f5f5f5;
+  text-align: left;
+  padding: 14px 16px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.admin-table tbody td {
+  padding: 14px 16px;
+  border-top: 1px solid #f0f0f0;
+  color: #333;
+  white-space: nowrap;
+}
+
+.admin-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.admin-email {
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.admin-empty {
+  text-align: center;
+  color: #999;
+  padding: 32px 0;
+}
+
+/* 角色标签 */
+.admin-role {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.admin-role-admin {
+  background: #fdeaea;
+  color: #e60012;
+}
+
+.admin-role-user {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 状态 */
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.admin-status-online { color: #1e8e3e; }
+.admin-status-offline { color: #999; }
+.admin-status-banned { color: #e60012; }
+
+.admin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.admin-dot-green { background: #1e8e3e; }
+.admin-dot-gray { background: #bbb; }
+.admin-dot-red { background: #e60012; }
+
+/* 操作按钮 */
+.admin-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.admin-btn:hover {
+  transform: scale(1.05);
+}
+
+.admin-btn-ban {
+  background: #e60012;
+  color: #fff;
+}
+
+.admin-btn-unban {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* 分页 */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.admin-pagination button {
+  padding: 8px 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  font-size: 14px;
+  color: #333;
+}
+
+.admin-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-pagination span {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 封禁弹窗 */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+}
+
+.admin-modal h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.admin-modal-tip {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #666;
+}
+
+.admin-modal-email {
+  margin: 0 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  word-break: break-all;
+}
+
+.admin-modal-days {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.admin-day {
+  flex: 1;
+  padding: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #333;
+}
+
+.admin-day-active {
+  border-color: #e60012;
+  color: #e60012;
+  font-weight: 600;
+}
+
+.admin-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.admin-modal-cancel,
+.admin-modal-confirm {
+  flex: 1;
+  height: 42px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.admin-modal-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.admin-modal-confirm {
+  background: #e60012;
+  color: #fff;
+}
+
+.admin-modal-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .admin-main {
+    padding: 24px 16px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+}

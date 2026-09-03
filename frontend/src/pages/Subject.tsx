@@ -32,13 +32,7 @@ export default function Subject() {
         trailing={
           <>
             <span className="navbar-email">{user?.email || user?.username}</span>
-            <button
-              className="navbar-btn"
-              onClick={() => {
-                logout()
-                navigate('/')
-              }}
-            >
+            <button className="navbar-btn" onClick={logout}>
               退出登录
             </button>
           </>

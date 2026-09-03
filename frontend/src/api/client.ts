@@ -13,10 +13,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// 响应拦截器：401 时清除 token 并跳转登录页
+// 响应拦截器：统一处理认证与封禁错误
 api.interceptors.response.use(
   (res) => res,
   (error) => {
+    // 401：未登录或 token 过期
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       const path = window.location.pathname
@@ -24,6 +25,17 @@ api.interceptors.response.use(
         window.location.href = '/login'
       }
     }
+
+    // 403：封禁或权限不足
+    if (error.response?.status === 403) {
+      const msg = error.response?.data?.detail || ''
+      // 只要是封禁相关的错误，强制退出
+      if (msg.includes('封禁') || msg.includes('banned')) {
+        localStorage.removeItem('token')
+        window.location.href = '/login?banned=' + encodeURIComponent(msg)
+      }
+    }
+
     return Promise.reject(error)
   },
 )
