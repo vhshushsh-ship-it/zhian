@@ -1,111 +1,380 @@
-/* 口语练习功能占位页 */
+/* 英语口语练习：AI 对话 + 翻译 + 辅助功能 三栏布局 */
 
 .speaking-page {
-  position: relative;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8f8f8;
+  height: 100vh;
+  overflow: hidden;
+  background: #f5f5f5;
 }
 
-.speaking-main {
-  flex: 1;
+/* 外层容器：占满导航栏以下高度，左右各留 5% 边距，浅灰背景突出白色卡片 */
+.speaking-layout {
   width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 40px;
-  text-align: left;
+  height: calc(100vh - 64px);
+  padding: 0 5%;
+  background: #f5f5f5;
+  display: flex;
+  gap: 0;
+  box-sizing: border-box;
+  min-height: 0;
 }
 
-/* 左下角固定返回按钮：红色描边 */
-.speaking-back {
-  position: fixed;
-  left: 40px;
-  bottom: 100px;
-  z-index: 100;
-  height: 40px;
-  padding: 0 24px;
+/* 三栏卡片容器：占满中间 90% 区域，整体圆角 + 淡阴影 */
+.speaking-cards {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 0;
   background: #fff;
-  color: #e60012;
-  border: 1px solid #e60012;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
-.speaking-back:hover {
-  opacity: 1;
-  background: #fef0f0;
-  border-color: #e60012;
-  color: #e60012;
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(230, 0, 18, 0.15);
+/* 每栏卡片：白色背景，纵向排列，内部不溢出 */
+.speaking-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+  border-right: 2px solid #f0f0f0;
 }
 
-.speaking-back:active {
-  transform: scale(0.98);
+/* 左栏 40% / 中栏 30% / 右栏 30% */
+.speaking-chat {
+  flex: 0 0 40%;
 }
 
-.speaking-title {
-  margin: 0;
-  font-size: 32px;
-  font-weight: 800;
-  color: #1a1a1a;
-  line-height: 1.2;
+.speaking-translation {
+  flex: 0 0 30%;
 }
 
-.speaking-accent {
-  display: block;
-  width: 40px;
-  height: 4px;
-  margin-top: 12px;
-  background: #e60012;
-  border-radius: 2px;
+/* 最后一栏（右栏）去掉右边框 */
+.speaking-tools {
+  flex: 0 0 30%;
+  border-right: none;
 }
 
-.speaking-subtitle {
-  margin: 12px 0 0;
+/* 每栏标题区：浅灰背景 + 红色底边线 */
+.speaking-col-header {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  background: #f8f8f8;
+  border-bottom: 2px solid #e60012;
   font-size: 16px;
+  font-weight: 700;
   color: #333;
 }
 
-/* 占位提示区 */
-.speaking-placeholder {
-  margin-top: 64px;
-  text-align: center;
-}
-
-.speaking-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 24px;
-  border-radius: 50%;
+/* 栏目内容区：白色背景，内部滚动 */
+.speaking-chat-list,
+.speaking-translation-list,
+.speaking-tools-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
   background: #fff;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  font-size: 44px;
 }
 
-.speaking-placeholder-title {
-  margin: 0 0 12px;
-  font-size: 28px;
-  font-weight: 800;
-  color: #1a1a1a;
+/* ---------- 左栏：对话 ---------- */
+
+.speaking-msg {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
 }
 
-.speaking-placeholder-sub {
+.speaking-msg-user {
+  align-items: flex-end;
+}
+
+.speaking-msg-assistant {
+  align-items: flex-start;
+}
+
+.speaking-msg-system {
+  align-items: center;
+}
+
+.speaking-msg-role {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.speaking-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* 用户消息：靠右，红色背景白色文字 */
+.speaking-msg-user .speaking-bubble {
+  background: #e60012;
+  color: #fff;
+}
+
+/* AI 消息：靠左，白色背景深灰文字（加浅边框以便在白色栏上可见） */
+.speaking-msg-assistant .speaking-bubble {
+  background: #fff;
+  color: #333;
+  border: 1px solid #eee;
+}
+
+/* 系统提示：居中，浅灰 */
+.speaking-msg-system .speaking-bubble {
+  background: #f5f5f5;
+  color: #999;
+  font-size: 13px;
+}
+
+/* 左栏输入区：白色背景 + 顶部分隔线 */
+.speaking-chat-input {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+
+.speaking-textarea {
+  width: 100%;
+  height: 80px;
   margin: 0;
-  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.speaking-textarea:focus {
+  outline: none;
+  border-color: #e60012;
+}
+
+/* 发送按钮：黑色胶囊 */
+.speaking-send-btn {
+  align-self: flex-end;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.speaking-send-btn:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.speaking-send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.speaking-error {
+  margin: 0;
+  font-size: 13px;
+  color: #e60012;
+}
+
+/* ---------- 中栏：翻译 ---------- */
+
+.speaking-trans-msg {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.speaking-trans-user {
+  align-items: flex-end;
+}
+
+.speaking-trans-assistant {
+  align-items: flex-start;
+}
+
+.speaking-trans-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* 用户消息翻译：靠右，浅灰背景 */
+.speaking-trans-user .speaking-trans-bubble {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* AI 消息翻译：靠左，白色背景 */
+.speaking-trans-assistant .speaking-trans-bubble {
+  background: #fff;
+  color: #333;
+  border: 1px solid #eee;
+}
+
+/* ---------- 右栏：辅助功能 ---------- */
+
+/* 板块之间用分隔线隔开 */
+.speaking-tool-block {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.speaking-tool-block:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.speaking-tool-label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
   color: #666;
 }
 
-@media (max-width: 768px) {
-  .speaking-main {
-    padding: 24px 20px 60px;
+.speaking-tool-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 话题 / 难度按钮：未选中白色红边框灰字，选中红色白字 */
+.speaking-tool-btn {
+  padding: 8px 16px;
+  border: 1px solid #e60012;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speaking-tool-btn:hover {
+  background: #fef0f0;
+}
+
+.speaking-tool-btn-active {
+  background: #e60012;
+  color: #fff;
+}
+
+.speaking-tool-btn-active:hover {
+  background: #e60012;
+}
+
+/* 推荐回复句子 */
+.speaking-suggestion {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speaking-suggestion:hover {
+  border-color: #e60012;
+  background: #fef0f0;
+}
+
+.speaking-suggestion-en {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+.speaking-suggestion-zh {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #999;
+}
+
+.speaking-suggestion-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+/* ---------- 细滚动条 ---------- */
+
+.speaking-chat-list::-webkit-scrollbar,
+.speaking-translation-list::-webkit-scrollbar,
+.speaking-tools-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.speaking-chat-list::-webkit-scrollbar-thumb,
+.speaking-translation-list::-webkit-scrollbar-thumb,
+.speaking-tools-content::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.speaking-chat-list::-webkit-scrollbar-thumb:hover,
+.speaking-translation-list::-webkit-scrollbar-thumb:hover,
+.speaking-tools-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* ---------- 响应式：窄屏下三栏纵向堆叠 ---------- */
+
+@media (max-width: 900px) {
+  .speaking-layout {
+    height: auto;
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .speaking-cards {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .speaking-chat,
+  .speaking-translation,
+  .speaking-tools {
+    flex: none;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .speaking-tools {
+    border-bottom: none;
+  }
+
+  .speaking-chat-list,
+  .speaking-translation-list {
+    max-height: 50vh;
   }
 }
