@@ -1,17 +1,27 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 import { useAuth } from '../../auth/AuthContext'
 import Navbar from '../../components/Navbar'
 import { getErrorMessage } from '../../api/client'
 import {
-  sendSpeakingMessage,
-  type ChatMessage,
+  createConversation,
+  deleteConversation,
+  getConversation,
+  getConversations,
+  sendMessage,
+  type ConversationSummary,
   type Level,
   type SpeakingSuggestion,
   type Topic,
 } from '../../api/english'
 import './Speaking.css'
 
-/** 页面内的一条消息（system 用于系统提示，不带翻译） */
+/** 页面内的一条消息（system 用于本地提示，不带翻译、不入库） */
 interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
@@ -37,15 +47,48 @@ function topicLabel(id: Topic): string {
   return TOPICS.find((t) => t.id === id)?.label ?? id
 }
 
+function levelLabel(id: Level): string {
+  return LEVELS.find((l) => l.id === id)?.label ?? id
+}
+
+/** 欢迎提示（本地 system 消息） */
+function welcomeMessage(topic: Topic, level: Level): Message {
+  return {
+    role: 'system',
+    content: `欢迎来到口语练习！当前话题：${topicLabel(topic)}，难度：${levelLabel(level)}。用英语输入开始对话吧。`,
+  }
+}
+
+/** 对话标题：前 20 字，超出加省略号（与后端一致） */
+function makeTitle(content: string): string {
+  const t = content.trim()
+  return t.length > 20 ? `${t.slice(0, 20)}...` : t
+}
+
+/** 相对时间：刚刚 / X 分钟前 / X 小时前 / X 天前 / 具体日期 */
+function formatRelativeTime(iso: string): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return ''
+  const diff = Date.now() - t
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return '刚刚'
+  if (min < 60) return `${min}分钟前`
+  const hour = Math.floor(min / 60)
+  if (hour < 24) return `${hour}小时前`
+  const day = Math.floor(hour / 24)
+  if (day < 30) return `${day}天前`
+  const d = new Date(iso)
+  return `${d.getMonth() + 1}月${d.getDate()}日`
+}
+
 /** 英语口语练习：AI 对话 + 翻译 + 辅助功能 三栏布局 */
 export default function Speaking() {
   const { user, logout } = useAuth()
 
+  const [conversations, setConversations] = useState<ConversationSummary[]>([])
+  const [currentId, setCurrentId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'system',
-      content: '欢迎来到口语练习！当前话题：日常对话，难度：初级。用英语输入开始对话吧。',
-    },
+    { role: 'system', content: '加载中...' },
   ])
   const [topic, setTopic] = useState<Topic>('daily')
   const [level, setLevel] = useState<Level>('beginner')
@@ -53,10 +96,13 @@ export default function Speaking() {
   const [suggestions, setSuggestions] = useState<SpeakingSuggestion[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [historyOpen, setHistoryOpen] = useState(true)
 
   // 用于自动滚动到最新消息
   const chatListRef = useRef<HTMLDivElement>(null)
   const translationListRef = useRef<HTMLDivElement>(null)
+  // 防止 React StrictMode 下初始化逻辑重复执行
+  const initializedRef = useRef(false)
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -67,13 +113,87 @@ export default function Speaking() {
     }
   }, [messages])
 
-  /** 发送消息 */
+  /** 加载指定对话的详情（消息、话题、难度） */
+  const loadConversation = async (id: number) => {
+    const res = await getConversation(id)
+    const detail = res.data
+    setCurrentId(detail.id)
+    setTopic(detail.topic)
+    setLevel(detail.level)
+    const loaded: Message[] = detail.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      translation: m.translation,
+    }))
+    setMessages(
+      loaded.length > 0 ? loaded : [welcomeMessage(detail.topic, detail.level)],
+    )
+    setSuggestions([])
+    setInput('')
+    setError('')
+  }
+
+  /** 重新拉取对话列表 */
+  const refreshConversations = async () => {
+    const res = await getConversations()
+    setConversations(res.data)
+  }
+
+  /** 新建对话：用当前选中的话题 / 难度 */
+  const handleNewConversation = async () => {
+    try {
+      const res = await createConversation(topic, level)
+      setCurrentId(res.data.id)
+      setMessages([welcomeMessage(topic, level)])
+      setSuggestions([])
+      setInput('')
+      setError('')
+      await refreshConversations()
+    } catch (err) {
+      setError(getErrorMessage(err))
+    }
+  }
+
+  /** 切换对话 */
+  const handleSelectConversation = async (id: number) => {
+    if (id === currentId) return
+    try {
+      await loadConversation(id)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    }
+  }
+
+  /** 删除对话 */
+  const handleDeleteConversation = async (
+    id: number,
+    e: MouseEvent<HTMLButtonElement>,
+  ) => {
+    e.stopPropagation()
+    try {
+      await deleteConversation(id)
+      const remaining = conversations.filter((c) => c.id !== id)
+      setConversations(remaining)
+      if (id === currentId) {
+        if (remaining.length > 0) {
+          await loadConversation(remaining[0].id)
+        } else {
+          await handleNewConversation()
+        }
+      }
+    } catch (err) {
+      setError(getErrorMessage(err))
+    }
+  }
+
+  /** 发送消息（有状态接口，自动保存到当前对话） */
   const handleSend = async () => {
     const text = input.trim()
-    if (!text || sending) return
+    if (!text || sending || currentId == null) return
 
     const userMsg: Message = { role: 'user', content: text, translation: '' }
     const nextMessages = [...messages, userMsg]
+    const isFirstUserMessage = !messages.some((m) => m.role === 'user')
 
     setMessages(nextMessages)
     setInput('')
@@ -81,16 +201,7 @@ export default function Speaking() {
     setError('')
 
     try {
-      // 只把 user / assistant 消息传给后端
-      const apiMessages: ChatMessage[] = nextMessages
-        .filter((m): m is Message & { role: 'user' | 'assistant' } => m.role !== 'system')
-        .map((m) => ({ role: m.role, content: m.content }))
-
-      const res = await sendSpeakingMessage({
-        messages: apiMessages,
-        topic,
-        level,
-      })
+      const res = await sendMessage(currentId, text)
       const { ai_reply, translation, user_translation, suggestions: next } = res.data
 
       // 回填用户消息的中文翻译，并追加 AI 回复
@@ -100,6 +211,22 @@ export default function Speaking() {
       updated.push({ role: 'assistant', content: ai_reply, translation })
       setMessages(updated)
       setSuggestions(next)
+
+      // 更新列表里的标题与时间，并置顶
+      setConversations((prev) => {
+        const updatedList = prev.map((c) =>
+          c.id === currentId
+            ? {
+                ...c,
+                title: isFirstUserMessage ? makeTitle(text) : c.title,
+                updated_at: new Date().toISOString(),
+              }
+            : c,
+        )
+        return updatedList.sort(
+          (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        )
+      })
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -115,17 +242,12 @@ export default function Speaking() {
     }
   }
 
-  /** 切换话题：清空对话，重新开始 */
+  /** 选择话题（用于下次「新建对话」，不影响当前对话） */
   const handleTopicChange = (t: Topic) => {
-    if (t === topic) return
     setTopic(t)
-    setMessages([{ role: 'system', content: `已切换到 ${topicLabel(t)} 话题` }])
-    setSuggestions([])
-    setInput('')
-    setError('')
   }
 
-  /** 切换难度：不清空对话 */
+  /** 选择难度 */
   const handleLevelChange = (l: Level) => {
     setLevel(l)
   }
@@ -134,6 +256,27 @@ export default function Speaking() {
   const handleSuggestionClick = (s: SpeakingSuggestion) => {
     setInput(s.en)
   }
+
+  // 初始化：拉取对话列表，有则加载最近一条，无则新建
+  useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+    ;(async () => {
+      try {
+        const res = await getConversations()
+        const list = res.data
+        setConversations(list)
+        if (list.length > 0) {
+          await loadConversation(list[0].id)
+        } else {
+          await handleNewConversation()
+        }
+      } catch (err) {
+        setError(getErrorMessage(err))
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 翻译列展示的消息（排除 system 提示）
   const translationMessages = messages.filter((m) => m.role !== 'system')
@@ -157,6 +300,53 @@ export default function Speaking() {
           {/* 左栏：AI 对话 */}
           <section className="speaking-col speaking-chat">
             <header className="speaking-col-header">AI 对话</header>
+
+            {/* 历史对话区 */}
+            <div className="speaking-history">
+              <div className="speaking-history-bar">
+                <button className="speaking-new-btn" onClick={handleNewConversation}>
+                  + 新建对话
+                </button>
+                <button
+                  className="speaking-history-toggle"
+                  onClick={() => setHistoryOpen((v) => !v)}
+                >
+                  历史对话 {historyOpen ? '▾' : '▸'}
+                </button>
+              </div>
+              {historyOpen && (
+                <div className="speaking-history-list">
+                  {conversations.length === 0 ? (
+                    <p className="speaking-history-empty">暂无历史对话</p>
+                  ) : (
+                    conversations.map((c) => (
+                      <div
+                        key={c.id}
+                        className={
+                          c.id === currentId
+                            ? 'speaking-history-item speaking-history-item-active'
+                            : 'speaking-history-item'
+                        }
+                        onClick={() => handleSelectConversation(c.id)}
+                      >
+                        <div className="speaking-history-info">
+                          <span className="speaking-history-title">{c.title}</span>
+                          <span className="speaking-history-time">
+                            {formatRelativeTime(c.updated_at)}
+                          </span>
+                        </div>
+                        <button
+                          className="speaking-history-delete"
+                          onClick={(e) => handleDeleteConversation(c.id, e)}
+                        >
+                          删除
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="speaking-chat-list" ref={chatListRef}>
               {messages.map((m, i) => (
@@ -183,7 +373,7 @@ export default function Speaking() {
               <button
                 className="speaking-send-btn"
                 onClick={handleSend}
-                disabled={sending}
+                disabled={sending || currentId == null}
               >
                 {sending ? '发送中...' : '发送'}
               </button>

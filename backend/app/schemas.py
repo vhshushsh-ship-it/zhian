@@ -116,3 +116,66 @@ class SpeakingChatResponse(BaseModel):
     suggestions: list[SpeakingSuggestion]
     # 用户上一条消息的中文翻译（用于中栏「翻译」与左栏对话一一对应）
     user_translation: str = ""
+
+
+class ConversationSummary(BaseModel):
+    """对话列表项（不含消息）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    topic: Topic
+    level: Level
+    updated_at: datetime
+
+
+class Message(BaseModel):
+    """对话详情中的一条消息"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    role: Literal["user", "assistant"]
+    content: str
+    translation: str = ""
+    created_at: datetime
+
+
+class ConversationDetail(BaseModel):
+    """对话详情：基本信息 + 全部消息（按时间正序）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    topic: Topic
+    level: Level
+    messages: list[Message]
+
+
+class CreateConversationRequest(BaseModel):
+    """新建对话请求：话题 + 难度"""
+
+    topic: Topic
+    level: Level
+
+
+class ConversationIdResponse(BaseModel):
+    """新建对话响应：返回对话 id"""
+
+    id: int
+
+
+class SendMessageRequest(BaseModel):
+    """发送消息请求：用户输入的英文"""
+
+    content: str
+
+
+class SendMessageResponse(BaseModel):
+    """发送消息响应：AI 回复 + 中文翻译 + 推荐句子"""
+
+    ai_reply: str
+    translation: str
+    user_translation: str = ""
+    suggestions: list[SpeakingSuggestion]
