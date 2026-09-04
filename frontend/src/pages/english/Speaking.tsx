@@ -153,120 +153,122 @@ export default function Speaking() {
       />
 
       <div className="speaking-layout">
-        {/* 左栏：AI 对话 */}
-        <section className="speaking-col speaking-chat">
-          <header className="speaking-col-header">AI 对话</header>
+        <div className="speaking-cards">
+          {/* 左栏：AI 对话 */}
+          <section className="speaking-col speaking-chat">
+            <header className="speaking-col-header">AI 对话</header>
 
-          <div className="speaking-chat-list" ref={chatListRef}>
-            {messages.map((m, i) => (
-              <div key={i} className={`speaking-msg speaking-msg-${m.role}`}>
-                {m.role !== 'system' && (
-                  <span className="speaking-msg-role">
-                    {m.role === 'user' ? '你' : 'AI'}
-                  </span>
+            <div className="speaking-chat-list" ref={chatListRef}>
+              {messages.map((m, i) => (
+                <div key={i} className={`speaking-msg speaking-msg-${m.role}`}>
+                  {m.role !== 'system' && (
+                    <span className="speaking-msg-role">
+                      {m.role === 'user' ? '你' : 'AI'}
+                    </span>
+                  )}
+                  <div className="speaking-bubble">{m.content}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="speaking-chat-input">
+              <textarea
+                className="speaking-textarea"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="用英语输入你想说的话..."
+              />
+              {error && <p className="speaking-error">{error}</p>}
+              <button
+                className="speaking-send-btn"
+                onClick={handleSend}
+                disabled={sending}
+              >
+                {sending ? '发送中...' : '发送'}
+              </button>
+            </div>
+          </section>
+
+          {/* 中栏：翻译 */}
+          <section className="speaking-col speaking-translation">
+            <header className="speaking-col-header">翻译</header>
+
+            <div className="speaking-translation-list" ref={translationListRef}>
+              {translationMessages.map((m, i) => (
+                <div key={i} className={`speaking-trans-msg speaking-trans-${m.role}`}>
+                  <div className="speaking-trans-bubble">{m.translation ?? ''}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 右栏：辅助功能 */}
+          <section className="speaking-col speaking-tools">
+            <header className="speaking-col-header">辅助功能</header>
+
+            <div className="speaking-tools-content">
+              {/* 话题选择 */}
+              <div className="speaking-tool-block">
+                <p className="speaking-tool-label">选择话题</p>
+                <div className="speaking-tool-buttons">
+                  {TOPICS.map((t) => (
+                    <button
+                      key={t.id}
+                      className={
+                        t.id === topic
+                          ? 'speaking-tool-btn speaking-tool-btn-active'
+                          : 'speaking-tool-btn'
+                      }
+                      onClick={() => handleTopicChange(t.id)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 难度选择 */}
+              <div className="speaking-tool-block">
+                <p className="speaking-tool-label">选择难度</p>
+                <div className="speaking-tool-buttons">
+                  {LEVELS.map((l) => (
+                    <button
+                      key={l.id}
+                      className={
+                        l.id === level
+                          ? 'speaking-tool-btn speaking-tool-btn-active'
+                          : 'speaking-tool-btn'
+                      }
+                      onClick={() => handleLevelChange(l.id)}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 推荐回复 */}
+              <div className="speaking-tool-block">
+                <p className="speaking-tool-label">推荐回复</p>
+                {suggestions.length === 0 ? (
+                  <p className="speaking-suggestion-empty">发送消息后获取推荐</p>
+                ) : (
+                  suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      className="speaking-suggestion"
+                      onClick={() => handleSuggestionClick(s)}
+                    >
+                      <span className="speaking-suggestion-en">{s.en}</span>
+                      <span className="speaking-suggestion-zh">{s.zh}</span>
+                    </button>
+                  ))
                 )}
-                <div className="speaking-bubble">{m.content}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="speaking-chat-input">
-            <textarea
-              className="speaking-textarea"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="用英语输入你想说的话..."
-            />
-            {error && <p className="speaking-error">{error}</p>}
-            <button
-              className="speaking-send-btn"
-              onClick={handleSend}
-              disabled={sending}
-            >
-              {sending ? '发送中...' : '发送'}
-            </button>
-          </div>
-        </section>
-
-        {/* 中栏：翻译 */}
-        <section className="speaking-col speaking-translation">
-          <header className="speaking-col-header">翻译</header>
-
-          <div className="speaking-translation-list" ref={translationListRef}>
-            {translationMessages.map((m, i) => (
-              <div key={i} className={`speaking-trans-msg speaking-trans-${m.role}`}>
-                <div className="speaking-trans-bubble">{m.translation ?? ''}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 右栏：辅助功能 */}
-        <section className="speaking-col speaking-tools">
-          <header className="speaking-col-header">辅助功能</header>
-
-          <div className="speaking-tools-content">
-            {/* 话题选择 */}
-            <div className="speaking-tool-block">
-              <p className="speaking-tool-label">选择话题</p>
-              <div className="speaking-tool-buttons">
-                {TOPICS.map((t) => (
-                  <button
-                    key={t.id}
-                    className={
-                      t.id === topic
-                        ? 'speaking-tool-btn speaking-tool-btn-active'
-                        : 'speaking-tool-btn'
-                    }
-                    onClick={() => handleTopicChange(t.id)}
-                  >
-                    {t.label}
-                  </button>
-                ))}
               </div>
             </div>
-
-            {/* 难度选择 */}
-            <div className="speaking-tool-block">
-              <p className="speaking-tool-label">选择难度</p>
-              <div className="speaking-tool-buttons">
-                {LEVELS.map((l) => (
-                  <button
-                    key={l.id}
-                    className={
-                      l.id === level
-                        ? 'speaking-tool-btn speaking-tool-btn-active'
-                        : 'speaking-tool-btn'
-                    }
-                    onClick={() => handleLevelChange(l.id)}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 推荐回复 */}
-            <div className="speaking-tool-block">
-              <p className="speaking-tool-label">推荐回复</p>
-              {suggestions.length === 0 ? (
-                <p className="speaking-suggestion-empty">发送消息后获取推荐</p>
-              ) : (
-                suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    className="speaking-suggestion"
-                    onClick={() => handleSuggestionClick(s)}
-                  >
-                    <span className="speaking-suggestion-en">{s.en}</span>
-                    <span className="speaking-suggestion-zh">{s.zh}</span>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   )
