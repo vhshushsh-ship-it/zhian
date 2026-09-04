@@ -193,6 +193,133 @@
   color: #e60012;
 }
 
+/* ---------- 左栏：历史对话 ---------- */
+
+.speaking-history {
+  flex-shrink: 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* 顶部操作栏：新建对话 + 折叠开关 */
+.speaking-history-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+/* 新建对话按钮：红色胶囊，小尺寸 */
+.speaking-new-btn {
+  background: #e60012;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.speaking-new-btn:hover {
+  background: #c5000f;
+}
+
+/* 历史对话折叠开关 */
+.speaking-history-toggle {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.speaking-history-toggle:hover {
+  color: #e60012;
+}
+
+/* 历史对话列表：内部滚动 */
+.speaking-history-list {
+  max-height: 240px;
+  overflow-y: auto;
+  border-top: 1px solid #f0f0f0;
+  padding: 4px 0;
+}
+
+.speaking-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+}
+
+.speaking-history-item:hover {
+  background: #fafafa;
+}
+
+/* 当前对话高亮：浅红背景 + 红色左边框 */
+.speaking-history-item-active {
+  background: #fef0f0;
+  border-left-color: #e60012;
+}
+
+.speaking-history-item-active:hover {
+  background: #fef0f0;
+}
+
+.speaking-history-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.speaking-history-title {
+  font-size: 13px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.speaking-history-time {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* 删除按钮：hover 时显示 */
+.speaking-history-delete {
+  opacity: 0;
+  border: none;
+  background: none;
+  color: #e60012;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.speaking-history-item:hover .speaking-history-delete {
+  opacity: 1;
+}
+
+.speaking-history-delete:hover {
+  text-decoration: underline;
+}
+
+.speaking-history-empty {
+  padding: 12px 16px;
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
 /* ---------- 中栏：翻译 ---------- */
 
 .speaking-trans-msg {

@@ -5,17 +5,33 @@
 - AI 回复的中文翻译（translation）
 - 用户上一条消息的中文翻译（user_translation）
 - 3 句推荐回复（suggestions）
+
+同时提供对话历史的有状态接口：每个用户可创建多段对话，每段对话
+持久化保存其消息，支持列表 / 详情 / 发送 / 删除。
 """
 
 import json
+from datetime import datetime
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 from ..config import settings
+from ..database import get_db
 from ..deps import get_current_user
-from ..models import User
-from ..schemas import SpeakingChatRequest, SpeakingChatResponse, SpeakingSuggestion
+from ..models import SpeakingConversation, SpeakingMessage, User
+from ..schemas import (
+    ConversationDetail,
+    ConversationIdResponse,
+    ConversationSummary,
+    CreateConversationRequest,
+    SendMessageRequest,
+    SendMessageResponse,
+    SpeakingChatRequest,
+    SpeakingChatResponse,
+    SpeakingSuggestion,
+)
 
 router = APIRouter(prefix="/english/speaking", tags=["english-speaking"])
 
@@ -128,17 +144,152 @@ def parse_response(content: str) -> SpeakingChatResponse:
         )
 
 
+def get_owned_conversation(
+    conversation_id: int, user_id: int, db: Session
+) -> SpeakingConversation:
+    """获取对话并校验归属：不存在返回 404，非本人返回 403。"""
+    conv = db.get(SpeakingConversation, conversation_id)
+    if conv is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="对话不存在")
+    if conv.user_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权访问该对话")
+    return conv
+
+
+def make_title(content: str) -> str:
+    """用第一条用户消息的前 20 字作为标题，超出加省略号。"""
+    text = content.strip()
+    return text[:20] + ("..." if len(text) > 20 else "")
+
+
+# ---------- 有状态接口（对话历史） ----------
+
+
+@router.get("/conversations", response_model=list[ConversationSummary])
+def list_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """返回当前用户的所有对话，按更新时间倒序。"""
+    convs = (
+        db.query(SpeakingConversation)
+        .filter(SpeakingConversation.user_id == current_user.id)
+        .order_by(SpeakingConversation.updated_at.desc())
+        .all()
+    )
+    return convs
+
+
+@router.post(
+    "/conversations", response_model=ConversationIdResponse, status_code=status.HTTP_201_CREATED
+)
+def create_conversation(
+    payload: CreateConversationRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """新建对话，标题默认为「新对话」。"""
+    conv = SpeakingConversation(
+        user_id=current_user.id,
+        title="新对话",
+        topic=payload.topic,
+        level=payload.level,
+    )
+    db.add(conv)
+    db.commit()
+    db.refresh(conv)
+    return ConversationIdResponse(id=conv.id)
+
+
+@router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
+def get_conversation(
+    conversation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """返回对话详情 + 全部消息（按时间正序）。"""
+    conv = get_owned_conversation(conversation_id, current_user.id, db)
+    return conv
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages", response_model=SendMessageResponse
+)
+def send_message(
+    conversation_id: int,
+    payload: SendMessageRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """发送消息：保存用户消息，调用 DeepSeek，保存 AI 消息，更新标题与时间。"""
+    conv = get_owned_conversation(conversation_id, current_user.id, db)
+
+    # 构建历史消息上下文（按时间正序，不含 system 提示）
+    history = [{"role": m.role, "content": m.content} for m in conv.messages]
+
+    deepseek_messages = [{"role": "system", "content": build_system_prompt(conv.topic, conv.level)}]
+    deepseek_messages += history
+    deepseek_messages.append({"role": "user", "content": payload.content})
+
+    content = call_deepseek(deepseek_messages)
+    parsed = parse_response(content)
+
+    # 第一条消息时，用用户消息前 20 字作为标题
+    is_first = len(history) == 0
+
+    user_msg = SpeakingMessage(
+        conversation_id=conv.id,
+        role="user",
+        content=payload.content,
+        translation=parsed.user_translation,
+    )
+    ai_msg = SpeakingMessage(
+        conversation_id=conv.id,
+        role="assistant",
+        content=parsed.ai_reply,
+        translation=parsed.translation,
+    )
+    db.add(user_msg)
+    db.add(ai_msg)
+
+    if is_first:
+        conv.title = make_title(payload.content)
+    conv.updated_at = datetime.now()
+
+    db.commit()
+
+    return SendMessageResponse(
+        ai_reply=parsed.ai_reply,
+        translation=parsed.translation,
+        user_translation=parsed.user_translation,
+        suggestions=parsed.suggestions,
+    )
+
+
+@router.delete("/conversations/{conversation_id}")
+def delete_conversation(
+    conversation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """删除对话及其所有消息（级联删除）。"""
+    conv = get_owned_conversation(conversation_id, current_user.id, db)
+    db.delete(conv)
+    db.commit()
+    return {"message": "删除成功"}
+
+
+# ---------- 无状态接口（保留，供兼容） ----------
+
+
 @router.post("/chat", response_model=SpeakingChatResponse)
 def chat(
     payload: SpeakingChatRequest,
     current_user: User = Depends(get_current_user),
 ):
-    """口语对话：返回 AI 英文回复、中文翻译与推荐句子。"""
-    system_prompt = build_system_prompt(payload.topic, payload.level)
-    messages = [{"role": "system", "content": system_prompt}]
-    messages += [
-        {"role": m.role, "content": m.content} for m in payload.messages
-    ]
+    """无状态口语对话：传入历史消息，返回 AI 英文回复、中文翻译与推荐句子。"""
+    messages = [{"role": "system", "content": build_system_prompt(payload.topic, payload.level)}]
+    messages += [{"role": m.role, "content": m.content} for m in payload.messages]
 
     content = call_deepseek(messages)
     return parse_response(content)
