@@ -105,3 +105,15 @@ export function sendMessage(id: number, content: string) {
 export function deleteConversation(id: number) {
   return api.delete(`/english/speaking/conversations/${id}`)
 }
+
+// ---------- 语音合成（TTS） ----------
+
+/**
+ * 返回某段文本的 TTS 音频流地址，可直接作为 <audio> 的 src。
+ * 因为 <audio> 标签无法携带 Authorization 请求头，所以把 JWT 作为
+ * token query 参数附加到 URL 上，后端用该参数完成鉴权。
+ */
+export function getTtsUrl(text: string, rate: number): string {
+  const token = localStorage.getItem('token') || ''
+  return `/api/tts/speak?text=${encodeURIComponent(text)}&rate=${rate}&token=${encodeURIComponent(token)}`
+}

@@ -231,3 +231,6 @@ pnpm-debug.log*
 
 
 .claude/
+
+
+test_tts.py/
