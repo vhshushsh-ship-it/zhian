@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     deepseek_model: str = "deepseek-v4-flash"
     deepseek_base_url: str = "https://api.deepseek.com/v1"
 
+    # 阿里云百炼（DashScope）语音合成
+    dashscope_api_key: str = ""
+    dashscope_base_url: str = "https://dashscope.aliyuncs.com/api/v1"
+    dashscope_model: str = "cosyvoice-v3-flash"
+
     @property
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.backend_cors_origins.split(",") if o.strip()]

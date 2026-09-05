@@ -13,6 +13,7 @@ import {
   deleteConversation,
   getConversation,
   getConversations,
+  getTtsUrl,
   sendMessage,
   type ConversationSummary,
   type Level,
@@ -23,10 +24,21 @@ import './Speaking.css'
 
 /** 页面内的一条消息（system 用于本地提示，不带翻译、不入库） */
 interface Message {
+  id: number
   role: 'user' | 'assistant' | 'system'
   content: string
   translation?: string
 }
+
+/** 生成本地消息唯一 id（仅用于前端播放状态定位） */
+let messageSeq = 0
+function genMessageId(): number {
+  messageSeq += 1
+  return messageSeq
+}
+
+/** 语速选项（倍速） */
+const RATES = [0.5, 0.75, 1, 1.25, 1.5]
 
 /** 话题选项 */
 const TOPICS: { id: Topic; label: string }[] = [
@@ -54,6 +66,7 @@ function levelLabel(id: Level): string {
 /** 欢迎提示（本地 system 消息） */
 function welcomeMessage(topic: Topic, level: Level): Message {
   return {
+    id: genMessageId(),
     role: 'system',
     content: `欢迎来到口语练习！当前话题：${topicLabel(topic)}，难度：${levelLabel(level)}。用英语输入开始对话吧。`,
   }
@@ -88,7 +101,7 @@ export default function Speaking() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [currentId, setCurrentId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'system', content: '加载中...' },
+    { id: genMessageId(), role: 'system', content: '加载中...' },
   ])
   const [topic, setTopic] = useState<Topic>('daily')
   const [level, setLevel] = useState<Level>('beginner')
@@ -98,11 +111,24 @@ export default function Speaking() {
   const [error, setError] = useState('')
   const [historyOpen, setHistoryOpen] = useState(true)
 
+  // TTS 语音朗读相关状态
+  const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [autoPlay, setAutoPlay] = useState(
+    () => localStorage.getItem('speaking_autoplay') === '1',
+  )
+  const [playRate, setPlayRate] = useState(() => {
+    const saved = Number(localStorage.getItem('speaking_rate'))
+    return RATES.includes(saved) ? saved : 1
+  })
+
   // 用于自动滚动到最新消息
   const chatListRef = useRef<HTMLDivElement>(null)
   const translationListRef = useRef<HTMLDivElement>(null)
   // 防止 React StrictMode 下初始化逻辑重复执行
   const initializedRef = useRef(false)
+  // 全局 Audio 对象（复用一个实例，切换 src 即停止上一段播放）
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -113,14 +139,70 @@ export default function Speaking() {
     }
   }, [messages])
 
+  /** 获取（懒创建）全局 Audio 实例 */
+  function getAudio(): HTMLAudioElement {
+    if (!audioRef.current) {
+      const audio = new Audio()
+      audio.onended = () => {
+        setCurrentPlayingId(null)
+        setIsPlaying(false)
+      }
+      audio.onerror = () => {
+        setCurrentPlayingId(null)
+        setIsPlaying(false)
+      }
+      audioRef.current = audio
+    }
+    return audioRef.current
+  }
+
+  /** 停止当前播放并清空状态 */
+  function stopAudio() {
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+    setCurrentPlayingId(null)
+    setIsPlaying(false)
+  }
+
+  /** 朗读某条消息：若正在播放同一条则停止，否则停止旧播放并播放新的 */
+  function playMessage(msg: Message) {
+    if (currentPlayingId === msg.id && isPlaying) {
+      stopAudio()
+      return
+    }
+    const audio = getAudio()
+    audio.src = getTtsUrl(msg.content, playRate)
+    audio.play().catch(() => {
+      setCurrentPlayingId(null)
+      setIsPlaying(false)
+    })
+    setCurrentPlayingId(msg.id)
+    setIsPlaying(true)
+  }
+
+  // 卸载时停止播放并释放音频
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ''
+      }
+    }
+  }, [])
+
   /** 加载指定对话的详情（消息、话题、难度） */
   const loadConversation = async (id: number) => {
+    stopAudio()
     const res = await getConversation(id)
     const detail = res.data
     setCurrentId(detail.id)
     setTopic(detail.topic)
     setLevel(detail.level)
     const loaded: Message[] = detail.messages.map((m) => ({
+      id: genMessageId(),
       role: m.role,
       content: m.content,
       translation: m.translation,
@@ -141,6 +223,7 @@ export default function Speaking() {
 
   /** 新建对话：用当前选中的话题 / 难度 */
   const handleNewConversation = async () => {
+    stopAudio()
     try {
       const res = await createConversation(topic, level)
       setCurrentId(res.data.id)
@@ -191,7 +274,12 @@ export default function Speaking() {
     const text = input.trim()
     if (!text || sending || currentId == null) return
 
-    const userMsg: Message = { role: 'user', content: text, translation: '' }
+    const userMsg: Message = {
+      id: genMessageId(),
+      role: 'user',
+      content: text,
+      translation: '',
+    }
     const nextMessages = [...messages, userMsg]
     const isFirstUserMessage = !messages.some((m) => m.role === 'user')
 
@@ -208,9 +296,20 @@ export default function Speaking() {
       const updated = nextMessages.map((m) =>
         m === userMsg ? { ...m, translation: user_translation } : m,
       )
-      updated.push({ role: 'assistant', content: ai_reply, translation })
+      const aiMsg: Message = {
+        id: genMessageId(),
+        role: 'assistant',
+        content: ai_reply,
+        translation,
+      }
+      updated.push(aiMsg)
       setMessages(updated)
       setSuggestions(next)
+
+      // 自动朗读：开关开启时自动播放本次 AI 回复
+      if (autoPlay) {
+        playMessage(aiMsg)
+      }
 
       // 更新列表里的标题与时间，并置顶
       setConversations((prev) => {
@@ -255,6 +354,21 @@ export default function Speaking() {
   /** 点击推荐句子，填入输入框 */
   const handleSuggestionClick = (s: SpeakingSuggestion) => {
     setInput(s.en)
+  }
+
+  /** 切换自动朗读开关并持久化到 localStorage */
+  const handleToggleAutoPlay = () => {
+    setAutoPlay((prev) => {
+      const next = !prev
+      localStorage.setItem('speaking_autoplay', next ? '1' : '0')
+      return next
+    })
+  }
+
+  /** 切换语速并持久化到 localStorage */
+  const handleRateChange = (r: number) => {
+    setPlayRate(r)
+    localStorage.setItem('speaking_rate', String(r))
   }
 
   // 初始化：拉取对话列表，有则加载最近一条，无则新建
@@ -349,14 +463,32 @@ export default function Speaking() {
             </div>
 
             <div className="speaking-chat-list" ref={chatListRef}>
-              {messages.map((m, i) => (
-                <div key={i} className={`speaking-msg speaking-msg-${m.role}`}>
+              {messages.map((m) => (
+                <div key={m.id} className={`speaking-msg speaking-msg-${m.role}`}>
                   {m.role !== 'system' && (
                     <span className="speaking-msg-role">
                       {m.role === 'user' ? '你' : 'AI'}
                     </span>
                   )}
-                  <div className="speaking-bubble">{m.content}</div>
+                  {m.role === 'assistant' ? (
+                    <div className="speaking-bubble-row">
+                      <div className="speaking-bubble">{m.content}</div>
+                      <button
+                        className={
+                          currentPlayingId === m.id && isPlaying
+                            ? 'speaking-play-btn speaking-play-btn-active'
+                            : 'speaking-play-btn'
+                        }
+                        onClick={() => playMessage(m)}
+                        title={currentPlayingId === m.id && isPlaying ? '停止朗读' : '朗读'}
+                        aria-label={currentPlayingId === m.id && isPlaying ? '停止朗读' : '朗读'}
+                      >
+                        {currentPlayingId === m.id && isPlaying ? '⏸' : '🔊'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="speaking-bubble">{m.content}</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -435,6 +567,40 @@ export default function Speaking() {
                       {l.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* 朗读设置 */}
+              <div className="speaking-tool-block">
+                <p className="speaking-tool-label">朗读设置</p>
+                <div className="speaking-autoplay-row">
+                  <span className="speaking-autoplay-label">自动朗读 AI 回复</span>
+                  <button
+                    className={autoPlay ? 'speaking-toggle speaking-toggle-on' : 'speaking-toggle'}
+                    onClick={handleToggleAutoPlay}
+                    role="switch"
+                    aria-checked={autoPlay}
+                  >
+                    <span className="speaking-toggle-knob" />
+                  </button>
+                </div>
+                <div className="speaking-rate-row">
+                  <span className="speaking-rate-label">语速</span>
+                  <div className="speaking-rate-buttons">
+                    {RATES.map((r) => (
+                      <button
+                        key={r}
+                        className={
+                          r === playRate
+                            ? 'speaking-rate-btn speaking-rate-btn-active'
+                            : 'speaking-rate-btn'
+                        }
+                        onClick={() => handleRateChange(r)}
+                      >
+                        {r}x
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

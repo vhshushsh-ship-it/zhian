@@ -128,6 +128,42 @@
   border: 1px solid #eee;
 }
 
+/* AI 气泡 + 朗读按钮的横向排列 */
+.speaking-bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 90%;
+}
+
+/* AI 回复朗读按钮：小圆形，灰色背景，hover / 播放中变红 */
+.speaking-play-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.speaking-play-btn:hover {
+  background: #e60012;
+  color: #fff;
+}
+
+.speaking-play-btn-active {
+  background: #e60012;
+  color: #fff;
+}
+
 /* 系统提示：居中，浅灰 */
 .speaking-msg-system .speaking-bubble {
   background: #f5f5f5;
@@ -409,6 +445,93 @@
 }
 
 .speaking-tool-btn-active:hover {
+  background: #e60012;
+}
+
+/* 朗读设置：自动朗读开关 */
+.speaking-autoplay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.speaking-autoplay-label {
+  font-size: 13px;
+  color: #666;
+}
+
+/* 开关：灰色关，红色开（知岸风格） */
+.speaking-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.speaking-toggle-on {
+  background: #e60012;
+}
+
+.speaking-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.speaking-toggle-on .speaking-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* 语速调节 */
+.speaking-rate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.speaking-rate-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.speaking-rate-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.speaking-rate-btn {
+  padding: 5px 10px;
+  border: 1px solid #e60012;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speaking-rate-btn:hover {
+  background: #fef0f0;
+}
+
+.speaking-rate-btn-active {
+  background: #e60012;
+  color: #fff;
+}
+
+.speaking-rate-btn-active:hover {
   background: #e60012;
 }
 
