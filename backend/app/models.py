@@ -1,6 +1,17 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -86,4 +97,136 @@ class SpeakingMessage(Base):
 
     conversation: Mapped["SpeakingConversation"] = relationship(
         back_populates="messages"
+    )
+
+
+class Word(Base):
+    """词库单词：公共数据，所有用户共享。一个词可有多条释义与例句。"""
+
+    __tablename__ = "words"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    # 词条（词库全局去重）
+    word: Mapped[str] = mapped_column(
+        String(100), unique=True, index=True, nullable=False
+    )
+    # 音标
+    phonetic: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # 发音音频 URL（MVP 可空，后续接 TTS / OSS）
+    audio_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # 标签，如 "考研,CET4,CET6"
+    tags: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # 难度等级
+    difficulty: Mapped[int] = mapped_column(
+        Integer, server_default="1", nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    # 释义 / 例句：删除单词时级联删除
+    definitions: Mapped[list["WordDefinition"]] = relationship(
+        back_populates="word",
+        cascade="all, delete-orphan",
+        order_by="WordDefinition.order_index",
+    )
+    examples: Mapped[list["WordExample"]] = relationship(
+        back_populates="word",
+        cascade="all, delete-orphan",
+        order_by="WordExample.order_index",
+    )
+
+
+class WordDefinition(Base):
+    """单词释义：一词多义，按 order_index 排序展示。"""
+
+    __tablename__ = "word_definitions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    word_id: Mapped[int] = mapped_column(
+        ForeignKey("words.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 词性，如 n. / v. / adj.
+    pos: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # 中文释义
+    meaning: Mapped[str] = mapped_column(String(200), nullable=False)
+    # 展示顺序
+    order_index: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+
+    word: Mapped["Word"] = relationship(back_populates="definitions")
+
+
+class WordExample(Base):
+    """单词例句：英文例句 + 中文翻译，按 order_index 排序展示。"""
+
+    __tablename__ = "word_examples"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    word_id: Mapped[int] = mapped_column(
+        ForeignKey("words.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 英文例句
+    en: Mapped[str] = mapped_column(Text, nullable=False)
+    # 中文翻译
+    zh: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # 展示顺序
+    order_index: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+
+    word: Mapped["Word"] = relationship(back_populates="examples")
+
+
+class UserWordProgress(Base):
+    """用户单词学习进度：按用户隔离，记录记忆强度、复习次数等。"""
+
+    __tablename__ = "user_word_progress"
+    __table_args__ = (
+        UniqueConstraint("user_id", "word_id", name="uq_user_word_progress_user_word"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
+    word_id: Mapped[int] = mapped_column(
+        ForeignKey("words.id"), nullable=False, index=True
+    )
+    # 记忆强度 S：存上次复习后的值（非衰减值）
+    memory_strength: Mapped[float] = mapped_column(
+        Float, server_default="0", nullable=False
+    )
+    # 上次复习时间
+    last_review_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # 下次复习日期：查今日复习队列走此索引
+    next_review_date: Mapped[date | None] = mapped_column(
+        Date, nullable=True, index=True
+    )
+    # 总复习次数
+    review_count: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # "认识"次数
+    known_count: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # "模糊"次数
+    vague_count: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # "忘记"次数
+    forgotten_count: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # 是否标记熟知
+    is_mastered: Mapped[bool] = mapped_column(
+        Boolean, server_default="0", nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -179,3 +179,90 @@ class SendMessageResponse(BaseModel):
     translation: str
     user_translation: str = ""
     suggestions: list[SpeakingSuggestion]
+
+
+# ---------- 背单词 ----------
+
+Feedback = Literal["known", "vague", "forgotten"]
+
+
+class WordDefinitionResponse(BaseModel):
+    """单词释义"""
+
+    pos: str | None = None
+    meaning: str
+
+
+class WordExampleResponse(BaseModel):
+    """单词例句"""
+
+    en: str
+    zh: str | None = None
+
+
+class TodayQueueItem(BaseModel):
+    """今日复习队列中的一项"""
+
+    id: int
+    word: str
+    phonetic: str | None = None
+    audio_url: str | None = None
+    current_strength: float
+    is_new: bool
+    index: int
+
+
+class TodayQueueResponse(BaseModel):
+    """今日复习队列"""
+
+    total: int
+    review_count: int
+    new_count: int
+    items: list[TodayQueueItem]
+
+
+class WordDetailResponse(BaseModel):
+    """单词详情 + 当前用户学习进度"""
+
+    id: int
+    word: str
+    phonetic: str | None = None
+    audio_url: str | None = None
+    definitions: list[WordDefinitionResponse]
+    examples: list[WordExampleResponse]
+    # 当前用户进度
+    current_strength: float
+    memory_strength: float
+    review_count: int
+    known_count: int
+    vague_count: int
+    forgotten_count: int
+    is_mastered: bool
+
+
+class ReviewRequest(BaseModel):
+    """复习反馈请求"""
+
+    feedback: Feedback
+
+
+class ReviewResponse(BaseModel):
+    """复习反馈响应"""
+
+    new_strength: float
+    next_review_date: date
+    interval_text: str
+
+
+class WordStatsResponse(BaseModel):
+    """背单词学习统计"""
+
+    learned: int
+    due_today: int
+    learned_today: int
+    mastered: int
+    known_count: int
+    vague_count: int
+    forgotten_count: int
+    accuracy: float
+    streak_days: int
