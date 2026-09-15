@@ -234,3 +234,8 @@ pnpm-debug.log*
 
 
 test_tts.py/
+
+
+# 词库原始数据与预处理产物（体积大，不入库）
+backend/tools/ecdict.csv
+backend/seed_words_kaoyan.csv
