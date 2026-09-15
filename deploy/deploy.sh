@@ -23,6 +23,7 @@ cd "$BACKEND_DIR"
 source .venv/bin/activate
 pip install -r requirements.txt
 alembic upgrade head
+python seed.py
 deactivate
 
 echo "=== 3. 重启后端服务 ==="
@@ -41,6 +42,7 @@ echo "=== 6. 更新 Nginx 配置 ==="
 cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/zhian.conf
 nginx -t
 systemctl reload nginx
+
 
 
 echo "=== 部署完成 ==="
