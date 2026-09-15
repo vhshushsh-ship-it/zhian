@@ -200,6 +200,20 @@ class WordExampleResponse(BaseModel):
     zh: str | None = None
 
 
+class IntervalPreview(BaseModel):
+    """单个反馈档位的间隔预览文案，如「今日」「明日」「4天后」"""
+
+    text: str
+
+
+class TodayQueuePreviews(BaseModel):
+    """三档反馈的间隔预览"""
+
+    known: IntervalPreview
+    vague: IntervalPreview
+    forgotten: IntervalPreview
+
+
 class TodayQueueItem(BaseModel):
     """今日复习队列中的一项"""
 
@@ -210,6 +224,7 @@ class TodayQueueItem(BaseModel):
     current_strength: float
     is_new: bool
     index: int
+    previews: TodayQueuePreviews
 
 
 class TodayQueueResponse(BaseModel):
@@ -266,3 +281,39 @@ class WordStatsResponse(BaseModel):
     forgotten_count: int
     accuracy: float
     streak_days: int
+
+
+BookKey = Literal["kaoyan", "cet4", "cet6"]
+
+
+class BookItem(BaseModel):
+    """单本词书的统计信息"""
+
+    key: BookKey
+    label: str
+    total: int
+    learned: int
+    mastered: int
+    familiar: int
+    medium: int
+    weak: int
+    unlearned: int
+
+
+class WordSettingsResponse(BaseModel):
+    """用户背单词设置"""
+
+    current_book: BookKey
+    daily_new_goal: int
+
+
+class SelectBookRequest(BaseModel):
+    """切换词书请求"""
+
+    book: BookKey
+
+
+class UpdateSettingsRequest(BaseModel):
+    """更新每日新词量请求"""
+
+    daily_new_goal: int = Field(..., ge=1, le=200)

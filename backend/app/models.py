@@ -230,3 +230,28 @@ class UserWordProgress(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+class UserWordSettings(Base):
+    """用户背单词设置：当前词书 + 每日新词上限，按用户唯一。"""
+
+    __tablename__ = "user_word_settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True, nullable=False
+    )
+    # 当前学习词书 key：kaoyan / cet4 / cet6
+    current_book: Mapped[str] = mapped_column(
+        String(20), server_default="kaoyan", nullable=False
+    )
+    # 每日新词上限（复习词超 30 时递减）
+    daily_new_goal: Mapped[int] = mapped_column(
+        Integer, server_default="20", nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )

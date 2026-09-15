@@ -14,15 +14,21 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..deps import get_current_user
-from ..models import User, UserWordProgress, Word
+from ..models import User, UserWordProgress, UserWordSettings, Word
 from ..schemas import (
+    BookItem,
+    IntervalPreview,
     ReviewRequest,
     ReviewResponse,
+    SelectBookRequest,
     TodayQueueItem,
+    TodayQueuePreviews,
     TodayQueueResponse,
+    UpdateSettingsRequest,
     WordDetailResponse,
     WordDefinitionResponse,
     WordExampleResponse,
+    WordSettingsResponse,
     WordStatsResponse,
 )
 
@@ -61,8 +67,15 @@ INTERVAL_MAP: list[tuple[float, float, timedelta]] = [
     (90, 100, timedelta(days=36)),
 ]
 
-# 每日新增单词上限
+# 每日新增单词上限（默认值，实际以用户设置 user_word_settings.daily_new_goal 为准）
 NEW_WORDS_PER_DAY = 20
+
+# 词书：key / 显示名 / 词库 tags 归属标记（words.tags 用逗号分隔，LIKE 匹配）
+BOOKS: list[dict[str, str]] = [
+    {"key": "kaoyan", "label": "考研英语", "tag": "考研"},
+    {"key": "cet4", "label": "四级英语", "tag": "四级"},
+    {"key": "cet6", "label": "六级英语", "tag": "六级"},
+]
 
 
 def _known_increment(s: float) -> float:
@@ -124,12 +137,41 @@ def apply_feedback(cur_s: float, feedback: str) -> tuple[float, timedelta]:
     return new_s, delta
 
 
-def _format_interval(delta: timedelta) -> str:
-    """把间隔格式化为中文文本：12小时 / 1天 / 2天 / 36天。"""
-    total_hours = delta.total_seconds() / 3600.0
-    if total_hours < 24:
-        return f"{total_hours:g}小时"
-    return f"{total_hours / 24.0:g}天"
+def interval_text(delta: timedelta) -> str:
+    """把复习间隔格式化为墨墨风格文案：今日 / 明日 / N天后。
+
+    - 12 小时档：若 now+12h 仍在今天显示「今日」，否则「明日」；
+    - 1 天：显示「明日」；
+    - N 天：显示「N天后」。
+    """
+    now = datetime.now()
+    target = now + delta
+    if target.date() == now.date():
+        return "今日"
+    days = (target.date() - now.date()).days
+    if days <= 1:
+        return "明日"
+    return f"{days}天后"
+
+
+def _book_tag(key: str) -> str:
+    """按词书 key 取对应 tags 标记，未知 key 回退到第一本。"""
+    for book in BOOKS:
+        if book["key"] == key:
+            return book["tag"]
+    return BOOKS[0]["tag"]
+
+
+def _previews_for(cur_s: float) -> TodayQueuePreviews:
+    """在「不写库」前提下，分别算出点认识/不确定/不认识后的间隔预览。"""
+    _, known_delta = apply_feedback(cur_s, "known")
+    _, vague_delta = apply_feedback(cur_s, "vague")
+    _, forgotten_delta = apply_feedback(cur_s, "forgotten")
+    return TodayQueuePreviews(
+        known=IntervalPreview(text=interval_text(known_delta)),
+        vague=IntervalPreview(text=interval_text(vague_delta)),
+        forgotten=IntervalPreview(text=interval_text(forgotten_delta)),
+    )
 
 
 def _compute_streak(progresses: list[UserWordProgress], today: date) -> int:
@@ -151,6 +193,21 @@ def _compute_streak(progresses: list[UserWordProgress], today: date) -> int:
     return streak
 
 
+def get_or_create_settings(db: Session, user_id: int) -> UserWordSettings:
+    """取用户背单词设置，无记录时自动创建默认行（current_book=kaoyan, daily_new_goal=20）。"""
+    settings = (
+        db.query(UserWordSettings)
+        .filter(UserWordSettings.user_id == user_id)
+        .first()
+    )
+    if settings is None:
+        settings = UserWordSettings(user_id=user_id)
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
+    return settings
+
+
 # ---------- 接口 ----------
 
 
@@ -159,8 +216,17 @@ def today_queue(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """今日复习队列：到期词（按当前 S 升序）+ 新词。"""
+    """今日复习队列：当前词书下到期词（按当前 S 升序）+ 新词。"""
     today = date.today()
+
+    settings = get_or_create_settings(db, current_user.id)
+    tag = _book_tag(settings.current_book)
+    like = f"%{tag}%"
+
+    # 当前词书下的全部词 + 该用户全部进度
+    book_word_ids = {
+        w.id for w in db.query(Word).filter(Word.tags.like(like)).all()
+    }
 
     progresses = (
         db.query(UserWordProgress)
@@ -169,28 +235,30 @@ def today_queue(
     )
     progressed_word_ids = [p.word_id for p in progresses]
 
-    # a. 到期词：next_review_date <= 今天，按当前 S 升序
+    # a. 到期词：属于当前词书且 next_review_date <= 今天，按当前 S 升序
     due = [
         (current_strength(p.memory_strength, p.last_review_at), p)
         for p in progresses
-        if p.next_review_date is not None and p.next_review_date <= today
+        if p.word_id in book_word_ids
+        and p.next_review_date is not None
+        and p.next_review_date <= today
     ]
     due.sort(key=lambda x: x[0])
     review_count = len(due)
 
-    # c. 新词上限：到期词 > 30 时递减（每多 1 个复习词减 1，最少 0）
-    target_new = NEW_WORDS_PER_DAY
+    # c. 新词上限：读用户设置；到期词 > 30 时递减（每多 1 个复习词减 1，最少 0）
+    target_new = settings.daily_new_goal
     if review_count > 30:
-        target_new = max(0, NEW_WORDS_PER_DAY - (review_count - 30))
+        target_new = max(0, settings.daily_new_goal - (review_count - 30))
 
     new_words: list[Word] = []
     if target_new > 0:
-        q = db.query(Word)
+        q = db.query(Word).filter(Word.tags.like(like))
         if progressed_word_ids:
             q = q.filter(~Word.id.in_(progressed_word_ids))
         new_words = q.order_by(Word.id.asc()).limit(target_new).all()
 
-    # d. 组装队列：先到期词，再新词
+    # d. 组装队列：先到期词，再新词（每项带三档间隔预览）
     items: list[TodayQueueItem] = []
     index = 0
     for cur_s, p in due:
@@ -206,6 +274,7 @@ def today_queue(
                 current_strength=round(cur_s, 2),
                 is_new=False,
                 index=index,
+                previews=_previews_for(cur_s),
             )
         )
         index += 1
@@ -219,6 +288,7 @@ def today_queue(
                 current_strength=0.0,
                 is_new=True,
                 index=index,
+                previews=_previews_for(0.0),
             )
         )
         index += 1
@@ -276,6 +346,100 @@ def stats(
         accuracy=accuracy,
         streak_days=_compute_streak(progresses, today),
     )
+
+
+@router.get("/books", response_model=list[BookItem])
+def books(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """三本词书的统计信息（只统计考研/四级/六级）。"""
+    progresses = (
+        db.query(UserWordProgress)
+        .filter(UserWordProgress.user_id == current_user.id)
+        .all()
+    )
+    progress_by_word = {p.word_id: p for p in progresses}
+
+    result: list[BookItem] = []
+    for book in BOOKS:
+        tag = book["tag"]
+        words = db.query(Word).filter(Word.tags.like(f"%{tag}%")).all()
+        total = len(words)
+
+        learned = 0
+        mastered = 0
+        familiar = 0
+        medium = 0
+        weak = 0
+        for w in words:
+            p = progress_by_word.get(w.id)
+            if p is None:
+                continue
+            learned += 1
+            if p.is_mastered:
+                mastered += 1
+            s = current_strength(p.memory_strength, p.last_review_at)
+            if s >= 70:
+                familiar += 1
+            elif s >= 30:
+                medium += 1
+            else:
+                weak += 1
+
+        result.append(
+            BookItem(
+                key=book["key"],  # type: ignore[arg-type]
+                label=book["label"],
+                total=total,
+                learned=learned,
+                mastered=mastered,
+                familiar=familiar,
+                medium=medium,
+                weak=weak,
+                unlearned=total - learned,
+            )
+        )
+
+    return result
+
+
+@router.get("/settings", response_model=WordSettingsResponse)
+def get_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """获取用户背单词设置。"""
+    s = get_or_create_settings(db, current_user.id)
+    return WordSettingsResponse(current_book=s.current_book, daily_new_goal=s.daily_new_goal)
+
+
+@router.post("/select-book", response_model=WordSettingsResponse)
+def select_book(
+    payload: SelectBookRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """切换当前学习词书。"""
+    s = get_or_create_settings(db, current_user.id)
+    s.current_book = payload.book
+    db.commit()
+    db.refresh(s)
+    return WordSettingsResponse(current_book=s.current_book, daily_new_goal=s.daily_new_goal)
+
+
+@router.put("/settings", response_model=WordSettingsResponse)
+def update_settings(
+    payload: UpdateSettingsRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """更新每日新词量。"""
+    s = get_or_create_settings(db, current_user.id)
+    s.daily_new_goal = payload.daily_new_goal
+    db.commit()
+    db.refresh(s)
+    return WordSettingsResponse(current_book=s.current_book, daily_new_goal=s.daily_new_goal)
 
 
 @router.get("/{word_id}", response_model=WordDetailResponse)
@@ -405,5 +569,5 @@ def review_word(
     return ReviewResponse(
         new_strength=round(new_s, 2),
         next_review_date=progress.next_review_date,
-        interval_text=_format_interval(delta),
+        interval_text=interval_text(delta),
     )
