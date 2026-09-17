@@ -257,6 +257,44 @@ class UserWordSettings(Base):
     )
 
 
+class UserDailyStats(Base):
+    """用户每日学习统计：按 (user_id, stat_date) 唯一，记录当天各类学习量。"""
+
+    __tablename__ = "user_daily_stats"
+    __table_args__ = (
+        UniqueConstraint("user_id", "stat_date", name="uq_user_daily_stats_user_date"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 统计日期
+    stat_date: Mapped[date] = mapped_column(Date, nullable=False)
+    # 当天复习的旧词数
+    words_reviewed: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # 当天学的新词数
+    words_new: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # 当天口语用户消息数
+    speaking_messages: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # 预留：当天阅读时长（分钟）
+    reading_minutes: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
 class AiTutorConversation(Base):
     """AI 一对一导师「小岸」：对话会话。"""
 

@@ -1,0 +1,481 @@
+/* 学习数据聚合页 */
+
+.stats-page {
+  min-height: 100vh;
+  background: #f8f8f8;
+  color: #1a1a1a;
+}
+
+.stats-main {
+  padding: 28px 20px 64px;
+}
+
+.stats-container {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- 标题 ---------- */
+
+.stats-header {
+  margin-bottom: 4px;
+}
+
+.stats-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.stats-subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #999;
+}
+
+.stats-loading {
+  padding: 80px 0;
+  text-align: center;
+  color: #999;
+  font-size: 15px;
+}
+
+.stats-error {
+  margin: 0;
+  padding: 12px 16px;
+  background: #fde8ea;
+  color: #e60012;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* ---------- 概览区 ---------- */
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stats-overview-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.stats-overview-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.stats-overview-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: #e60012;
+  line-height: 1.1;
+}
+
+.stats-overview-label {
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+}
+
+/* ---------- 详情卡片 ---------- */
+
+.stats-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.stats-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stats-section-title {
+  margin: 0 0 18px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.stats-section-title-row .stats-section-title {
+  margin-bottom: 0;
+}
+
+/* ---------- 单词 / 口语 行 ---------- */
+
+.stats-words-row,
+.stats-speaking-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stats-words-cell {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-words-cell-wide {
+  grid-column: span 1;
+}
+
+.stats-words-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  word-break: break-all;
+}
+
+.stats-words-label {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ---------- 认识率进度条 ---------- */
+
+.stats-recognition {
+  margin-top: 18px;
+}
+
+.stats-recognition-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stats-recognition-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.stats-recognition-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e60012;
+}
+
+.stats-recognition-track {
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stats-recognition-fill {
+  height: 100%;
+  background: #e60012;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ---------- 薄弱词 ---------- */
+
+.stats-weak,
+.stats-topics {
+  margin-top: 18px;
+}
+
+.stats-weak-head {
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.stats-weak-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #bbb;
+}
+
+.stats-weak-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stats-weak-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fafafa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.stats-weak-item:hover {
+  background: #fde8ea;
+}
+
+.stats-weak-word {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.stats-weak-forget {
+  font-size: 12px;
+  color: #e60012;
+  white-space: nowrap;
+}
+
+.stats-weak-strength {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* ---------- 常练话题 ---------- */
+
+.stats-topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats-topic-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-topic-name {
+  width: 72px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #444;
+}
+
+.stats-topic-track {
+  flex: 1;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stats-topic-fill {
+  height: 100%;
+  background: #4f8cff;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.stats-topic-count {
+  width: 48px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  color: #888;
+}
+
+/* ---------- 近 7 天柱状图 ---------- */
+
+.stats-chart-legend {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.stats-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.stats-chart-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.stats-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.stats-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-chart-stack {
+  position: relative;
+  width: 100%;
+  max-width: 56px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stats-chart-seg {
+  width: 100%;
+  transition: height 0.4s ease;
+}
+
+.stats-chart-seg:first-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.stats-chart-zero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.stats-chart-day {
+  font-size: 11px;
+  color: #999;
+}
+
+/* ---------- AI 导师分析 ---------- */
+
+.stats-ai-reanalyze {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #e60012;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.stats-ai-reanalyze:hover:not(:disabled) {
+  background: #c5000f;
+}
+
+.stats-ai-reanalyze:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stats-ai-reply {
+  margin-top: 14px;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.stats-ai-loading {
+  margin: 0;
+  font-size: 14px;
+  color: #999;
+}
+
+.stats-ai-content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.stats-ai-content strong {
+  color: #e60012;
+  font-weight: 700;
+}
+
+/* ---------- 阅读占位 ---------- */
+
+.stats-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 0;
+  color: #bbb;
+}
+
+.stats-placeholder-icon {
+  font-size: 32px;
+}
+
+.stats-placeholder-text {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ---------- 返回按钮 ---------- */
+
+.stats-back {
+  position: fixed;
+  left: 20px;
+  bottom: 24px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: color 0.15s, box-shadow 0.15s;
+}
+
+.stats-back:hover {
+  color: #e60012;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 720px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-words-row,
+  .stats-speaking-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-chart {
+    gap: 8px;
+  }
+}

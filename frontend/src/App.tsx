@@ -11,6 +11,7 @@ import Welcome from './pages/Welcome'
 import EnglishHome from './pages/EnglishHome'
 import Reading from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
+import Stats from './pages/english/Stats'
 import Words from './pages/english/Words'
 
 function Protected({ children }: { children: ReactElement }) {
@@ -81,6 +82,14 @@ export default function App() {
           element={
             <Protected>
               <Reading />
+            </Protected>
+          }
+        />
+        <Route
+          path="/english/stats"
+          element={
+            <Protected>
+              <Stats />
             </Protected>
           }
         />

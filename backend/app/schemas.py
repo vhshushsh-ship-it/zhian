@@ -390,3 +390,67 @@ class AiTutorSendResponse(BaseModel):
     """发送消息响应：AI 导师回复"""
 
     ai_reply: str
+
+
+# ---------- 学习数据统计 ----------
+
+
+class OverviewStats(BaseModel):
+    """概览区：连续天数 / 单词 / 口语 / 完成率等核心指标"""
+
+    streak_days: int
+    total_words_learned: int
+    total_words_mastered: int
+    words_today_due: int
+    recognition_rate: float
+    speaking_sessions: int
+    speaking_total_messages: int
+    last_speaking_at: datetime | None = None
+    weekly_completion_rate: float
+
+
+class WeakWordItem(BaseModel):
+    """薄弱词（按忘记次数降序）"""
+
+    word: str
+    forgotten_count: int
+    memory_strength: float
+
+
+class WordsStats(BaseModel):
+    """单词学习详情"""
+
+    current_book: str
+    daily_goal: int
+    weak_words: list[WeakWordItem]
+
+
+class TopicStatItem(BaseModel):
+    """常练话题统计项"""
+
+    topic: str
+    count: int
+
+
+class SpeakingStats(BaseModel):
+    """口语练习详情"""
+
+    topics: list[TopicStatItem]
+
+
+class DailyTrendItem(BaseModel):
+    """近 7 天某天的学习量"""
+
+    date: date
+    words_reviewed: int
+    words_new: int
+    speaking_messages: int
+
+
+class EnglishStatsResponse(BaseModel):
+    """英语模块聚合学习数据"""
+
+    overview: OverviewStats
+    words: WordsStats
+    speaking: SpeakingStats
+    weekly_trend: list[DailyTrendItem]

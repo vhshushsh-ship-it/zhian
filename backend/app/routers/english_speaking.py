@@ -21,6 +21,7 @@ from ..config import settings
 from ..database import get_db
 from ..deps import get_current_user
 from ..models import SpeakingConversation, SpeakingMessage, User
+from ..stats_service import update_daily_stats
 from ..schemas import (
     ConversationDetail,
     ConversationIdResponse,
@@ -255,6 +256,9 @@ def send_message(
     if is_first:
         conv.title = make_title(payload.content)
     conv.updated_at = datetime.now()
+
+    # 记录当天口语动作：只统计用户消息（AI 回复不计）
+    update_daily_stats(db, current_user.id, "speaking_messages")
 
     db.commit()
 
