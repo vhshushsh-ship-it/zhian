@@ -1,10 +1,12 @@
 /* 背单词：墨墨风格桌面端，白色浅色背景，左侧竖向子导航 + 右侧内容区 */
 
 .words-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: #f5f6f8;
+  padding-top: 64px;
 }
 
 .words-body {

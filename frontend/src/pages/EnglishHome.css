@@ -1,26 +1,25 @@
 /* 英语首页：左侧导航 + 右侧内容布局，遵循知岸统一设计风格 */
 
 .english-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: #f8f8f8;
+  padding-top: 64px;
 }
 
 /* 主体左右分栏 */
 .english-layout {
   flex: 1;
   display: flex;
+  min-height: 0;
 }
 
 /* ===== 左侧导航 ===== */
 .english-sidebar {
   width: 240px;
   flex-shrink: 0;
-  align-self: flex-start;
-  position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
   background: #fff;
   border-right: 1px solid #eee;
   display: flex;
@@ -153,6 +152,7 @@
   flex: 1;
   min-width: 0;
   padding: 40px;
+  overflow-y: auto;
 }
 
 .english-content-title {
@@ -264,12 +264,17 @@
 
 /* 响应式：移动端上下堆叠 */
 @media (max-width: 768px) {
+  .english-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .english-layout {
     flex-direction: column;
   }
 
   .english-sidebar {
-    position: static;
     width: 100%;
     height: auto;
     border-right: none;
@@ -278,6 +283,7 @@
 
   .english-content {
     padding: 24px 20px;
+    overflow: visible;
   }
 
   .english-start-btn {
