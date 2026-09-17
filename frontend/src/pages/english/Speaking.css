@@ -6,6 +6,7 @@
   height: 100vh;
   overflow: hidden;
   background: #f5f5f5;
+  padding-top: 64px;
 }
 
 /* 外层容器：占满导航栏以下高度，左右各留 5% 边距，浅灰背景突出白色卡片 */
@@ -597,6 +598,12 @@
 /* ---------- 响应式：窄屏下三栏纵向堆叠 ---------- */
 
 @media (max-width: 900px) {
+  .speaking-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .speaking-layout {
     height: auto;
     padding: 0;
