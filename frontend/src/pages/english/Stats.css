@@ -1,14 +1,4 @@
-/* 学习数据聚合页 */
-
-.stats-page {
-  min-height: 100vh;
-  background: #f8f8f8;
-  color: #1a1a1a;
-}
-
-.stats-main {
-  padding: 28px 20px 64px;
-}
+/* 学习数据视图（英语首页右侧内容区） */
 
 .stats-container {
   max-width: 960px;
@@ -26,13 +16,23 @@
 
 .stats-title {
   margin: 0;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: #e60012;
+  line-height: 1.2;
+}
+
+.stats-title-accent {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-top: 12px;
+  background: #e60012;
+  border-radius: 2px;
 }
 
 .stats-subtitle {
-  margin: 6px 0 0;
+  margin: 12px 0 0;
   font-size: 14px;
   color: #999;
 }
@@ -439,28 +439,6 @@
 .stats-placeholder-text {
   margin: 0;
   font-size: 14px;
-}
-
-/* ---------- 返回按钮 ---------- */
-
-.stats-back {
-  position: fixed;
-  left: 20px;
-  bottom: 24px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 999px;
-  background: #fff;
-  color: #666;
-  font-size: 13px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  transition: color 0.15s, box-shadow 0.15s;
-}
-
-.stats-back:hover {
-  color: #e60012;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 /* ---------- 响应式 ---------- */

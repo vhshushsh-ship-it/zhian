@@ -71,23 +71,6 @@
   background: #e60012;
 }
 
-.words-sidenav-back {
-  margin-top: auto;
-  margin-left: 24px;
-  margin-right: 24px;
-  padding: 10px 0;
-  background: transparent;
-  border: none;
-  color: #999;
-  font-size: 13px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.words-sidenav-back:hover {
-  color: #e60012;
-}
-
 /* ---------- 右侧内容区 ---------- */
 
 .words-content {

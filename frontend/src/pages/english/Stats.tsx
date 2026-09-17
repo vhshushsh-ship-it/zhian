@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../auth/AuthContext'
-import Navbar from '../../components/Navbar'
 import { getErrorMessage } from '../../api/client'
 import { createAiConversation, sendAiMessage } from '../../api/aiTutor'
 import { getEnglishStats, type EnglishStats } from '../../api/stats'
@@ -46,9 +44,8 @@ function formatDateTime(iso: string | null): string {
   return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}`
 }
 
-/** 英语模块学习数据聚合页 */
-export default function Stats() {
-  const { user, logout } = useAuth()
+/** 英语模块学习数据视图（嵌入英语首页右侧内容区） */
+export function StatsContent() {
   const navigate = useNavigate()
 
   const [stats, setStats] = useState<EnglishStats | null>(null)
@@ -103,14 +100,7 @@ export default function Stats() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="stats-page">
-        <Navbar active="home" trailing={null} />
-        <main className="stats-main">
-          <div className="stats-loading">加载中...</div>
-        </main>
-      </div>
-    )
+    return <div className="stats-loading">加载中...</div>
   }
 
   const overview = stats?.overview
@@ -127,230 +117,211 @@ export default function Stats() {
   const maxTopic = Math.max(1, ...(speaking?.topics ?? []).map((t) => t.count))
 
   return (
-    <div className="stats-page">
-      <Navbar
-        active="home"
-        trailing={
-          <>
-            <span className="navbar-email">{user?.email || user?.username}</span>
-            <button className="navbar-btn" onClick={logout}>
-              退出登录
-            </button>
-          </>
-        }
-      />
+    <div className="stats-container">
+      <header className="stats-header">
+        <h2 className="stats-title">学习数据</h2>
+        <span className="stats-title-accent" aria-hidden="true" />
+        <p className="stats-subtitle">实时同步你的学习进度</p>
+      </header>
 
-      <main className="stats-main">
-        <div className="stats-container">
-          <header className="stats-header">
-            <h1 className="stats-title">学习数据</h1>
-            <p className="stats-subtitle">实时同步你的学习进度</p>
-          </header>
+      {error && <p className="stats-error">{error}</p>}
 
-          {error && <p className="stats-error">{error}</p>}
+      {/* 概览区 */}
+      <section className="stats-overview">
+        <div className="stats-overview-card">
+          <span className="stats-overview-icon" aria-hidden="true">🔥</span>
+          <span className="stats-overview-value">{overview?.streak_days ?? 0}</span>
+          <span className="stats-overview-label">连续学习（天）</span>
+        </div>
+        <div className="stats-overview-card">
+          <span className="stats-overview-icon" aria-hidden="true">📚</span>
+          <span className="stats-overview-value">{overview?.total_words_learned ?? 0}</span>
+          <span className="stats-overview-label">
+            已学单词（掌握 {overview?.total_words_mastered ?? 0} 词）
+          </span>
+        </div>
+        <div className="stats-overview-card">
+          <span className="stats-overview-icon" aria-hidden="true">🎤</span>
+          <span className="stats-overview-value">{overview?.speaking_sessions ?? 0}</span>
+          <span className="stats-overview-label">口语练习（次）</span>
+        </div>
+        <div className="stats-overview-card">
+          <span className="stats-overview-icon" aria-hidden="true">📊</span>
+          <span className="stats-overview-value">{overview?.weekly_completion_rate ?? 0}%</span>
+          <span className="stats-overview-label">本周完成率</span>
+        </div>
+      </section>
 
-          {/* 概览区 */}
-          <section className="stats-overview">
-            <div className="stats-overview-card">
-              <span className="stats-overview-icon" aria-hidden="true">🔥</span>
-              <span className="stats-overview-value">{overview?.streak_days ?? 0}</span>
-              <span className="stats-overview-label">连续学习（天）</span>
-            </div>
-            <div className="stats-overview-card">
-              <span className="stats-overview-icon" aria-hidden="true">📚</span>
-              <span className="stats-overview-value">{overview?.total_words_learned ?? 0}</span>
-              <span className="stats-overview-label">
-                已学单词（掌握 {overview?.total_words_mastered ?? 0} 词）
-              </span>
-            </div>
-            <div className="stats-overview-card">
-              <span className="stats-overview-icon" aria-hidden="true">🎤</span>
-              <span className="stats-overview-value">{overview?.speaking_sessions ?? 0}</span>
-              <span className="stats-overview-label">口语练习（次）</span>
-            </div>
-            <div className="stats-overview-card">
-              <span className="stats-overview-icon" aria-hidden="true">📊</span>
-              <span className="stats-overview-value">{overview?.weekly_completion_rate ?? 0}%</span>
-              <span className="stats-overview-label">本周完成率</span>
-            </div>
-          </section>
+      {/* 单词学习详情 */}
+      <section className="stats-section">
+        <h2 className="stats-section-title">单词学习</h2>
+        <div className="stats-words-row">
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{words?.current_book ?? '未设置'}</span>
+            <span className="stats-words-label">当前词书</span>
+          </div>
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{words?.daily_goal ?? 20}</span>
+            <span className="stats-words-label">每日目标（词）</span>
+          </div>
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{overview?.words_today_due ?? 0}</span>
+            <span className="stats-words-label">今日待复习</span>
+          </div>
+        </div>
 
-          {/* 单词学习详情 */}
-          <section className="stats-section">
-            <h2 className="stats-section-title">单词学习</h2>
-            <div className="stats-words-row">
-              <div className="stats-words-cell">
-                <span className="stats-words-value">{words?.current_book ?? '未设置'}</span>
-                <span className="stats-words-label">当前词书</span>
-              </div>
-              <div className="stats-words-cell">
-                <span className="stats-words-value">{words?.daily_goal ?? 20}</span>
-                <span className="stats-words-label">每日目标（词）</span>
-              </div>
-              <div className="stats-words-cell">
-                <span className="stats-words-value">{overview?.words_today_due ?? 0}</span>
-                <span className="stats-words-label">今日待复习</span>
-              </div>
-            </div>
+        <div className="stats-recognition">
+          <div className="stats-recognition-head">
+            <span className="stats-recognition-label">认识率</span>
+            <span className="stats-recognition-value">{overview?.recognition_rate ?? 0}%</span>
+          </div>
+          <div className="stats-recognition-track">
+            <div
+              className="stats-recognition-fill"
+              style={{ width: `${Math.min(100, overview?.recognition_rate ?? 0)}%` }}
+            />
+          </div>
+        </div>
 
-            <div className="stats-recognition">
-              <div className="stats-recognition-head">
-                <span className="stats-recognition-label">认识率</span>
-                <span className="stats-recognition-value">{overview?.recognition_rate ?? 0}%</span>
-              </div>
-              <div className="stats-recognition-track">
-                <div
-                  className="stats-recognition-fill"
-                  style={{ width: `${Math.min(100, overview?.recognition_rate ?? 0)}%` }}
-                />
-              </div>
-            </div>
+        <div className="stats-weak">
+          <div className="stats-weak-head">薄弱词 TOP5</div>
+          {(words?.weak_words?.length ?? 0) === 0 ? (
+            <p className="stats-weak-empty">暂无薄弱词</p>
+          ) : (
+            <ul className="stats-weak-list">
+              {words?.weak_words.map((w) => (
+                <li
+                  key={w.word}
+                  className="stats-weak-item"
+                  onClick={() => navigate('/english/words')}
+                  title="点击去背单词"
+                >
+                  <span className="stats-weak-word">{w.word}</span>
+                  <span className="stats-weak-forget">忘记 {w.forgotten_count} 次</span>
+                  <span className="stats-weak-strength">
+                    记忆强度 {Math.round(w.memory_strength)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
-            <div className="stats-weak">
-              <div className="stats-weak-head">薄弱词 TOP5</div>
-              {(words?.weak_words?.length ?? 0) === 0 ? (
-                <p className="stats-weak-empty">暂无薄弱词</p>
-              ) : (
-                <ul className="stats-weak-list">
-                  {words?.weak_words.map((w) => (
-                    <li
-                      key={w.word}
-                      className="stats-weak-item"
-                      onClick={() => navigate('/english/words')}
-                      title="点击去背单词"
-                    >
-                      <span className="stats-weak-word">{w.word}</span>
-                      <span className="stats-weak-forget">忘记 {w.forgotten_count} 次</span>
-                      <span className="stats-weak-strength">
-                        记忆强度 {Math.round(w.memory_strength)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
+      {/* 口语练习详情 */}
+      <section className="stats-section">
+        <h2 className="stats-section-title">口语练习</h2>
+        <div className="stats-speaking-grid">
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{overview?.speaking_sessions ?? 0}</span>
+            <span className="stats-words-label">练习次数</span>
+          </div>
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{overview?.speaking_total_messages ?? 0}</span>
+            <span className="stats-words-label">总消息数</span>
+          </div>
+          <div className="stats-words-cell stats-words-cell-wide">
+            <span className="stats-words-value">{formatDateTime(overview?.last_speaking_at ?? null)}</span>
+            <span className="stats-words-label">最近练习时间</span>
+          </div>
+        </div>
 
-          {/* 口语练习详情 */}
-          <section className="stats-section">
-            <h2 className="stats-section-title">口语练习</h2>
-            <div className="stats-speaking-grid">
-              <div className="stats-words-cell">
-                <span className="stats-words-value">{overview?.speaking_sessions ?? 0}</span>
-                <span className="stats-words-label">练习次数</span>
-              </div>
-              <div className="stats-words-cell">
-                <span className="stats-words-value">{overview?.speaking_total_messages ?? 0}</span>
-                <span className="stats-words-label">总消息数</span>
-              </div>
-              <div className="stats-words-cell stats-words-cell-wide">
-                <span className="stats-words-value">{formatDateTime(overview?.last_speaking_at ?? null)}</span>
-                <span className="stats-words-label">最近练习时间</span>
-              </div>
-            </div>
-
-            <div className="stats-topics">
-              <div className="stats-weak-head">常练话题 TOP5</div>
-              {(speaking?.topics?.length ?? 0) === 0 ? (
-                <p className="stats-weak-empty">暂无口语练习</p>
-              ) : (
-                <div className="stats-topic-list">
-                  {speaking?.topics.map((t) => (
-                    <div key={t.topic} className="stats-topic-row">
-                      <span className="stats-topic-name">{t.topic}</span>
-                      <div className="stats-topic-track">
-                        <div
-                          className="stats-topic-fill"
-                          style={{ width: `${(t.count / maxTopic) * 100}%` }}
-                        />
-                      </div>
-                      <span className="stats-topic-count">{t.count} 次</span>
-                    </div>
-                  ))}
+        <div className="stats-topics">
+          <div className="stats-weak-head">常练话题 TOP5</div>
+          {(speaking?.topics?.length ?? 0) === 0 ? (
+            <p className="stats-weak-empty">暂无口语练习</p>
+          ) : (
+            <div className="stats-topic-list">
+              {speaking?.topics.map((t) => (
+                <div key={t.topic} className="stats-topic-row">
+                  <span className="stats-topic-name">{t.topic}</span>
+                  <div className="stats-topic-track">
+                    <div
+                      className="stats-topic-fill"
+                      style={{ width: `${(t.count / maxTopic) * 100}%` }}
+                    />
+                  </div>
+                  <span className="stats-topic-count">{t.count} 次</span>
                 </div>
-              )}
-            </div>
-          </section>
-
-          {/* 近 7 天学习趋势 */}
-          <section className="stats-section">
-            <h2 className="stats-section-title">近 7 天学习趋势</h2>
-            <div className="stats-chart-legend">
-              {TREND_SEGMENTS.map((s) => (
-                <span key={s.key} className="stats-chart-legend-item">
-                  <span className="stats-chart-dot" style={{ background: s.color }} />
-                  {s.label}
-                </span>
               ))}
             </div>
-            <div className="stats-chart">
-              {trend.map((t) => {
-                const total = t.words_reviewed + t.words_new + t.speaking_messages
-                return (
-                  <div key={t.date} className="stats-chart-col">
-                    <div className="stats-chart-stack">
-                      {TREND_SEGMENTS.map((s) => {
-                        const value = t[s.key as TrendKey]
-                        if (value <= 0) return null
-                        return (
-                          <div
-                            key={s.key}
-                            className="stats-chart-seg"
-                            style={{
-                              height: `${(value / maxTotal) * 100}%`,
-                              background: s.color,
-                            }}
-                            title={`${s.label}：${value}`}
-                          />
-                        )
-                      })}
-                      {total === 0 && <span className="stats-chart-zero">0</span>}
-                    </div>
-                    <span className="stats-chart-day">{formatDay(t.date)}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-
-          {/* AI 动态建议 */}
-          <section className="stats-section">
-            <div className="stats-section-title-row">
-              <h2 className="stats-section-title">AI 导师分析</h2>
-              <button
-                className="stats-ai-reanalyze"
-                onClick={runAnalysis}
-                disabled={analysisLoading}
-              >
-                {analysisLoading ? '分析中...' : '重新分析'}
-              </button>
-            </div>
-            {analysisError && <p className="stats-error">{analysisError}</p>}
-            <div className="stats-ai-reply">
-              {analysisLoading && !analysis ? (
-                <p className="stats-ai-loading">AI 导师正在分析你的学习数据…</p>
-              ) : analysis ? (
-                <div className="stats-ai-content">{renderBold(analysis)}</div>
-              ) : (
-                <p className="stats-ai-loading">点击「重新分析」获取学习建议</p>
-              )}
-            </div>
-          </section>
-
-          {/* 阅读练习占位 */}
-          <section className="stats-section">
-            <h2 className="stats-section-title">阅读练习</h2>
-            <div className="stats-placeholder">
-              <span className="stats-placeholder-icon" aria-hidden="true">📖</span>
-              <p className="stats-placeholder-text">阅读功能开发中，暂无数据</p>
-            </div>
-          </section>
+          )}
         </div>
-      </main>
+      </section>
 
-      <button className="stats-back" onClick={() => navigate('/english')}>
-        ← 返回英语主页
-      </button>
+      {/* 近 7 天学习趋势 */}
+      <section className="stats-section">
+        <h2 className="stats-section-title">近 7 天学习趋势</h2>
+        <div className="stats-chart-legend">
+          {TREND_SEGMENTS.map((s) => (
+            <span key={s.key} className="stats-chart-legend-item">
+              <span className="stats-chart-dot" style={{ background: s.color }} />
+              {s.label}
+            </span>
+          ))}
+        </div>
+        <div className="stats-chart">
+          {trend.map((t) => {
+            const total = t.words_reviewed + t.words_new + t.speaking_messages
+            return (
+              <div key={t.date} className="stats-chart-col">
+                <div className="stats-chart-stack">
+                  {TREND_SEGMENTS.map((s) => {
+                    const value = t[s.key as TrendKey]
+                    if (value <= 0) return null
+                    return (
+                      <div
+                        key={s.key}
+                        className="stats-chart-seg"
+                        style={{
+                          height: `${(value / maxTotal) * 100}%`,
+                          background: s.color,
+                        }}
+                        title={`${s.label}：${value}`}
+                      />
+                    )
+                  })}
+                  {total === 0 && <span className="stats-chart-zero">0</span>}
+                </div>
+                <span className="stats-chart-day">{formatDay(t.date)}</span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* AI 动态建议 */}
+      <section className="stats-section">
+        <div className="stats-section-title-row">
+          <h2 className="stats-section-title">AI 导师分析</h2>
+          <button
+            className="stats-ai-reanalyze"
+            onClick={runAnalysis}
+            disabled={analysisLoading}
+          >
+            {analysisLoading ? '分析中...' : '重新分析'}
+          </button>
+        </div>
+        {analysisError && <p className="stats-error">{analysisError}</p>}
+        <div className="stats-ai-reply">
+          {analysisLoading && !analysis ? (
+            <p className="stats-ai-loading">AI 导师正在分析你的学习数据…</p>
+          ) : analysis ? (
+            <div className="stats-ai-content">{renderBold(analysis)}</div>
+          ) : (
+            <p className="stats-ai-loading">点击「重新分析」获取学习建议</p>
+          )}
+        </div>
+      </section>
+
+      {/* 阅读练习占位 */}
+      <section className="stats-section">
+        <h2 className="stats-section-title">阅读练习</h2>
+        <div className="stats-placeholder">
+          <span className="stats-placeholder-icon" aria-hidden="true">📖</span>
+          <p className="stats-placeholder-text">阅读功能开发中，暂无数据</p>
+        </div>
+      </section>
     </div>
   )
 }
