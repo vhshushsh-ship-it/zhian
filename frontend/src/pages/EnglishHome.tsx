@@ -86,14 +86,6 @@ const FEATURES: Feature[] = [
   },
 ]
 
-/** 学习数据：先写死为 0，后续接入真实数据 */
-const LEARNING_DATA = [
-  { icon: '📚', label: '已学单词', value: '0 个' },
-  { icon: '⏱️', label: '今日学习', value: '0 分钟' },
-  { icon: '🔥', label: '连续天数', value: '0 天' },
-  { icon: '✅', label: '完成率', value: '0%' },
-]
-
 /** 英语首页：左侧功能导航 + 右侧功能介绍 */
 export default function EnglishHome() {
   const { user, logout } = useAuth()
@@ -140,18 +132,14 @@ export default function EnglishHome() {
                 <span>{f.label}</span>
               </button>
             ))}
+            <button
+              className="english-menu-item"
+              onClick={() => navigate('/english/stats')}
+            >
+              <span className="english-menu-icon">📊</span>
+              <span>学习数据</span>
+            </button>
           </nav>
-
-          <div className="english-data">
-            <h3>学习数据</h3>
-            {LEARNING_DATA.map((d) => (
-              <div key={d.label} className="english-data-item">
-                <span className="english-data-icon">{d.icon}</span>
-                <span className="english-data-label">{d.label}</span>
-                <span className="english-data-value">{d.value}</span>
-              </div>
-            ))}
-          </div>
         </aside>
 
         {/* 右侧内容 */}

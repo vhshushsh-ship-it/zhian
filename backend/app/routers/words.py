@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..deps import get_current_user
 from ..models import User, UserWordProgress, UserWordSettings, Word
+from ..stats_service import update_daily_stats
 from ..schemas import (
     BookItem,
     IntervalPreview,
@@ -523,6 +524,8 @@ def review_word(
         )
         .first()
     )
+    # 是否新词：之前无 progress，或虽有 progress 但从未复习过（last_review_at 为空）
+    is_new_word = progress is None or progress.last_review_at is None
     if progress is None:
         progress = UserWordProgress(
             user_id=current_user.id,
@@ -563,7 +566,12 @@ def review_word(
     elif payload.feedback == "forgotten":
         progress.is_mastered = False
 
-    # g. 保存
+    # g. 记录当天学习动作：新词 +1，复习旧词 +1
+    update_daily_stats(
+        db, current_user.id, "words_new" if is_new_word else "words_reviewed"
+    )
+
+    # h. 保存
     db.commit()
 
     return ReviewResponse(
