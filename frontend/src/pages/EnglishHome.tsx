@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import Navbar from '../components/Navbar'
 import { StatsContent } from './english/Stats'
+import { ReadingContent } from './english/Reading'
 import './EnglishHome.css'
 
 type FeatureId = 'words' | 'speaking' | 'reading' | 'stats'
@@ -66,21 +67,21 @@ const FEATURES: Feature[] = [
   },
   {
     id: 'reading',
-    label: '阅读练习',
-    icon: '📚',
-    title: '阅读练习',
-    intro: '精选文章阅读，长难句解析，提升阅读理解能力',
+    label: '外刊精读',
+    icon: '🔍',
+    title: '外刊精读',
+    intro: '精选外刊文章，长难句解析，边读边积累生词',
     methods: [
-      '精选不同难度的英文文章，循序渐进',
-      '遇到生词点击即可查看释义，自动加入生词本',
-      '长难句一键解析，理清句子结构',
+      '精选不同难度的外刊文章，循序渐进',
+      '划词即译，选中生词一键加入生词本',
+      '长难句黄色高亮，点击解析句子结构',
       '读完文章做阅读理解题，检验学习效果',
     ],
     instructions: [
-      '点击「开始阅读」进入阅读练习页面',
-      '选择文章难度和主题（科技/文化/经济等）',
-      '阅读过程中点击生词查看释义',
-      '完成阅读后做配套题目，查看解析',
+      '点击「外刊精读」进入文章列表',
+      '按难度（考研/四级/六级）和话题筛选文章',
+      '阅读中选中生词点击翻译或加入生词本',
+      '完成阅读后做配套题目，查看得分与解析',
     ],
     buttonText: '开始阅读',
     path: '/english/reading',
@@ -151,6 +152,8 @@ export default function EnglishHome() {
         <main className="english-content">
           {activeId === 'stats' ? (
             <StatsContent />
+          ) : activeId === 'reading' ? (
+            <ReadingContent />
           ) : (
             <>
               <h2 className="english-content-title">{active.title}</h2>

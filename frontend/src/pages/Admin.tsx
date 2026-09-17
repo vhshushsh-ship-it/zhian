@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { banUser, getStats, getUsers, unbanUser } from '../api/admin'
 import { getErrorMessage } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
@@ -36,6 +37,7 @@ function banUntilLabel(u: AdminUser): string {
 
 export default function Admin() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [stats, setStats] = useState<AdminStats>({
     total_users: 0,
     online_users: 0,
@@ -154,7 +156,15 @@ export default function Admin() {
       />
 
       <main className="admin-main">
-        <h1 className="admin-title">用户管理</h1>
+        <div className="admin-title-row">
+          <h1 className="admin-title">用户管理</h1>
+          <button
+            className="admin-enter-learning"
+            onClick={() => navigate('/dashboard')}
+          >
+            📚 进入学习
+          </button>
+        </div>
         <span className="admin-accent" aria-hidden="true" />
 
         {error && <p className="admin-notice admin-notice-error">{error}</p>}

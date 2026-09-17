@@ -224,6 +224,10 @@ class UserWordProgress(Base):
     is_mastered: Mapped[bool] = mapped_column(
         Boolean, server_default="0", nullable=False
     )
+    # 来源外刊文章 id：从外刊精读收集的生词；背单词页正常复习的词为 NULL
+    source_article_id: Mapped[int | None] = mapped_column(
+        ForeignKey("reading_articles.id"), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )
@@ -362,4 +366,55 @@ class UserAiProfile(Base):
     ai_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class ReadingArticle(Base):
+    """外刊精读文章：管理员调用 AI 生成的公共文章库，所有用户共享。"""
+
+    __tablename__ = "reading_articles"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    # 难度：考研 / 四级 / 六级
+    difficulty: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    # 话题：科技 / 经济 / 文化 / 教育 / 社会
+    topic: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    word_count: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
+    )
+    # 长难句 JSON 数组字符串
+    long_sentences: Mapped[str] = mapped_column(Text, nullable=False)
+    # 题目 JSON 数组字符串（每题 question/options/answer/explanation）
+    quiz: Mapped[str] = mapped_column(Text, nullable=False)
+    # 生成文章的管理员 id
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False, index=True
+    )
+
+
+class ReadingHistory(Base):
+    """用户外刊阅读记录：每个用户私有，记录已读 / 做题分数 / 收集生词数。"""
+
+    __tablename__ = "reading_history"
+    __table_args__ = (
+        UniqueConstraint("user_id", "article_id", name="uq_reading_history_user_article"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("reading_articles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    read_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+    # 做题正确率百分比（0-100）
+    quiz_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    words_collected: Mapped[int] = mapped_column(
+        Integer, server_default="0", nullable=False
     )
