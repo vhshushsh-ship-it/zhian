@@ -255,3 +255,73 @@ class UserWordSettings(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+class AiTutorConversation(Base):
+    """AI 一对一导师「小岸」：对话会话。"""
+
+    __tablename__ = "ai_tutor_conversations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(String(100), default="新对话", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    # 关联消息：删除对话时级联删除其所有消息
+    messages: Mapped[list["AiTutorMessage"]] = relationship(
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        order_by="AiTutorMessage.id",
+    )
+
+
+class AiTutorMessage(Base):
+    """AI 一对一导师：对话消息（user / assistant）。"""
+
+    __tablename__ = "ai_tutor_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey("ai_tutor_conversations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    conversation: Mapped["AiTutorConversation"] = relationship(
+        back_populates="messages"
+    )
+
+
+class UserAiProfile(Base):
+    """用户 AI 导师长期画像：每个用户一条（学习目标/考试日期/薄弱项等）。"""
+
+    __tablename__ = "user_ai_profile"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True, nullable=False
+    )
+    # 学习目标，如「考研英语 70 分」
+    goal: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # 考试日期
+    exam_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # 薄弱项列表（JSON 字符串）
+    weak_points: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 学习风格
+    learning_style: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # 偏好（JSON 字符串）
+    preferences: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # AI 的观察记录（MVP 阶段用户不可编辑）
+    ai_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )

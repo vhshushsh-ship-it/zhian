@@ -317,3 +317,76 @@ class UpdateSettingsRequest(BaseModel):
     """更新每日新词量请求"""
 
     daily_new_goal: int = Field(..., ge=1, le=200)
+
+
+# ---------- AI 一对一导师 ----------
+
+AiTutorRole = Literal["user", "assistant"]
+
+# 场景感知：前端传入的当前页面标识
+AiTutorPage = Literal["words", "speaking", "reading", "english"]
+
+
+class AiProfileResponse(BaseModel):
+    """用户 AI 导师长期画像（弱项/偏好以结构化字段返回）"""
+
+    goal: str | None = None
+    exam_date: date | None = None
+    weak_points: list[str] = []
+    learning_style: str | None = None
+    preferences: dict = {}
+    ai_notes: str | None = None
+
+
+class UpdateAiProfileRequest(BaseModel):
+    """更新长期画像（缺省字段不修改，显式传 null 表示清空）"""
+
+    goal: str | None = None
+    exam_date: date | None = None
+    weak_points: list[str] | None = None
+    learning_style: str | None = None
+    preferences: dict | None = None
+
+
+class AiTutorConversationSummary(BaseModel):
+    """AI 导师对话列表项（不含消息）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    created_at: datetime
+
+
+class AiTutorMessageOut(BaseModel):
+    """AI 导师对话详情中的一条消息"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    role: AiTutorRole
+    content: str
+    created_at: datetime
+
+
+class AiTutorConversationDetail(BaseModel):
+    """AI 导师对话详情：基本信息 + 全部消息（按时间正序）"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    created_at: datetime
+    messages: list[AiTutorMessageOut]
+
+
+class AiTutorSendRequest(BaseModel):
+    """发送消息请求：content 用户文本，page 当前页面标识（场景感知）"""
+
+    content: str
+    page: AiTutorPage = "english"
+
+
+class AiTutorSendResponse(BaseModel):
+    """发送消息响应：AI 导师回复"""
+
+    ai_reply: str

@@ -1,6 +1,7 @@
 import { type ReactElement } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
+import AiTutor from './components/AiTutor'
 import Admin from './pages/Admin'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
@@ -30,67 +31,70 @@ function AdminRoute({ children }: { children: ReactElement }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/dashboard"
-        element={
-          <Protected>
-            <Dashboard />
-          </Protected>
-        }
-      />
-      <Route
-        path="/subject/:id"
-        element={
-          <Protected>
-            <Subject />
-          </Protected>
-        }
-      />
-      <Route
-        path="/english"
-        element={
-          <Protected>
-            <EnglishHome />
-          </Protected>
-        }
-      />
-      <Route
-        path="/english/words"
-        element={
-          <Protected>
-            <Words />
-          </Protected>
-        }
-      />
-      <Route
-        path="/english/speaking"
-        element={
-          <Protected>
-            <Speaking />
-          </Protected>
-        }
-      />
-      <Route
-        path="/english/reading"
-        element={
-          <Protected>
-            <Reading />
-          </Protected>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <Admin />
-          </AdminRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Protected>
+              <Dashboard />
+            </Protected>
+          }
+        />
+        <Route
+          path="/subject/:id"
+          element={
+            <Protected>
+              <Subject />
+            </Protected>
+          }
+        />
+        <Route
+          path="/english"
+          element={
+            <Protected>
+              <EnglishHome />
+            </Protected>
+          }
+        />
+        <Route
+          path="/english/words"
+          element={
+            <Protected>
+              <Words />
+            </Protected>
+          }
+        />
+        <Route
+          path="/english/speaking"
+          element={
+            <Protected>
+              <Speaking />
+            </Protected>
+          }
+        />
+        <Route
+          path="/english/reading"
+          element={
+            <Protected>
+              <Reading />
+            </Protected>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <Admin />
+            </AdminRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <AiTutor />
+    </>
   )
 }
