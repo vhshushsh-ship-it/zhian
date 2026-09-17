@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import Navbar from '../../components/Navbar'
 import './Reading.css'
@@ -6,7 +5,6 @@ import './Reading.css'
 /** 阅读练习功能占位页 */
 export default function Reading() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
 
   return (
     <div className="reading-page">
@@ -33,10 +31,6 @@ export default function Reading() {
           <p className="reading-placeholder-sub">阅读练习功能正在紧张开发中...</p>
         </div>
       </main>
-
-      <button className="reading-back" onClick={() => navigate(-1)}>
-        ← 返回
-      </button>
     </div>
   )
 }

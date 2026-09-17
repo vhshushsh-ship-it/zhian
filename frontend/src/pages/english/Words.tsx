@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import Navbar from '../../components/Navbar'
 import { getErrorMessage } from '../../api/client'
@@ -70,7 +69,6 @@ function highlightTarget(text: string, target: string): ReactNode {
 
 export default function Words() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const [view, setView] = useState<WordsView>('review')
 
   const navItems: { key: WordsView; label: string }[] = [
@@ -107,9 +105,6 @@ export default function Words() {
               </button>
             ))}
           </nav>
-          <button className="words-sidenav-back" onClick={() => navigate('/english')}>
-            ← 返回英语主页
-          </button>
         </aside>
 
         <main className="words-content">

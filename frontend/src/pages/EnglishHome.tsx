@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import Navbar from '../components/Navbar'
+import { StatsContent } from './english/Stats'
 import './EnglishHome.css'
 
-type FeatureId = 'words' | 'speaking' | 'reading'
+type FeatureId = 'words' | 'speaking' | 'reading' | 'stats'
 
 interface Feature {
   id: FeatureId
@@ -133,8 +134,12 @@ export default function EnglishHome() {
               </button>
             ))}
             <button
-              className="english-menu-item"
-              onClick={() => navigate('/english/stats')}
+              className={
+                activeId === 'stats'
+                  ? 'english-menu-item english-menu-item-active'
+                  : 'english-menu-item'
+              }
+              onClick={() => setActiveId('stats')}
             >
               <span className="english-menu-icon">📊</span>
               <span>学习数据</span>
@@ -144,42 +149,44 @@ export default function EnglishHome() {
 
         {/* 右侧内容 */}
         <main className="english-content">
-          <h2 className="english-content-title">{active.title}</h2>
-          <span className="english-content-accent" aria-hidden="true" />
-          <p className="english-content-intro">{active.intro}</p>
+          {activeId === 'stats' ? (
+            <StatsContent />
+          ) : (
+            <>
+              <h2 className="english-content-title">{active.title}</h2>
+              <span className="english-content-accent" aria-hidden="true" />
+              <p className="english-content-intro">{active.intro}</p>
 
-          <div className="english-detail-card">
-            <section className="english-detail-section">
-              <h3 className="english-detail-heading">学习方法</h3>
-              <ul className="english-detail-list">
-                {active.methods.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            </section>
+              <div className="english-detail-card">
+                <section className="english-detail-section">
+                  <h3 className="english-detail-heading">学习方法</h3>
+                  <ul className="english-detail-list">
+                    {active.methods.map((m) => (
+                      <li key={m}>{m}</li>
+                    ))}
+                  </ul>
+                </section>
 
-            <section className="english-detail-section">
-              <h3 className="english-detail-heading">使用说明</h3>
-              <ul className="english-detail-list">
-                {active.instructions.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            </section>
-          </div>
+                <section className="english-detail-section">
+                  <h3 className="english-detail-heading">使用说明</h3>
+                  <ul className="english-detail-list">
+                    {active.instructions.map((m) => (
+                      <li key={m}>{m}</li>
+                    ))}
+                  </ul>
+                </section>
+              </div>
 
-          <button
-            className="english-start-btn"
-            onClick={() => navigate(active.path)}
-          >
-            {active.buttonText}
-          </button>
+              <button
+                className="english-start-btn"
+                onClick={() => navigate(active.path)}
+              >
+                {active.buttonText}
+              </button>
+            </>
+          )}
         </main>
       </div>
-
-      <button className="english-back" onClick={() => navigate(-1)}>
-        ← 返回
-      </button>
     </div>
   )
 }
