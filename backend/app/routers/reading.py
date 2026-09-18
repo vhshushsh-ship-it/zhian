@@ -30,6 +30,7 @@ from ..schemas import (
     ReadingArticleListItem,
     ReadingArticleListResponse,
     ReadingHistoryOut,
+    ReadingLongSentence,
     ReadingQuizItem,
 )
 from ..stats_service import update_daily_stats
@@ -45,19 +46,22 @@ TOPICS = {"科技", "经济", "文化", "教育", "社会"}
 
 # ---------- AI 提示词 ----------
 
-# 文章生成：一次 DeepSeek 调用返回文章 + 长难句 + 题目
+# 文章生成：一次 DeepSeek 调用返回文章 + 长难句（含解析）+ 题目
 ARTICLE_PROMPT = (
     "你是一名资深外刊编辑，为「知岸」英语学习平台编写外刊精读文章。\n"
     "请严格只输出一个 JSON 对象（不要输出任何多余文字或代码块标记），字段如下：\n"
     '{"title": "文章标题（英文）", '
     '"content": "文章正文（英文，约 300-400 词，段落用 \\n\\n 分隔）", '
-    '"long_sentences": ["长难句1（英文）", "长难句2", "长难句3"], '
+    '"long_sentences": [{"sentence": "长难句1（英文原文）", '
+    '"translation": "该句中文翻译", '
+    '"analysis": "句子结构分析（中文，说明主干、从句、翻译要点）"}, ...], '
     '"quiz": [{"question": "阅读理解题1（中文）", '
     '"options": ["A选项（英文）", "B选项", "C选项", "D选项"], '
     '"answer": 0, "explanation": "解析（中文，说明为何选该项）"}]}\n\n'
     "要求：\n"
     "1. content 为纯英文文章，不要夹杂中文。\n"
-    "2. long_sentences 为 3-5 个从正文中挑选或凝练的长难句。\n"
+    "2. long_sentences 为 3-5 个从正文中挑选或凝练的长难句，"
+    "每个元素都是包含 sentence / translation / analysis 三个字段的对象。\n"
     "3. quiz 恰好 4 题，每题 4 个选项，answer 为正确选项下标（0-3）。\n"
     "4. 严格按用户要求的难度与话题生成。"
 )
@@ -109,13 +113,38 @@ def _call_deepseek_json(messages: list[dict]) -> dict:
         )
 
 
-def _parse_str_list(raw: str | None) -> list[str]:
-    """解析 JSON 字符串为字符串列表，失败返回空列表。"""
+def _parse_long_sentences(raw: str | None) -> list[dict]:
+    """解析长难句 JSON 字符串为对象列表。
+
+    兼容旧数据（字符串数组）与新数据（对象数组）：
+    - 字符串项 → {"sentence": 原句, "translation": "", "analysis": ""}
+    - 对象项 → 规范化 sentence / translation / analysis
+    """
     try:
         data = json.loads(raw) if raw else []
         if not isinstance(data, list):
             return []
-        return [str(x).strip() for x in data if str(x).strip()]
+        result: list[dict] = []
+        for item in data:
+            if isinstance(item, str):
+                sentence = item.strip()
+                if not sentence:
+                    continue
+                result.append(
+                    {"sentence": sentence, "translation": "", "analysis": ""}
+                )
+            elif isinstance(item, dict):
+                sentence = str(item.get("sentence") or "").strip()
+                if not sentence:
+                    continue
+                result.append(
+                    {
+                        "sentence": sentence,
+                        "translation": str(item.get("translation") or "").strip(),
+                        "analysis": str(item.get("analysis") or "").strip(),
+                    }
+                )
+        return result
     except (json.JSONDecodeError, TypeError):
         return []
 
@@ -204,7 +233,9 @@ def _article_detail(
         difficulty=article.difficulty,
         topic=article.topic,
         word_count=article.word_count,
-        long_sentences=_parse_str_list(article.long_sentences),
+        long_sentences=[
+            ReadingLongSentence(**s) for s in _parse_long_sentences(article.long_sentences)
+        ],
         quiz=[ReadingQuizItem(**q) for q in _parse_quiz(article.quiz)],
         created_at=article.created_at,
         history=_history_out(history),

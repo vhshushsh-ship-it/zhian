@@ -498,6 +498,14 @@ class ReadingHistoryOut(BaseModel):
     words_collected: int
 
 
+class ReadingLongSentence(BaseModel):
+    """长难句（含预生成的中文翻译与结构分析）"""
+
+    sentence: str
+    translation: str = ""
+    analysis: str = ""
+
+
 class ReadingArticleDetail(BaseModel):
     """文章详情（含正文 / 长难句 / 题目）+ 当前用户阅读记录"""
 
@@ -507,7 +515,7 @@ class ReadingArticleDetail(BaseModel):
     difficulty: str
     topic: str
     word_count: int
-    long_sentences: list[str]
+    long_sentences: list[ReadingLongSentence]
     quiz: list[ReadingQuizItem]
     created_at: datetime
     history: ReadingHistoryOut | None = None

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import { useAuth } from '../../auth/AuthContext'
 import { getErrorMessage } from '../../api/client'
 import {
@@ -12,6 +12,7 @@ import {
   type QuizSubmitResponse,
   type ReadingArticleDetail,
   type ReadingArticleListItem,
+  type ReadingLongSentence,
 } from '../../api/reading'
 import './Reading.css'
 
@@ -21,6 +22,15 @@ const TOPICS = ['科技', '经济', '文化', '教育', '社会']
 
 const PAGE_SIZE = 8
 
+// 正文字号：14-22px，默认 16，存 localStorage 记住
+const FONT_MIN = 14
+const FONT_MAX = 22
+const FONT_DEFAULT = 16
+const FONT_KEY = 'reading_font_size'
+
+// 长难句解析卡片宽度（用于默认定位到屏幕右侧）
+const SENTENCE_CARD_WIDTH = 340
+
 /** ISO 时间 → 'YYYY-MM-DD' */
 function formatDate(iso: string): string {
   const t = new Date(iso)
@@ -29,20 +39,27 @@ function formatDate(iso: string): string {
   return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`
 }
 
+/** 兼容旧数据：字符串长难句 → 对象（无解析） */
+function normalizeLongSentence(s: string | ReadingLongSentence): ReadingLongSentence {
+  if (typeof s === 'string') return { sentence: s, translation: '', analysis: '' }
+  return s
+}
+
 /** 在段落文本中高亮命中的长难句，返回混合文本 / 高亮节点 */
 function highlightLongSentences(
   text: string,
-  longSentences: string[],
-  onExplain: (sentence: string, rect: DOMRect) => void,
+  longSentences: (string | ReadingLongSentence)[],
+  onOpen: (s: ReadingLongSentence) => void,
 ): ReactNode[] {
-  type Range = { start: number; end: number; sentence: string }
+  type Range = { start: number; end: number; sentence: ReadingLongSentence }
   const ranges: Range[] = []
   for (const raw of longSentences) {
-    const sentence = raw.trim()
+    const item = normalizeLongSentence(raw)
+    const sentence = item.sentence.trim()
     if (!sentence) continue
     let idx = text.indexOf(sentence)
     while (idx !== -1) {
-      ranges.push({ start: idx, end: idx + sentence.length, sentence })
+      ranges.push({ start: idx, end: idx + sentence.length, sentence: item })
       idx = text.indexOf(sentence, idx + sentence.length)
     }
   }
@@ -59,9 +76,9 @@ function highlightLongSentences(
       <span
         key={`${r.start}-${r.end}`}
         className="reading-long-sentence"
-        onClick={(e) => onExplain(r.sentence, e.currentTarget.getBoundingClientRect())}
+        onClick={() => onOpen(r.sentence)}
       >
-        {r.sentence}
+        {r.sentence.sentence}
       </span>,
     )
     cursor = r.end
@@ -97,6 +114,11 @@ interface ExplainState {
   y: number
 }
 
+interface SentenceCardState extends ReadingLongSentence {
+  x: number
+  y: number
+}
+
 /** 外刊精读视图（嵌入英语首页右侧内容区） */
 export function ReadingContent() {
   const { user } = useAuth()
@@ -115,12 +137,25 @@ export function ReadingContent() {
   const [article, setArticle] = useState<ReadingArticleDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
-  // 选中即译
+  // 正文字号（localStorage 记住）
+  const [fontSize, setFontSize] = useState<number>(() => {
+    const saved = Number(localStorage.getItem(FONT_KEY))
+    return saved >= FONT_MIN && saved <= FONT_MAX ? saved : FONT_DEFAULT
+  })
+
+  // 做题分栏模式
+  const [quizMode, setQuizMode] = useState(false)
+
+  // 选中即译（划词）
   const [selection, setSelection] = useState<SelectionState | null>(null)
   const [explain, setExplain] = useState<ExplainState | null>(null)
   const [explainAnchor, setExplainAnchor] = useState<{ x: number; y: number } | null>(null)
   const [explainLoading, setExplainLoading] = useState(false)
   const [explainError, setExplainError] = useState('')
+
+  // 长难句解析卡片（预生成，可拖动）
+  const [sentenceCard, setSentenceCard] = useState<SentenceCardState | null>(null)
+  const dragOffset = useRef<{ dx: number; dy: number } | null>(null)
 
   // 做题
   const [answers, setAnswers] = useState<(number | null)[]>([])
@@ -137,7 +172,6 @@ export function ReadingContent() {
   const [toast, setToast] = useState('')
   const [markingRead, setMarkingRead] = useState(false)
 
-  const quizRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<number | null>(null)
 
   const showToast = (msg: string) => {
@@ -145,6 +179,61 @@ export function ReadingContent() {
     if (toastTimer.current) window.clearTimeout(toastTimer.current)
     toastTimer.current = window.setTimeout(() => setToast(''), 2500)
   }
+
+  /** 调整正文字号并写入 localStorage */
+  const changeFontSize = (delta: number) => {
+    setFontSize((prev) => {
+      const next = Math.min(FONT_MAX, Math.max(FONT_MIN, prev + delta))
+      localStorage.setItem(FONT_KEY, String(next))
+      return next
+    })
+  }
+
+  /** 打开长难句解析卡片（预生成数据，默认定位屏幕右侧） */
+  const openSentenceCard = (s: ReadingLongSentence) => {
+    setSentenceCard({
+      sentence: s.sentence,
+      translation: s.translation,
+      analysis: s.analysis,
+      x: Math.max(16, window.innerWidth - SENTENCE_CARD_WIDTH - 24),
+      y: 120,
+    })
+  }
+
+  // 卡片拖动：mousedown 记录偏移，mousemove 更新位置，mouseup 解除
+  const onSentenceCardDrag = (e: globalThis.MouseEvent) => {
+    const off = dragOffset.current
+    if (!off) return
+    setSentenceCard((prev) =>
+      prev ? { ...prev, x: e.clientX - off.dx, y: e.clientY - off.dy } : prev,
+    )
+  }
+
+  const stopSentenceCardDrag = () => {
+    dragOffset.current = null
+    document.removeEventListener('mousemove', onSentenceCardDrag)
+    document.removeEventListener('mouseup', stopSentenceCardDrag)
+  }
+
+  const startSentenceCardDrag = (e: ReactMouseEvent) => {
+    if (!sentenceCard) return
+    e.preventDefault() // 拖动时不触发文本选择
+    dragOffset.current = {
+      dx: e.clientX - sentenceCard.x,
+      dy: e.clientY - sentenceCard.y,
+    }
+    document.addEventListener('mousemove', onSentenceCardDrag)
+    document.addEventListener('mouseup', stopSentenceCardDrag)
+  }
+
+  // 卸载时清理拖动监听
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', onSentenceCardDrag)
+      document.removeEventListener('mouseup', stopSentenceCardDrag)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /** 拉取文章列表 */
   const loadList = async (p = page, d = difficulty, t = topic) => {
@@ -169,7 +258,9 @@ export function ReadingContent() {
     setArticle(null)
     setSelection(null)
     setExplain(null)
+    setSentenceCard(null)
     setQuizResult(null)
+    setQuizMode(false)
     try {
       const res = await getArticle(id)
       setArticle(res.data)
@@ -185,7 +276,9 @@ export function ReadingContent() {
     setArticle(null)
     setSelection(null)
     setExplain(null)
+    setSentenceCard(null)
     setQuizResult(null)
+    setQuizMode(false)
     void loadList()
   }
 
@@ -199,7 +292,7 @@ export function ReadingContent() {
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.closest('.reading-toolbar') || target.closest('.reading-explain')) return
+      if (target.closest('.reading-toolbar') || target.closest('.reading-explain') || target.closest('.reading-sentence-card')) return
       setSelection(null)
     }
     document.addEventListener('mousedown', onDocMouseDown)
@@ -222,7 +315,7 @@ export function ReadingContent() {
     })
   }
 
-  /** 翻译并解析选中的词 / 长难句 */
+  /** 翻译并解析选中的词 / 句子（划词即译，实时调 AI） */
   const doExplain = async (text: string, context: string, rect?: DOMRect) => {
     const anchor = rect
       ? { x: rect.left, y: rect.bottom + 6 }
@@ -473,32 +566,143 @@ export function ReadingContent() {
     return <div className="reading-loading">加载中...</div>
   }
 
+  const longSentences = (article.long_sentences ?? []).map(normalizeLongSentence)
   const contentParagraphs = article.content.replace(/\r\n/g, '\n').split(/\n{2,}/).filter((p) => p.trim())
-  const lastScore = quizResult?.score ?? article.history?.quiz_score ?? null
+
+  const isRead = !!article.history?.read_at
+  const totalQuestions = article.quiz.length
+  // 上次得分：本次判分用 correct/total；历史分数为百分比，反推答对题数
+  const lastCorrect =
+    quizResult != null
+      ? quizResult.correct
+      : article.history?.quiz_score != null
+        ? Math.round((article.history.quiz_score / 100) * totalQuestions)
+        : null
+
+  // 正文（含长难句高亮），字号由 fontSize 控制，行高随字号自适应
+  const articleBody = (
+    <div className="reading-article-body" style={{ fontSize }} onMouseUp={handleMouseUp}>
+      {contentParagraphs.map((para, pi) => (
+        <p key={pi} className="reading-paragraph">
+          {highlightLongSentences(para, longSentences, openSentenceCard)}
+        </p>
+      ))}
+    </div>
+  )
+
+  // 题目内容（右侧栏）
+  const quizBody = (
+    <div className="reading-quiz-pane-body">
+      {article.quiz.length === 0 ? (
+        <p className="reading-quiz-empty">该文章暂无配套题目</p>
+      ) : (
+        <>
+          {article.quiz.map((q, qi) => {
+            const result = quizResult?.results[qi]
+            return (
+              <div key={qi} className="reading-quiz-item">
+                <p className="reading-quiz-question">{qi + 1}. {q.question}</p>
+                <div className="reading-quiz-options">
+                  {q.options.map((opt, oi) => {
+                    const selected = answers[qi] === oi
+                    const isCorrect = result && oi === result.correct_answer
+                    const isWrongSelected = result && selected && oi !== result.correct_answer
+                    let cls = 'reading-quiz-option'
+                    if (!result && selected) cls += ' reading-quiz-option-selected'
+                    if (isCorrect) cls += ' reading-quiz-option-correct'
+                    if (isWrongSelected) cls += ' reading-quiz-option-wrong'
+                    return (
+                      <button
+                        key={oi}
+                        className={cls}
+                        disabled={!!result}
+                        onClick={() => selectAnswer(qi, oi)}
+                      >
+                        <span className="reading-quiz-option-key">{String.fromCharCode(65 + oi)}</span>
+                        <span>{opt}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {result && (
+                  <div className={`reading-quiz-explain ${result.is_correct ? 'is-correct' : 'is-wrong'}`}>
+                    <span className="reading-quiz-explain-verdict">
+                      {result.is_correct ? '✅ 正确' : '❌ 错误'}
+                      {result.your_answer == null || result.your_answer < 0 ? '（未作答）' : ''}
+                    </span>
+                    <span className="reading-quiz-explain-text">{result.explanation}</span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {!quizResult && (
+            <button className="reading-submit-btn" onClick={() => void handleSubmitQuiz()} disabled={quizSubmitting}>
+              {quizSubmitting ? '判分中...' : '提交答案'}
+            </button>
+          )}
+          {quizResult && (
+            <div className="reading-quiz-score">
+              本次得分：<strong>{quizResult.score}</strong> 分（{quizResult.correct} / {quizResult.total}）
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
 
   return (
-    <div className="reading-container reading-detail">
-      <button className="reading-back" onClick={backToList}>← 返回列表</button>
-
+    <div className={`reading-container reading-detail${quizMode ? ' reading-detail-split' : ''}`}>
       <header className="reading-detail-header">
         <h2 className="reading-detail-title">{article.title}</h2>
-        <div className="reading-detail-meta">
-          <span className="reading-card-tag">{article.difficulty}</span>
-          <span className="reading-detail-meta-item">#{article.topic}</span>
-          <span className="reading-detail-meta-item">{article.word_count} 词</span>
-          <span className="reading-detail-meta-item">{formatDate(article.created_at)}</span>
+        <div className="reading-detail-toolbar">
+          <div className="reading-detail-meta">
+            <span className="reading-card-tag">{article.difficulty}</span>
+            <span className="reading-detail-meta-item">#{article.topic}</span>
+            <span className="reading-detail-meta-item">{article.word_count} 词</span>
+          </div>
+          <div className="reading-detail-actions">
+            <div className="reading-font-group">
+              <button className="reading-font-btn" onClick={() => changeFontSize(-1)} title="减小字号">A-</button>
+              <button className="reading-font-btn" onClick={() => changeFontSize(1)} title="增大字号">A+</button>
+            </div>
+            <button
+              className={isRead ? 'reading-btn reading-btn-done' : 'reading-btn'}
+              onClick={isRead ? undefined : () => void handleMarkRead()}
+              disabled={markingRead || isRead}
+            >
+              {isRead ? '已读' : markingRead ? '标记中...' : '标记已读'}
+            </button>
+            {!quizMode && (
+              <button
+                className="reading-btn reading-btn-primary"
+                onClick={() => setQuizMode(true)}
+                disabled={totalQuestions === 0}
+              >
+                开始做题
+              </button>
+            )}
+            {lastCorrect != null && totalQuestions > 0 && (
+              <span className="reading-detail-score">上次得分 {lastCorrect}/{totalQuestions}</span>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="reading-article" onMouseUp={handleMouseUp}>
-        {contentParagraphs.map((para, pi) => (
-          <p key={pi} className="reading-paragraph">
-            {highlightLongSentences(para, article.long_sentences, (sentence, rect) =>
-              void doExplain(sentence, sentence, rect),
-            )}
-          </p>
-        ))}
-      </div>
+      {quizMode ? (
+        <div className="reading-split">
+          <div className="reading-split-left">{articleBody}</div>
+          <div className="reading-split-right">
+            <div className="reading-quiz-pane-head">
+              <span className="reading-quiz-pane-title">阅读理解</span>
+              <button className="reading-quiz-exit" onClick={() => setQuizMode(false)}>退出做题</button>
+            </div>
+            {quizBody}
+          </div>
+        </div>
+      ) : (
+        <div className="reading-article">{articleBody}</div>
+      )}
 
       {/* 划词工具条 */}
       {selection && (
@@ -524,7 +728,7 @@ export function ReadingContent() {
         </div>
       )}
 
-      {/* 解析结果 */}
+      {/* 划词解析结果 */}
       {explainLoading && (
         <div
           className="reading-explain reading-explain-loading"
@@ -557,76 +761,33 @@ export function ReadingContent() {
         </div>
       )}
 
-      {/* 做题 */}
-      <section className="reading-quiz" ref={quizRef}>
-        <h3 className="reading-quiz-title">阅读理解</h3>
-        {article.quiz.length === 0 ? (
-          <p className="reading-quiz-empty">该文章暂无配套题目</p>
-        ) : (
-          <>
-            {article.quiz.map((q, qi) => {
-              const result = quizResult?.results[qi]
-              return (
-                <div key={qi} className="reading-quiz-item">
-                  <p className="reading-quiz-question">{qi + 1}. {q.question}</p>
-                  <div className="reading-quiz-options">
-                    {q.options.map((opt, oi) => {
-                      const selected = answers[qi] === oi
-                      const isCorrect = result && oi === result.correct_answer
-                      const isWrongSelected = result && selected && oi !== result.correct_answer
-                      let cls = 'reading-quiz-option'
-                      if (!result && selected) cls += ' reading-quiz-option-selected'
-                      if (isCorrect) cls += ' reading-quiz-option-correct'
-                      if (isWrongSelected) cls += ' reading-quiz-option-wrong'
-                      return (
-                        <button
-                          key={oi}
-                          className={cls}
-                          disabled={!!result}
-                          onClick={() => selectAnswer(qi, oi)}
-                        >
-                          <span className="reading-quiz-option-key">{String.fromCharCode(65 + oi)}</span>
-                          <span>{opt}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {result && (
-                    <div className={`reading-quiz-explain ${result.is_correct ? 'is-correct' : 'is-wrong'}`}>
-                      <span className="reading-quiz-explain-verdict">
-                        {result.is_correct ? '✅ 正确' : '❌ 错误'}
-                        {result.your_answer == null || result.your_answer < 0 ? '（未作答）' : ''}
-                      </span>
-                      <span className="reading-quiz-explain-text">{result.explanation}</span>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-            {!quizResult && (
-              <button className="reading-submit-btn" onClick={() => void handleSubmitQuiz()} disabled={quizSubmitting}>
-                {quizSubmitting ? '判分中...' : '提交答案'}
-              </button>
-            )}
-            {quizResult && (
-              <div className="reading-quiz-score">
-                本次得分：<strong>{quizResult.score}</strong> 分（{quizResult.correct} / {quizResult.total}）
+      {/* 长难句解析卡片（预生成，可拖动） */}
+      {sentenceCard && (
+        <div
+          className="reading-sentence-card"
+          style={{ left: sentenceCard.x, top: sentenceCard.y, fontSize }}
+        >
+          <div className="reading-sentence-card-bar" onMouseDown={startSentenceCardDrag}>
+            <span className="reading-sentence-card-bar-title">长难句解析</span>
+            <button className="reading-sentence-card-close" onClick={() => setSentenceCard(null)}>×</button>
+          </div>
+          <div className="reading-sentence-card-body">
+            <p className="reading-sentence-card-sentence">{sentenceCard.sentence}</p>
+            {sentenceCard.translation && (
+              <div className="reading-sentence-card-section">
+                <div className="reading-sentence-card-label">翻译</div>
+                <div className="reading-sentence-card-text">{sentenceCard.translation}</div>
               </div>
             )}
-          </>
-        )}
-      </section>
-
-      {/* 底部操作条 */}
-      <div className="reading-actions">
-        <button className="reading-btn" onClick={() => void handleMarkRead()} disabled={markingRead}>
-          {markingRead ? '标记中...' : '标记已读'}
-        </button>
-        <button className="reading-btn reading-btn-primary" onClick={() => quizRef.current?.scrollIntoView({ behavior: 'smooth' })}>
-          开始做题
-        </button>
-        <span className="reading-score">上次得分：{lastScore != null ? `${lastScore} 分` : '未做题'}</span>
-      </div>
+            {sentenceCard.analysis && (
+              <div className="reading-sentence-card-section">
+                <div className="reading-sentence-card-label">解析</div>
+                <div className="reading-sentence-card-text">{sentenceCard.analysis}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {toast && <div className="reading-toast">{toast}</div>}
     </div>
