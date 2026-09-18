@@ -150,6 +150,11 @@ export function StatsContent() {
           <span className="stats-overview-value">{overview?.weekly_completion_rate ?? 0}%</span>
           <span className="stats-overview-label">本周完成率</span>
         </div>
+        <div className="stats-overview-card">
+          <span className="stats-overview-icon" aria-hidden="true">🔍</span>
+          <span className="stats-overview-value">{overview?.reading_articles_read ?? 0}</span>
+          <span className="stats-overview-label">外刊精读（篇）</span>
+        </div>
       </section>
 
       {/* 单词学习详情 */}
@@ -314,12 +319,14 @@ export function StatsContent() {
         </div>
       </section>
 
-      {/* 阅读练习占位 */}
+      {/* 外刊精读 */}
       <section className="stats-section">
-        <h2 className="stats-section-title">阅读练习</h2>
-        <div className="stats-placeholder">
-          <span className="stats-placeholder-icon" aria-hidden="true">📖</span>
-          <p className="stats-placeholder-text">阅读功能开发中，暂无数据</p>
+        <h2 className="stats-section-title">外刊精读</h2>
+        <div className="stats-words-row">
+          <div className="stats-words-cell">
+            <span className="stats-words-value">{overview?.reading_articles_read ?? 0}</span>
+            <span className="stats-words-label">已读外刊（篇）</span>
+          </div>
         </div>
       </section>
     </div>

@@ -9,7 +9,6 @@ import Register from './pages/Register'
 import Subject from './pages/Subject'
 import Welcome from './pages/Welcome'
 import EnglishHome from './pages/EnglishHome'
-import Reading from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
 import Words from './pages/english/Words'
 
@@ -80,7 +79,7 @@ export default function App() {
           path="/english/reading"
           element={
             <Protected>
-              <Reading />
+              <Navigate to="/english" replace />
             </Protected>
           }
         />

@@ -25,6 +25,12 @@ export default function Navbar({ active, trailing }: NavbarProps) {
         <button className="navbar-back" onClick={() => navigate(-1)}>
           ← 返回上一页
         </button>
+        <Link
+          to="/dashboard"
+          className={active === 'home' ? 'navbar-active' : undefined}
+        >
+          首页
+        </Link>
         <a
           href="#features"
           className={active === 'features' ? 'navbar-active' : undefined}

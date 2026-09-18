@@ -57,7 +57,7 @@
 
 .stats-overview {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
 }
 
@@ -419,26 +419,6 @@
 .stats-ai-content strong {
   color: #e60012;
   font-weight: 700;
-}
-
-/* ---------- 阅读占位 ---------- */
-
-.stats-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 28px 0;
-  color: #bbb;
-}
-
-.stats-placeholder-icon {
-  font-size: 32px;
-}
-
-.stats-placeholder-text {
-  margin: 0;
-  font-size: 14px;
 }
 
 /* ---------- 响应式 ---------- */

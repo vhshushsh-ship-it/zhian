@@ -396,7 +396,7 @@ class AiTutorSendResponse(BaseModel):
 
 
 class OverviewStats(BaseModel):
-    """概览区：连续天数 / 单词 / 口语 / 完成率等核心指标"""
+    """概览区：连续天数 / 单词 / 口语 / 阅读 / 完成率等核心指标"""
 
     streak_days: int
     total_words_learned: int
@@ -407,6 +407,7 @@ class OverviewStats(BaseModel):
     speaking_total_messages: int
     last_speaking_at: datetime | None = None
     weekly_completion_rate: float
+    reading_articles_read: int
 
 
 class WeakWordItem(BaseModel):
@@ -454,3 +455,111 @@ class EnglishStatsResponse(BaseModel):
     words: WordsStats
     speaking: SpeakingStats
     weekly_trend: list[DailyTrendItem]
+
+
+# ---------- 外刊精读 ----------
+
+
+class ReadingQuizItem(BaseModel):
+    """一道阅读理解题"""
+
+    question: str
+    options: list[str]
+    answer: int
+    explanation: str
+
+
+class ReadingArticleListItem(BaseModel):
+    """文章列表项（不含正文，含当前用户是否已读）"""
+
+    id: int
+    title: str
+    difficulty: str
+    topic: str
+    word_count: int
+    created_at: datetime
+    is_read: bool
+
+
+class ReadingArticleListResponse(BaseModel):
+    """文章列表分页响应"""
+
+    total: int
+    page: int
+    size: int
+    items: list[ReadingArticleListItem]
+
+
+class ReadingHistoryOut(BaseModel):
+    """当前用户的阅读记录"""
+
+    read_at: datetime
+    quiz_score: float | None = None
+    words_collected: int
+
+
+class ReadingArticleDetail(BaseModel):
+    """文章详情（含正文 / 长难句 / 题目）+ 当前用户阅读记录"""
+
+    id: int
+    title: str
+    content: str
+    difficulty: str
+    topic: str
+    word_count: int
+    long_sentences: list[str]
+    quiz: list[ReadingQuizItem]
+    created_at: datetime
+    history: ReadingHistoryOut | None = None
+
+
+class GenerateArticleRequest(BaseModel):
+    """管理员生成文章请求"""
+
+    difficulty: str
+    topic: str
+
+
+class QuizSubmitRequest(BaseModel):
+    """提交做题答案：用户所选选项索引数组（0 基）"""
+
+    answers: list[int]
+
+
+class QuizResultItem(BaseModel):
+    """单题判分结果"""
+
+    question: str
+    your_answer: int | None = None
+    correct_answer: int
+    is_correct: bool
+    explanation: str
+
+
+class QuizSubmitResponse(BaseModel):
+    """做题判分响应"""
+
+    score: float
+    correct: int
+    total: int
+    results: list[QuizResultItem]
+
+
+class CollectWordRequest(BaseModel):
+    """收集生词请求"""
+
+    word: str
+
+
+class ExplainRequest(BaseModel):
+    """选中即译请求：text 选中的词或句子，context 所在完整句子"""
+
+    text: str
+    context: str
+
+
+class ExplainResponse(BaseModel):
+    """选中即译响应"""
+
+    translation: str
+    analysis: str

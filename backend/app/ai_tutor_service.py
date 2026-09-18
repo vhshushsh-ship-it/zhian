@@ -77,6 +77,7 @@ def build_user_snapshot(db: Session, user_id: int) -> str:
     else:
         lines.append("- 最薄弱词：暂无")
     lines.append(f"- 口语练习次数：{overview['speaking_sessions']} 次")
+    lines.append(f"- 已读外刊：{overview['reading_articles_read']} 篇")
     if overview["last_speaking_at"] is not None:
         lines.append(f"- 最近口语练习：{overview['last_speaking_at']:%Y-%m-%d %H:%M}")
     if speaking["topics"]:

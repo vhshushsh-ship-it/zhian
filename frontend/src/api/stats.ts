@@ -13,6 +13,7 @@ export interface OverviewStats {
   speaking_total_messages: number
   last_speaking_at: string | null
   weekly_completion_rate: number
+  reading_articles_read: number
 }
 
 /** 薄弱词 */

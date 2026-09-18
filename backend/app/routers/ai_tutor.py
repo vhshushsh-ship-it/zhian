@@ -40,7 +40,7 @@ RECENT_MESSAGE_LIMIT = 20
 PAGE_NAMES = {
     "words": "背单词",
     "speaking": "口语练习",
-    "reading": "阅读练习",
+    "reading": "外刊精读",
     "english": "英语主页",
 }
 

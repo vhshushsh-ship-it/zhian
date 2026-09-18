@@ -24,6 +24,37 @@
   color: #1a1a1a;
 }
 
+.admin-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.admin-title-row .admin-title {
+  margin-bottom: 0;
+}
+
+.admin-enter-learning {
+  flex-shrink: 0;
+  padding: 10px 22px;
+  background: #e60012;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.admin-enter-learning:hover {
+  background: #c5000f;
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(230, 0, 18, 0.24);
+}
+
 .admin-accent {
   display: block;
   width: 40px;

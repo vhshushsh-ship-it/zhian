@@ -10,6 +10,7 @@ from datetime import date, timedelta
 from sqlalchemy.orm import Session
 
 from .models import (
+    ReadingHistory,
     SpeakingConversation,
     SpeakingMessage,
     UserDailyStats,
@@ -185,6 +186,13 @@ def compute_english_stats(db: Session, user_id: int) -> dict:
         )[:5]
     ]
 
+    # ---------- 外刊精读：已读文章数 ----------
+    reading_articles_read = (
+        db.query(ReadingHistory)
+        .filter(ReadingHistory.user_id == user_id)
+        .count()
+    )
+
     # ---------- 每日统计：连续天数 + 近 7 天趋势 ----------
     daily_rows = (
         db.query(UserDailyStats)
@@ -233,6 +241,7 @@ def compute_english_stats(db: Session, user_id: int) -> dict:
             "speaking_total_messages": speaking_total_messages,
             "last_speaking_at": last_speaking_at,
             "weekly_completion_rate": weekly_completion_rate,
+            "reading_articles_read": reading_articles_read,
         },
         "words": {
             "current_book": current_book,

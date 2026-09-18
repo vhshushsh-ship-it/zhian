@@ -1,36 +1,634 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../../auth/AuthContext'
-import Navbar from '../../components/Navbar'
+import { getErrorMessage } from '../../api/client'
+import {
+  collectWord,
+  explainText,
+  generateArticle,
+  getArticle,
+  getArticles,
+  markRead,
+  submitQuiz,
+  type QuizSubmitResponse,
+  type ReadingArticleDetail,
+  type ReadingArticleListItem,
+} from '../../api/reading'
 import './Reading.css'
 
-/** 阅读练习功能占位页 */
-export default function Reading() {
-  const { user, logout } = useAuth()
+// 难度 / 话题下拉选项
+const DIFFICULTIES = ['考研', '四级', '六级']
+const TOPICS = ['科技', '经济', '文化', '教育', '社会']
+
+const PAGE_SIZE = 8
+
+/** ISO 时间 → 'YYYY-MM-DD' */
+function formatDate(iso: string): string {
+  const t = new Date(iso)
+  if (Number.isNaN(t.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`
+}
+
+/** 在段落文本中高亮命中的长难句，返回混合文本 / 高亮节点 */
+function highlightLongSentences(
+  text: string,
+  longSentences: string[],
+  onExplain: (sentence: string, rect: DOMRect) => void,
+): ReactNode[] {
+  type Range = { start: number; end: number; sentence: string }
+  const ranges: Range[] = []
+  for (const raw of longSentences) {
+    const sentence = raw.trim()
+    if (!sentence) continue
+    let idx = text.indexOf(sentence)
+    while (idx !== -1) {
+      ranges.push({ start: idx, end: idx + sentence.length, sentence })
+      idx = text.indexOf(sentence, idx + sentence.length)
+    }
+  }
+  if (ranges.length === 0) return [text]
+
+  ranges.sort((a, b) => a.start - b.start)
+
+  const nodes: ReactNode[] = []
+  let cursor = 0
+  for (const r of ranges) {
+    if (r.start < cursor) continue
+    if (r.start > cursor) nodes.push(text.slice(cursor, r.start))
+    nodes.push(
+      <span
+        key={`${r.start}-${r.end}`}
+        className="reading-long-sentence"
+        onClick={(e) => onExplain(r.sentence, e.currentTarget.getBoundingClientRect())}
+      >
+        {r.sentence}
+      </span>,
+    )
+    cursor = r.end
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor))
+  return nodes
+}
+
+/** 从选区向上找到所在段落文本作为 context */
+function getContextSentence(sel: Selection): string {
+  let node: Node | null = sel.anchorNode
+  while (node) {
+    if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === 'P') {
+      return (node as Element).textContent?.trim() || ''
+    }
+    node = node.parentNode
+  }
+  return sel.toString().trim()
+}
+
+interface SelectionState {
+  text: string
+  context: string
+  x: number
+  y: number
+  isWord: boolean
+}
+
+interface ExplainState {
+  translation: string
+  analysis: string
+  x: number
+  y: number
+}
+
+/** 外刊精读视图（嵌入英语首页右侧内容区） */
+export function ReadingContent() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+
+  // 列表视图
+  const [articles, setArticles] = useState<ReadingArticleListItem[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [difficulty, setDifficulty] = useState('')
+  const [topic, setTopic] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // 详情视图
+  const [article, setArticle] = useState<ReadingArticleDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  // 选中即译
+  const [selection, setSelection] = useState<SelectionState | null>(null)
+  const [explain, setExplain] = useState<ExplainState | null>(null)
+  const [explainAnchor, setExplainAnchor] = useState<{ x: number; y: number } | null>(null)
+  const [explainLoading, setExplainLoading] = useState(false)
+  const [explainError, setExplainError] = useState('')
+
+  // 做题
+  const [answers, setAnswers] = useState<(number | null)[]>([])
+  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null)
+  const [quizSubmitting, setQuizSubmitting] = useState(false)
+
+  // 生成文章弹窗
+  const [showGenerate, setShowGenerate] = useState(false)
+  const [genDifficulty, setGenDifficulty] = useState('考研')
+  const [genTopic, setGenTopic] = useState('科技')
+  const [generating, setGenerating] = useState(false)
+
+  // 提示 + 标记已读
+  const [toast, setToast] = useState('')
+  const [markingRead, setMarkingRead] = useState(false)
+
+  const quizRef = useRef<HTMLDivElement>(null)
+  const toastTimer = useRef<number | null>(null)
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    if (toastTimer.current) window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(''), 2500)
+  }
+
+  /** 拉取文章列表 */
+  const loadList = async (p = page, d = difficulty, t = topic) => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await getArticles({ page: p, size: PAGE_SIZE, difficulty: d || undefined, topic: t || undefined })
+      setArticles(res.data.items)
+      setTotal(res.data.total)
+      setPage(res.data.page)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /** 打开文章详情 */
+  const openArticle = async (id: number) => {
+    setDetailLoading(true)
+    setError('')
+    setArticle(null)
+    setSelection(null)
+    setExplain(null)
+    setQuizResult(null)
+    try {
+      const res = await getArticle(id)
+      setArticle(res.data)
+      setAnswers(Array(res.data.quiz.length).fill(null))
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const backToList = () => {
+    setArticle(null)
+    setSelection(null)
+    setExplain(null)
+    setQuizResult(null)
+    void loadList()
+  }
+
+  // 首次进入加载列表
+  useEffect(() => {
+    void loadList(1, '', '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 点击文档空白处关闭选中工具栏
+  useEffect(() => {
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('.reading-toolbar') || target.closest('.reading-explain')) return
+      setSelection(null)
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [])
+
+  /** 正文选中（划词） */
+  const handleMouseUp = () => {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return
+    const text = sel.toString().trim()
+    if (!text) return
+    const rect = sel.getRangeAt(0).getBoundingClientRect()
+    setSelection({
+      text,
+      context: getContextSentence(sel),
+      x: Math.min(Math.max(rect.left + rect.width / 2, 100), window.innerWidth - 100),
+      y: rect.top - 10,
+      isWord: !/\s/.test(text),
+    })
+  }
+
+  /** 翻译并解析选中的词 / 长难句 */
+  const doExplain = async (text: string, context: string, rect?: DOMRect) => {
+    const anchor = rect
+      ? { x: rect.left, y: rect.bottom + 6 }
+      : { x: selection?.x ?? 200, y: (selection?.y ?? 200) + 24 }
+    setExplainAnchor(anchor)
+    setExplain(null)
+    setExplainLoading(true)
+    setExplainError('')
+    try {
+      const res = await explainText(text, context)
+      setExplain({
+        translation: res.data.translation,
+        analysis: res.data.analysis,
+        x: anchor.x,
+        y: anchor.y,
+      })
+    } catch (err) {
+      setExplainError(getErrorMessage(err))
+    } finally {
+      setExplainLoading(false)
+    }
+  }
+
+  /** 收集生词 */
+  const handleCollect = async (word: string) => {
+    if (!article) return
+    try {
+      const res = await collectWord(article.id, word)
+      showToast(`已加入生词本：${res.data.word}`)
+    } catch (err) {
+      showToast(getErrorMessage(err))
+    }
+  }
+
+  /** 标记已读 */
+  const handleMarkRead = async () => {
+    if (!article) return
+    setMarkingRead(true)
+    try {
+      await markRead(article.id)
+      setArticle((prev) =>
+        prev
+          ? {
+              ...prev,
+              history: {
+                read_at: new Date().toISOString(),
+                quiz_score: prev.history?.quiz_score ?? null,
+                words_collected: prev.history?.words_collected ?? 0,
+              },
+            }
+          : prev,
+      )
+      showToast('已标记已读')
+    } catch (err) {
+      showToast(getErrorMessage(err))
+    } finally {
+      setMarkingRead(false)
+    }
+  }
+
+  /** 做题：选择选项 */
+  const selectAnswer = (qi: number, oi: number) => {
+    if (quizResult) return
+    setAnswers((prev) => prev.map((a, i) => (i === qi ? oi : a)))
+  }
+
+  /** 提交做题 */
+  const handleSubmitQuiz = async () => {
+    if (!article) return
+    setQuizSubmitting(true)
+    setError('')
+    try {
+      const res = await submitQuiz(
+        article.id,
+        answers.map((a) => (a == null ? -1 : a)),
+      )
+      setQuizResult(res.data)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setQuizSubmitting(false)
+    }
+  }
+
+  /** 生成文章 */
+  const handleGenerate = async () => {
+    setGenerating(true)
+    setError('')
+    try {
+      const res = await generateArticle(genDifficulty, genTopic)
+      setShowGenerate(false)
+      showToast('已生成新文章')
+      setDifficulty('')
+      setTopic('')
+      void loadList(1, '', '')
+      void openArticle(res.data.id)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
+  // ---------- 列表视图 ----------
+  if (!article) {
+    return (
+      <div className="reading-container">
+        <header className="reading-header">
+          <div className="reading-header-title-row">
+            <div>
+              <h2 className="reading-title">外刊精读</h2>
+              <span className="reading-title-accent" aria-hidden="true" />
+              <p className="reading-subtitle">精选外刊文章，长难句解析，边读边积累</p>
+            </div>
+            {isAdmin && (
+              <button className="reading-generate-btn" onClick={() => setShowGenerate(true)}>
+                ✨ AI 生成新文章
+              </button>
+            )}
+          </div>
+
+          <div className="reading-filters">
+            <select
+              className="reading-select"
+              value={difficulty}
+              onChange={(e) => {
+                setDifficulty(e.target.value)
+                void loadList(1, e.target.value, topic)
+              }}
+            >
+              <option value="">全部难度</option>
+              {DIFFICULTIES.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            <select
+              className="reading-select"
+              value={topic}
+              onChange={(e) => {
+                setTopic(e.target.value)
+                void loadList(1, difficulty, e.target.value)
+              }}
+            >
+              <option value="">全部话题</option>
+              {TOPICS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+        </header>
+
+        {error && <p className="reading-error">{error}</p>}
+
+        {loading ? (
+          <div className="reading-loading">加载中...</div>
+        ) : articles.length === 0 ? (
+          <div className="reading-empty">
+            <span aria-hidden="true">📚</span>
+            <p>暂无文章{isAdmin ? '，点击右上角「AI 生成新文章」' : ''}</p>
+          </div>
+        ) : (
+          <>
+            <div className="reading-grid">
+              {articles.map((a) => (
+                <button key={a.id} className="reading-card" onClick={() => void openArticle(a.id)}>
+                  <div className="reading-card-top">
+                    <span className="reading-card-tag">{a.difficulty}</span>
+                    {a.is_read && <span className="reading-card-read">已读</span>}
+                  </div>
+                  <h3 className="reading-card-title">{a.title}</h3>
+                  <div className="reading-card-meta">
+                    <span>#{a.topic}</span>
+                    <span>{a.word_count} 词</span>
+                    <span>{formatDate(a.created_at)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="reading-pagination">
+                <button
+                  className="reading-page-btn"
+                  disabled={page <= 1}
+                  onClick={() => void loadList(page - 1, difficulty, topic)}
+                >
+                  上一页
+                </button>
+                <span className="reading-page-info">{page} / {totalPages}</span>
+                <button
+                  className="reading-page-btn"
+                  disabled={page >= totalPages}
+                  onClick={() => void loadList(page + 1, difficulty, topic)}
+                >
+                  下一页
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* 生成文章弹窗 */}
+        {showGenerate && (
+          <div className="reading-modal-mask" onClick={() => setShowGenerate(false)}>
+            <div className="reading-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>AI 生成外刊文章</h3>
+              <label className="reading-modal-label">难度</label>
+              <select
+                className="reading-select"
+                value={genDifficulty}
+                onChange={(e) => setGenDifficulty(e.target.value)}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              <label className="reading-modal-label">话题</label>
+              <select
+                className="reading-select"
+                value={genTopic}
+                onChange={(e) => setGenTopic(e.target.value)}
+              >
+                {TOPICS.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+              <div className="reading-modal-actions">
+                <button className="reading-modal-cancel" onClick={() => setShowGenerate(false)}>
+                  取消
+                </button>
+                <button className="reading-modal-confirm" onClick={() => void handleGenerate()} disabled={generating}>
+                  {generating ? '生成中...' : '开始生成'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {toast && <div className="reading-toast">{toast}</div>}
+      </div>
+    )
+  }
+
+  // ---------- 详情视图 ----------
+  if (detailLoading) {
+    return <div className="reading-loading">加载中...</div>
+  }
+
+  const contentParagraphs = article.content.replace(/\r\n/g, '\n').split(/\n{2,}/).filter((p) => p.trim())
+  const lastScore = quizResult?.score ?? article.history?.quiz_score ?? null
 
   return (
-    <div className="reading-page">
-      <Navbar
-        active="home"
-        trailing={
-          <>
-            <span className="navbar-email">{user?.email || user?.username}</span>
-            <button className="navbar-btn" onClick={logout}>
-              退出登录
-            </button>
-          </>
-        }
-      />
+    <div className="reading-container reading-detail">
+      <button className="reading-back" onClick={backToList}>← 返回列表</button>
 
-      <main className="reading-main">
-        <h1 className="reading-title">阅读练习</h1>
-        <span className="reading-accent" aria-hidden="true" />
-        <p className="reading-subtitle">精选文章阅读，长难句解析</p>
-
-        <div className="reading-placeholder">
-          <div className="reading-icon" aria-hidden="true">🚀</div>
-          <p className="reading-placeholder-title">功能建设中，敬请期待</p>
-          <p className="reading-placeholder-sub">阅读练习功能正在紧张开发中...</p>
+      <header className="reading-detail-header">
+        <h2 className="reading-detail-title">{article.title}</h2>
+        <div className="reading-detail-meta">
+          <span className="reading-card-tag">{article.difficulty}</span>
+          <span className="reading-detail-meta-item">#{article.topic}</span>
+          <span className="reading-detail-meta-item">{article.word_count} 词</span>
+          <span className="reading-detail-meta-item">{formatDate(article.created_at)}</span>
         </div>
-      </main>
+      </header>
+
+      <div className="reading-article" onMouseUp={handleMouseUp}>
+        {contentParagraphs.map((para, pi) => (
+          <p key={pi} className="reading-paragraph">
+            {highlightLongSentences(para, article.long_sentences, (sentence, rect) =>
+              void doExplain(sentence, sentence, rect),
+            )}
+          </p>
+        ))}
+      </div>
+
+      {/* 划词工具条 */}
+      {selection && (
+        <div
+          className="reading-toolbar"
+          style={{ left: selection.x, top: selection.y }}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <button
+            className="reading-toolbar-btn"
+            onClick={() => void doExplain(selection.text, selection.context)}
+          >
+            🔍 翻译
+          </button>
+          {selection.isWord && (
+            <button
+              className="reading-toolbar-btn reading-toolbar-btn-collect"
+              onClick={() => void handleCollect(selection.text)}
+            >
+              ➕ 生词本
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 解析结果 */}
+      {explainLoading && (
+        <div
+          className="reading-explain reading-explain-loading"
+          style={{ left: explainAnchor?.x, top: explainAnchor?.y }}
+        >
+          解析中...
+        </div>
+      )}
+      {explainError && (
+        <div
+          className="reading-explain reading-explain-error"
+          style={{ left: explainAnchor?.x, top: explainAnchor?.y }}
+        >
+          {explainError}
+        </div>
+      )}
+      {explain && !explainLoading && (
+        <div className="reading-explain" style={{ left: explain.x, top: explain.y }}>
+          <button className="reading-explain-close" onClick={() => setExplain(null)}>×</button>
+          <div className="reading-explain-section">
+            <div className="reading-explain-label">翻译</div>
+            <div className="reading-explain-text">{explain.translation}</div>
+          </div>
+          {explain.analysis && (
+            <div className="reading-explain-section">
+              <div className="reading-explain-label">解析</div>
+              <div className="reading-explain-text">{explain.analysis}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 做题 */}
+      <section className="reading-quiz" ref={quizRef}>
+        <h3 className="reading-quiz-title">阅读理解</h3>
+        {article.quiz.length === 0 ? (
+          <p className="reading-quiz-empty">该文章暂无配套题目</p>
+        ) : (
+          <>
+            {article.quiz.map((q, qi) => {
+              const result = quizResult?.results[qi]
+              return (
+                <div key={qi} className="reading-quiz-item">
+                  <p className="reading-quiz-question">{qi + 1}. {q.question}</p>
+                  <div className="reading-quiz-options">
+                    {q.options.map((opt, oi) => {
+                      const selected = answers[qi] === oi
+                      const isCorrect = result && oi === result.correct_answer
+                      const isWrongSelected = result && selected && oi !== result.correct_answer
+                      let cls = 'reading-quiz-option'
+                      if (!result && selected) cls += ' reading-quiz-option-selected'
+                      if (isCorrect) cls += ' reading-quiz-option-correct'
+                      if (isWrongSelected) cls += ' reading-quiz-option-wrong'
+                      return (
+                        <button
+                          key={oi}
+                          className={cls}
+                          disabled={!!result}
+                          onClick={() => selectAnswer(qi, oi)}
+                        >
+                          <span className="reading-quiz-option-key">{String.fromCharCode(65 + oi)}</span>
+                          <span>{opt}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {result && (
+                    <div className={`reading-quiz-explain ${result.is_correct ? 'is-correct' : 'is-wrong'}`}>
+                      <span className="reading-quiz-explain-verdict">
+                        {result.is_correct ? '✅ 正确' : '❌ 错误'}
+                        {result.your_answer == null || result.your_answer < 0 ? '（未作答）' : ''}
+                      </span>
+                      <span className="reading-quiz-explain-text">{result.explanation}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            {!quizResult && (
+              <button className="reading-submit-btn" onClick={() => void handleSubmitQuiz()} disabled={quizSubmitting}>
+                {quizSubmitting ? '判分中...' : '提交答案'}
+              </button>
+            )}
+            {quizResult && (
+              <div className="reading-quiz-score">
+                本次得分：<strong>{quizResult.score}</strong> 分（{quizResult.correct} / {quizResult.total}）
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* 底部操作条 */}
+      <div className="reading-actions">
+        <button className="reading-btn" onClick={() => void handleMarkRead()} disabled={markingRead}>
+          {markingRead ? '标记中...' : '标记已读'}
+        </button>
+        <button className="reading-btn reading-btn-primary" onClick={() => quizRef.current?.scrollIntoView({ behavior: 'smooth' })}>
+          开始做题
+        </button>
+        <span className="reading-score">上次得分：{lastScore != null ? `${lastScore} 分` : '未做题'}</span>
+      </div>
+
+      {toast && <div className="reading-toast">{toast}</div>}
     </div>
   )
 }
