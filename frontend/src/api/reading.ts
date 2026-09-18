@@ -10,6 +10,13 @@ export interface ReadingQuizItem {
   explanation: string
 }
 
+/** 长难句（新文章含预生成翻译与结构分析；旧文章可能仍是字符串） */
+export interface ReadingLongSentence {
+  sentence: string
+  translation: string
+  analysis: string
+}
+
 /** 文章列表项（不含正文，含当前用户是否已读） */
 export interface ReadingArticleListItem {
   id: number
@@ -44,7 +51,7 @@ export interface ReadingArticleDetail {
   difficulty: string
   topic: string
   word_count: number
-  long_sentences: string[]
+  long_sentences: (string | ReadingLongSentence)[]
   quiz: ReadingQuizItem[]
   created_at: string
   history: ReadingHistory | null
