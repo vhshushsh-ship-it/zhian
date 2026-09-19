@@ -58,6 +58,11 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
+/* 介绍页：对齐口语练习介绍样式（标题/卡片/按钮复用 EnglishHome 类，撑满内容区） */
+.reading-intro .reading-generate-btn {
+  margin-top: 24px;
+}
+
 .reading-filters {
   display: flex;
   gap: 12px;
@@ -386,11 +391,11 @@
   white-space: nowrap;
 }
 
-/* 正文卡片：单栏居中，最大宽度 720px */
+/* 正文卡片：单栏居中，最大宽度 900px */
 .reading-article {
   align-self: center;
   width: 100%;
-  max-width: 720px;
+  max-width: 900px;
   background: #fff;
   border-radius: 16px;
   padding: 32px;

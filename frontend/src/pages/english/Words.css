@@ -94,6 +94,15 @@
   min-height: 480px;
 }
 
+/* ---------- 介绍页 ---------- */
+
+.words-intro {
+  flex: 1;
+  min-height: 0;
+  padding: 40px;
+  overflow-y: auto;
+}
+
 /* ---------- 复习页 ---------- */
 
 .review-loading {

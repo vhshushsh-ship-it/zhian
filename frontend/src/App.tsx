@@ -9,7 +9,9 @@ import Register from './pages/Register'
 import Subject from './pages/Subject'
 import Welcome from './pages/Welcome'
 import EnglishHome from './pages/EnglishHome'
+import { ReadingContent } from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
+import { StatsContent } from './pages/english/Stats'
 import Words from './pages/english/Words'
 
 function Protected({ children }: { children: ReactElement }) {
@@ -58,31 +60,13 @@ export default function App() {
               <EnglishHome />
             </Protected>
           }
-        />
-        <Route
-          path="/english/words"
-          element={
-            <Protected>
-              <Words />
-            </Protected>
-          }
-        />
-        <Route
-          path="/english/speaking"
-          element={
-            <Protected>
-              <Speaking />
-            </Protected>
-          }
-        />
-        <Route
-          path="/english/reading"
-          element={
-            <Protected>
-              <Navigate to="/english" replace />
-            </Protected>
-          }
-        />
+        >
+          <Route index element={<Navigate to="/english/words" replace />} />
+          <Route path="words" element={<Words />} />
+          <Route path="speaking" element={<Speaking />} />
+          <Route path="reading" element={<ReadingContent />} />
+          <Route path="stats" element={<StatsContent />} />
+        </Route>
         <Route
           path="/admin"
           element={

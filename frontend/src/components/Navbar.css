@@ -24,6 +24,13 @@
   text-decoration: none;
 }
 
+/* 左侧 Logo + 返回图标 */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -46,20 +53,24 @@
   font-weight: 600;
 }
 
-/* 返回上一页按钮（视觉与导航链接一致，不参与高亮） */
+/* 返回上一页小图标：紧贴 Logo，只显示箭头，不占多余空间 */
 .navbar-back {
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
   border: none;
-  padding: 0;
-  font-size: 15px;
-  color: #333;
+  background: transparent;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
+  border-radius: 8px;
   transition: color 0.2s;
 }
 
 .navbar-back:hover {
-  opacity: 1;
-  color: #e60012;
+  color: #1a1a1a;
 }
 
 /* 用户邮箱 */

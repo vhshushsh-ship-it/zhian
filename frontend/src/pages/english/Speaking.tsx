@@ -5,8 +5,6 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from 'react'
-import { useAuth } from '../../auth/AuthContext'
-import Navbar from '../../components/Navbar'
 import { getErrorMessage } from '../../api/client'
 import {
   createConversation,
@@ -96,8 +94,6 @@ function formatRelativeTime(iso: string): string {
 
 /** 英语口语练习：AI 对话 + 翻译 + 辅助功能 三栏布局 */
 export default function Speaking() {
-  const { user, logout } = useAuth()
-
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [currentId, setCurrentId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([
@@ -110,6 +106,8 @@ export default function Speaking() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [historyOpen, setHistoryOpen] = useState(true)
+  // 是否已跳过介绍页进入三栏对话界面
+  const [started, setStarted] = useState(false)
 
   // TTS 语音朗读相关状态
   const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null)
@@ -395,21 +393,13 @@ export default function Speaking() {
   // 翻译列展示的消息（排除 system 提示）
   const translationMessages = messages.filter((m) => m.role !== 'system')
 
-  return (
-    <div className="speaking-page">
-      <Navbar
-        active="home"
-        trailing={
-          <>
-            <span className="navbar-email">{user?.email || user?.username}</span>
-            <button className="navbar-btn" onClick={logout}>
-              退出登录
-            </button>
-          </>
-        }
-      />
+  // 介绍页：开始练习前先展示学习方法与使用说明
+  if (!started) {
+    return <SpeakingIntro onStart={() => setStarted(true)} />
+  }
 
-      <div className="speaking-layout">
+  return (
+    <div className="speaking-layout">
         <div className="speaking-cards">
           {/* 左栏：AI 对话 */}
           <section className="speaking-col speaking-chat">
@@ -626,6 +616,42 @@ export default function Speaking() {
           </section>
         </div>
       </div>
+  )
+}
+
+// ============================================================ 介绍页
+
+function SpeakingIntro({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="speaking-intro">
+      <h2 className="english-content-title">口语练习</h2>
+      <span className="english-content-accent" aria-hidden="true" />
+      <p className="english-content-intro">AI对话练习，实时发音评分，大胆开口说英语</p>
+
+      <div className="english-detail-card">
+        <section className="english-detail-section">
+          <h3 className="english-detail-heading">学习方法</h3>
+          <ul className="english-detail-list">
+            <li>与AI进行真实场景对话，模拟日常交流</li>
+            <li>跟读练习，系统实时评分发音准确度</li>
+            <li>从简单问候到复杂话题，逐步提升难度</li>
+            <li>记录常用表达，建立自己的口语语料库</li>
+          </ul>
+        </section>
+        <section className="english-detail-section">
+          <h3 className="english-detail-heading">使用说明</h3>
+          <ul className="english-detail-list">
+            <li>点击「开始练习」进入口语练习页面</li>
+            <li>选择练习模式：AI对话/跟读模仿/话题讨论</li>
+            <li>允许麦克风权限，大声说出来</li>
+            <li>查看评分和发音建议，反复练习改进</li>
+          </ul>
+        </section>
+      </div>
+
+      <button className="english-start-btn" onClick={onStart}>
+        开始口语练习
+      </button>
     </div>
   )
 }

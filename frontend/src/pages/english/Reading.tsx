@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { getErrorMessage } from '../../api/client'
 import {
@@ -123,6 +124,12 @@ interface SentenceCardState extends ReadingLongSentence {
 export function ReadingContent() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // 详情视图由 URL 的 articleId 参数驱动（列表 → 详情计入浏览器历史）
+  const articleIdParam = searchParams.get('articleId')
+  // 介绍页 / 文章列表由 URL 的 view 参数驱动（介绍 → 列表计入浏览器历史，返回键可回退）
+  const view: 'intro' | 'list' = searchParams.get('view') === 'list' ? 'list' : 'intro'
 
   // 列表视图
   const [articles, setArticles] = useState<ReadingArticleListItem[]>([])
@@ -251,8 +258,8 @@ export function ReadingContent() {
     }
   }
 
-  /** 打开文章详情 */
-  const openArticle = async (id: number) => {
+  /** 加载文章详情（由 URL 的 articleId 参数触发） */
+  const loadArticle = async (id: number) => {
     setDetailLoading(true)
     setError('')
     setArticle(null)
@@ -272,14 +279,9 @@ export function ReadingContent() {
     }
   }
 
-  const backToList = () => {
-    setArticle(null)
-    setSelection(null)
-    setExplain(null)
-    setSentenceCard(null)
-    setQuizResult(null)
-    setQuizMode(false)
-    void loadList()
+  /** 打开文章详情：写入 URL 查询参数，浏览器历史记录「列表 → 详情」 */
+  const openArticle = (id: number) => {
+    navigate(`/english/reading?articleId=${id}`)
   }
 
   // 首次进入加载列表
@@ -287,6 +289,22 @@ export function ReadingContent() {
     void loadList(1, '', '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 根据 URL 的 articleId 加载详情 / 回到列表（含浏览器前进后退）
+  useEffect(() => {
+    const id = articleIdParam ? Number(articleIdParam) : NaN
+    if (Number.isInteger(id) && id > 0) {
+      void loadArticle(id)
+    } else {
+      setArticle(null)
+      setSelection(null)
+      setExplain(null)
+      setSentenceCard(null)
+      setQuizResult(null)
+      setQuizMode(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articleIdParam])
 
   // 点击文档空白处关闭选中工具栏
   useEffect(() => {
@@ -421,6 +439,91 @@ export function ReadingContent() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  // 生成文章弹窗（介绍页与列表页共用）
+  const generateModal = showGenerate ? (
+    <div className="reading-modal-mask" onClick={() => setShowGenerate(false)}>
+      <div className="reading-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>AI 生成外刊文章</h3>
+        <label className="reading-modal-label">难度</label>
+        <select
+          className="reading-select"
+          value={genDifficulty}
+          onChange={(e) => setGenDifficulty(e.target.value)}
+        >
+          {DIFFICULTIES.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+        <label className="reading-modal-label">话题</label>
+        <select
+          className="reading-select"
+          value={genTopic}
+          onChange={(e) => setGenTopic(e.target.value)}
+        >
+          {TOPICS.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <div className="reading-modal-actions">
+          <button className="reading-modal-cancel" onClick={() => setShowGenerate(false)}>
+            取消
+          </button>
+          <button className="reading-modal-confirm" onClick={() => void handleGenerate()} disabled={generating}>
+            {generating ? '生成中...' : '开始生成'}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null
+
+  // ---------- 介绍页 ----------
+  if (!article && view === 'intro') {
+    return (
+      <div className="reading-intro">
+        <h2 className="english-content-title">外刊精读</h2>
+        <span className="english-content-accent" aria-hidden="true" />
+        <p className="english-content-intro">精选外刊文章，长难句解析，边读边积累</p>
+
+        <div className="english-detail-card">
+          <section className="english-detail-section">
+            <h3 className="english-detail-heading">学习方法</h3>
+            <ul className="english-detail-list">
+              <li>精选考研/四六级外刊文章，350-450词</li>
+              <li>长难句自动高亮，点击查看语法结构分析</li>
+              <li>选中任意单词或句子，即时翻译和解析</li>
+              <li>读完后AI出题，检验阅读理解</li>
+            </ul>
+          </section>
+          <section className="english-detail-section">
+            <h3 className="english-detail-heading">使用说明</h3>
+            <ul className="english-detail-list">
+              <li>点击「开始阅读」进入文章列表</li>
+              <li>选择感兴趣的文章开始精读</li>
+              <li>生词可一键加入背单词本</li>
+              <li>阅读数据自动同步到学习数据页</li>
+            </ul>
+          </section>
+        </div>
+
+        {isAdmin && (
+          <button className="reading-generate-btn" onClick={() => setShowGenerate(true)}>
+            ✨ AI 生成新文章
+          </button>
+        )}
+
+        <button
+          className="english-start-btn"
+          onClick={() => navigate('/english/reading?view=list')}
+        >
+          开始阅读
+        </button>
+
+        {generateModal}
+        {toast && <div className="reading-toast">{toast}</div>}
+      </div>
+    )
+  }
+
   // ---------- 列表视图 ----------
   if (!article) {
     return (
@@ -519,42 +622,7 @@ export function ReadingContent() {
           </>
         )}
 
-        {/* 生成文章弹窗 */}
-        {showGenerate && (
-          <div className="reading-modal-mask" onClick={() => setShowGenerate(false)}>
-            <div className="reading-modal" onClick={(e) => e.stopPropagation()}>
-              <h3>AI 生成外刊文章</h3>
-              <label className="reading-modal-label">难度</label>
-              <select
-                className="reading-select"
-                value={genDifficulty}
-                onChange={(e) => setGenDifficulty(e.target.value)}
-              >
-                {DIFFICULTIES.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <label className="reading-modal-label">话题</label>
-              <select
-                className="reading-select"
-                value={genTopic}
-                onChange={(e) => setGenTopic(e.target.value)}
-              >
-                {TOPICS.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-              <div className="reading-modal-actions">
-                <button className="reading-modal-cancel" onClick={() => setShowGenerate(false)}>
-                  取消
-                </button>
-                <button className="reading-modal-confirm" onClick={() => void handleGenerate()} disabled={generating}>
-                  {generating ? '生成中...' : '开始生成'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {generateModal}
 
         {toast && <div className="reading-toast">{toast}</div>}
       </div>
