@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useAuth } from '../../auth/AuthContext'
-import Navbar from '../../components/Navbar'
 import { getErrorMessage } from '../../api/client'
 import { getTtsUrl } from '../../api/english'
 import {
@@ -68,8 +66,9 @@ function highlightTarget(text: string, target: string): ReactNode {
 // ============================================================ 页面外壳
 
 export default function Words() {
-  const { user, logout } = useAuth()
   const [view, setView] = useState<WordsView>('review')
+  // 是否已跳过介绍页进入背单词主界面
+  const [started, setStarted] = useState(false)
 
   const navItems: { key: WordsView; label: string }[] = [
     { key: 'review', label: '复习' },
@@ -77,44 +76,71 @@ export default function Words() {
     { key: 'stats', label: '统计' },
   ]
 
+  if (!started) {
+    return <WordsIntro onStart={() => setStarted(true)} />
+  }
+
   return (
-    <div className="words-page">
-      <Navbar
-        active="home"
-        trailing={
-          <>
-            <span className="navbar-email">{user?.email || user?.username}</span>
-            <button className="navbar-btn" onClick={logout}>
-              退出登录
+    <div className="words-body">
+      <aside className="words-sidenav">
+        <div className="words-sidenav-title">背单词</div>
+        <nav className="words-sidenav-menu">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              className={`words-sidenav-item ${view === item.key ? 'is-active' : ''}`}
+              onClick={() => setView(item.key)}
+            >
+              {item.label}
             </button>
-          </>
-        }
-      />
+          ))}
+        </nav>
+      </aside>
 
-      <div className="words-body">
-        <aside className="words-sidenav">
-          <div className="words-sidenav-title">背单词</div>
-          <nav className="words-sidenav-menu">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                className={`words-sidenav-item ${view === item.key ? 'is-active' : ''}`}
-                onClick={() => setView(item.key)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        </aside>
+      <main className="words-content">
+        <div className="words-container">
+          {view === 'review' && <ReviewPanel onNavigate={setView} />}
+          {view === 'select' && <SelectPanel />}
+          {view === 'stats' && <StatsPanel />}
+        </div>
+      </main>
+    </div>
+  )
+}
 
-        <main className="words-content">
-          <div className="words-container">
-            {view === 'review' && <ReviewPanel onNavigate={setView} />}
-            {view === 'select' && <SelectPanel />}
-            {view === 'stats' && <StatsPanel />}
-          </div>
-        </main>
+// ============================================================ 介绍页
+
+function WordsIntro({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="words-intro">
+      <h2 className="english-content-title">背单词</h2>
+      <span className="english-content-accent" aria-hidden="true" />
+      <p className="english-content-intro">科学记忆算法，高效积累词汇量</p>
+
+      <div className="english-detail-card">
+        <section className="english-detail-section">
+          <h3 className="english-detail-heading">学习方法</h3>
+          <ul className="english-detail-list">
+            <li>基于艾宾浩斯遗忘曲线的智能记忆算法</li>
+            <li>认识/模糊/忘记三档反馈，算法自动安排复习间隔</li>
+            <li>考研/四六级词库，每天新学20个单词</li>
+            <li>美式发音，支持生词回顾</li>
+          </ul>
+        </section>
+        <section className="english-detail-section">
+          <h3 className="english-detail-heading">使用说明</h3>
+          <ul className="english-detail-list">
+            <li>点击「开始背单词」进入学习</li>
+            <li>点击卡片或按空格键显示释义</li>
+            <li>根据记忆程度选择认识/模糊/忘记</li>
+            <li>学习数据自动同步到学习数据页</li>
+          </ul>
+        </section>
       </div>
+
+      <button className="english-start-btn" onClick={onStart}>
+        开始背单词
+      </button>
     </div>
   )
 }

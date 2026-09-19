@@ -18,13 +18,30 @@ interface NavbarProps {
 export default function Navbar({ active, trailing }: NavbarProps) {
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  /** 返回浏览器上一页；无历史记录时回退到学习首页 */
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back()
+    } else {
+      navigate('/dashboard')
+    }
+  }
+
   return (
     <header className="navbar">
-      <Link to="/" className="navbar-logo">知岸</Link>
-      <div className="navbar-right">
-        <button className="navbar-back" onClick={() => navigate(-1)}>
-          ← 返回上一页
+      <div className="navbar-left">
+        <Link to="/" className="navbar-logo">知岸</Link>
+        <button
+          className="navbar-back"
+          onClick={goBack}
+          title="返回上一页"
+          aria-label="返回上一页"
+        >
+          ←
         </button>
+      </div>
+      <div className="navbar-right">
         <Link
           to="/dashboard"
           className={active === 'home' ? 'navbar-active' : undefined}

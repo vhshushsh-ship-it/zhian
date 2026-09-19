@@ -21,6 +21,14 @@
   min-height: 0;
 }
 
+/* 介绍页：开始练习前展示（标题/卡片/按钮复用 EnglishHome 类，撑满内容区） */
+.speaking-intro {
+  flex: 1;
+  min-height: 0;
+  padding: 40px;
+  overflow-y: auto;
+}
+
 /* 三栏卡片容器：占满中间 90% 区域，整体圆角 + 淡阴影 */
 .speaking-cards {
   display: flex;
