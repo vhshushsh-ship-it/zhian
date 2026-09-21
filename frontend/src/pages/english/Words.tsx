@@ -125,10 +125,10 @@ function WordsIntro({ onStart }: { onStart: () => void }) {
         <section className="english-detail-section">
           <h3 className="english-detail-heading">学习方法</h3>
           <ul className="english-detail-list">
-            <li>基于艾宾浩斯遗忘曲线的智能记忆算法</li>
-            <li>认识/模糊/忘记三档反馈，算法自动安排复习间隔</li>
-            <li>考研/四六级词库，每天新学20个单词</li>
-            <li>美式发音，支持生词回顾</li>
+            <li>基于艾宾浩斯遗忘曲线的智能记忆算法，自动安排复习间隔</li>
+            <li>认识 / 模糊 / 忘记三档反馈，系统精准计算每个单词的记忆强度</li>
+            <li>考研核心词库 4800+ 词，美式真人发音</li>
+            <li>从外刊精读中遇到的生词可一键加入，自动进入复习队列</li>
           </ul>
         </section>
         <section className="english-detail-section">
@@ -136,8 +136,8 @@ function WordsIntro({ onStart }: { onStart: () => void }) {
           <ul className="english-detail-list">
             <li>点击「开始背单词」进入学习</li>
             <li>点击卡片或按空格键显示释义</li>
-            <li>根据记忆程度选择认识/模糊/忘记</li>
-            <li>学习数据自动同步到学习数据页</li>
+            <li>根据记忆程度选择认识 / 模糊 / 忘记</li>
+            <li>复习到期的单词优先出现，新词按每日目标分配</li>
           </ul>
         </section>
       </div>
