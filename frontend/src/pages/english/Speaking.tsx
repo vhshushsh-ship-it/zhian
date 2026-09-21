@@ -628,25 +628,26 @@ function SpeakingIntro({ onStart }: { onStart: () => void }) {
     <div className="speaking-intro">
       <h2 className="english-content-title">口语练习</h2>
       <span className="english-content-accent" aria-hidden="true" />
-      <p className="english-content-intro">AI对话练习，实时发音评分，大胆开口说英语</p>
+      <p className="english-content-intro">AI 对话陪练，实时翻译与朗读，大胆开口说英语</p>
 
       <div className="english-detail-card">
         <section className="english-detail-section">
           <h3 className="english-detail-heading">学习方法</h3>
           <ul className="english-detail-list">
-            <li>与AI进行真实场景对话，模拟日常交流</li>
-            <li>跟读练习，系统实时评分发音准确度</li>
-            <li>从简单问候到复杂话题，逐步提升难度</li>
-            <li>记录常用表达，建立自己的口语语料库</li>
+            <li>与 AI 进行真实场景对话，支持日常对话、面试、旅游、校园四大话题</li>
+            <li>三档难度适配：初级开口 → 中级流畅 → 高级思辨</li>
+            <li>左侧对话区打字交流，中间实时翻译，右侧话题难度辅助</li>
+            <li>AI 回复自动美式朗读，语速 0.5x-1.5x 可调</li>
           </ul>
         </section>
         <section className="english-detail-section">
           <h3 className="english-detail-heading">使用说明</h3>
           <ul className="english-detail-list">
-            <li>点击「开始练习」进入口语练习页面</li>
-            <li>选择练习模式：AI对话/跟读模仿/话题讨论</li>
-            <li>允许麦克风权限，大声说出来</li>
-            <li>查看评分和发音建议，反复练习改进</li>
+            <li>点击「开始口语练习」进入对话</li>
+            <li>选择话题和难度，用英语输入开始对话</li>
+            <li>每条对话实时显示中文翻译</li>
+            <li>AI 根据对话内容推荐常用表达</li>
+            <li>对话历史自动保存，可随时新建对话</li>
           </ul>
         </section>
       </div>

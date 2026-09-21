@@ -489,18 +489,19 @@ export function ReadingContent() {
           <section className="english-detail-section">
             <h3 className="english-detail-heading">学习方法</h3>
             <ul className="english-detail-list">
-              <li>精选考研/四六级外刊文章，350-450词</li>
-              <li>长难句自动高亮，点击查看语法结构分析</li>
-              <li>选中任意单词或句子，即时翻译和解析</li>
-              <li>读完后AI出题，检验阅读理解</li>
+              <li>AI 模仿《经济学人》风格生成考研 / 四六级外刊文章，每篇 350-450 词</li>
+              <li>长难句自动高亮，点击查看中文翻译和语法结构分析</li>
+              <li>选中任意单词或句子，即时翻译和用法解析</li>
+              <li>读完后 AI 出题检验理解，左右分栏对照原文做题</li>
+              <li>生词一键加入背单词本，自动进入复习队列</li>
             </ul>
           </section>
           <section className="english-detail-section">
             <h3 className="english-detail-heading">使用说明</h3>
             <ul className="english-detail-list">
               <li>点击「开始阅读」进入文章列表</li>
-              <li>选择感兴趣的文章开始精读</li>
-              <li>生词可一键加入背单词本</li>
+              <li>按难度和话题筛选文章，点击开始精读</li>
+              <li>字体大小可调，长难句解析卡片可拖动</li>
               <li>阅读数据自动同步到学习数据页</li>
             </ul>
           </section>
