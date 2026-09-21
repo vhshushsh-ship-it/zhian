@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../api/client'
 import { getTtsUrl } from '../../api/english'
 import {
@@ -66,9 +67,12 @@ function highlightTarget(text: string, target: string): ReactNode {
 // ============================================================ 页面外壳
 
 export default function Words() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [view, setView] = useState<WordsView>('review')
-  // 是否已跳过介绍页进入背单词主界面
-  const [started, setStarted] = useState(false)
+
+  // 是否已进入背单词主界面（/english/words/practice）；否则展示介绍页
+  const isPractice = location.pathname === '/english/words/practice'
 
   const navItems: { key: WordsView; label: string }[] = [
     { key: 'review', label: '复习' },
@@ -76,8 +80,8 @@ export default function Words() {
     { key: 'stats', label: '统计' },
   ]
 
-  if (!started) {
-    return <WordsIntro onStart={() => setStarted(true)} />
+  if (!isPractice) {
+    return <WordsIntro onStart={() => navigate('/english/words/practice')} />
   }
 
   return (

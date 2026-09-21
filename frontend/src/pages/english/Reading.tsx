@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { getErrorMessage } from '../../api/client'
 import {
@@ -125,11 +125,13 @@ export function ReadingContent() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  // 详情视图由 URL 的 articleId 参数驱动（列表 → 详情计入浏览器历史）
-  const articleIdParam = searchParams.get('articleId')
-  // 介绍页 / 文章列表由 URL 的 view 参数驱动（介绍 → 列表计入浏览器历史，返回键可回退）
-  const view: 'intro' | 'list' = searchParams.get('view') === 'list' ? 'list' : 'intro'
+  // 剩余路径段：'' = 介绍页，'list' = 文章列表，数字 = 文章详情
+  const { '*': rest = '' } = useParams()
+  const articleId = rest && rest !== 'list' ? Number(rest) : NaN
+  // 是否处于详情模式（URL 含合法 articleId）
+  const isDetail = Number.isInteger(articleId) && articleId > 0
+  // 介绍页 / 文章列表由 URL 路径驱动（介绍 → 列表计入浏览器历史，返回键可回退）
+  const view: 'intro' | 'list' = rest === 'list' ? 'list' : 'intro'
 
   // 列表视图
   const [articles, setArticles] = useState<ReadingArticleListItem[]>([])
@@ -279,9 +281,9 @@ export function ReadingContent() {
     }
   }
 
-  /** 打开文章详情：写入 URL 查询参数，浏览器历史记录「列表 → 详情」 */
+  /** 打开文章详情：写入 URL 路径，浏览器历史记录「列表 → 详情」 */
   const openArticle = (id: number) => {
-    navigate(`/english/reading?articleId=${id}`)
+    navigate(`/english/reading/${id}`)
   }
 
   // 首次进入加载列表
@@ -290,11 +292,10 @@ export function ReadingContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 根据 URL 的 articleId 加载详情 / 回到列表（含浏览器前进后退）
+  // 根据 URL 路径中的 articleId 加载详情 / 回到列表（含浏览器前进后退）
   useEffect(() => {
-    const id = articleIdParam ? Number(articleIdParam) : NaN
-    if (Number.isInteger(id) && id > 0) {
-      void loadArticle(id)
+    if (Number.isInteger(articleId) && articleId > 0) {
+      void loadArticle(articleId)
     } else {
       setArticle(null)
       setSelection(null)
@@ -304,7 +305,7 @@ export function ReadingContent() {
       setQuizMode(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [articleIdParam])
+  }, [articleId])
 
   // 点击文档空白处关闭选中工具栏
   useEffect(() => {
@@ -477,7 +478,7 @@ export function ReadingContent() {
   ) : null
 
   // ---------- 介绍页 ----------
-  if (!article && view === 'intro') {
+  if (!isDetail && view === 'intro') {
     return (
       <div className="reading-intro">
         <h2 className="english-content-title">外刊精读</h2>
@@ -513,7 +514,7 @@ export function ReadingContent() {
 
         <button
           className="english-start-btn"
-          onClick={() => navigate('/english/reading?view=list')}
+          onClick={() => navigate('/english/reading/list')}
         >
           开始阅读
         </button>
@@ -525,7 +526,7 @@ export function ReadingContent() {
   }
 
   // ---------- 列表视图 ----------
-  if (!article) {
+  if (!isDetail) {
     return (
       <div className="reading-container">
         <header className="reading-header">
@@ -630,7 +631,7 @@ export function ReadingContent() {
   }
 
   // ---------- 详情视图 ----------
-  if (detailLoading) {
+  if (detailLoading || !article) {
     return <div className="reading-loading">加载中...</div>
   }
 
