@@ -5,6 +5,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../api/client'
 import {
   createConversation,
@@ -94,6 +95,8 @@ function formatRelativeTime(iso: string): string {
 
 /** 英语口语练习：AI 对话 + 翻译 + 辅助功能 三栏布局 */
 export default function Speaking() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [currentId, setCurrentId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([
@@ -106,8 +109,6 @@ export default function Speaking() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [historyOpen, setHistoryOpen] = useState(true)
-  // 是否已跳过介绍页进入三栏对话界面
-  const [started, setStarted] = useState(false)
 
   // TTS 语音朗读相关状态
   const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null)
@@ -393,9 +394,10 @@ export default function Speaking() {
   // 翻译列展示的消息（排除 system 提示）
   const translationMessages = messages.filter((m) => m.role !== 'system')
 
-  // 介绍页：开始练习前先展示学习方法与使用说明
-  if (!started) {
-    return <SpeakingIntro onStart={() => setStarted(true)} />
+  // 是否已进入三栏对话主界面（/english/speaking/practice）；否则展示介绍页
+  const isPractice = location.pathname === '/english/speaking/practice'
+  if (!isPractice) {
+    return <SpeakingIntro onStart={() => navigate('/english/speaking/practice')} />
   }
 
   return (

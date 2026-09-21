@@ -62,9 +62,9 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/english/words" replace />} />
-          <Route path="words" element={<Words />} />
-          <Route path="speaking" element={<Speaking />} />
-          <Route path="reading" element={<ReadingContent />} />
+          <Route path="words/*" element={<Words />} />
+          <Route path="speaking/*" element={<Speaking />} />
+          <Route path="reading/*" element={<ReadingContent />} />
           <Route path="stats" element={<StatsContent />} />
         </Route>
         <Route

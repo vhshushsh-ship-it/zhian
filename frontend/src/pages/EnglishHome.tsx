@@ -26,9 +26,10 @@ export default function EnglishHome() {
   const { user, logout } = useAuth()
   const location = useLocation()
 
-  // 单词 / 口语是应用式满高布局，内容区需去掉内边距、自身滚动
+  // 单词 / 口语是应用式满高布局（含介绍页与主界面），内容区需去掉内边距、自身滚动
   const isFullBleed =
-    location.pathname === '/english/words' || location.pathname === '/english/speaking'
+    location.pathname.startsWith('/english/words') ||
+    location.pathname.startsWith('/english/speaking')
 
   return (
     <div className="english-page">
