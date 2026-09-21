@@ -31,6 +31,13 @@ export default function EnglishHome() {
     location.pathname.startsWith('/english/words') ||
     location.pathname.startsWith('/english/speaking')
 
+  // 全屏页面：隐藏左侧导航，内容占满整个屏幕宽度（主界面 / 文章列表 / 文章详情）
+  const hideSidebar =
+    location.pathname === '/english/words/practice' ||
+    location.pathname === '/english/speaking/practice' ||
+    location.pathname === '/english/reading/list' ||
+    /^\/english\/reading\/\d+$/.test(location.pathname)
+
   return (
     <div className="english-page">
       <Navbar
@@ -46,31 +53,33 @@ export default function EnglishHome() {
       />
 
       <div className="english-layout">
-        {/* 左侧导航 */}
-        <aside className="english-sidebar">
-          <div className="english-sidebar-title">
-            <h1>英语</h1>
-            <p>English Learning</p>
-            <span className="english-sidebar-accent" aria-hidden="true" />
-          </div>
+        {/* 左侧导航（全屏页面隐藏） */}
+        {!hideSidebar && (
+          <aside className="english-sidebar">
+            <div className="english-sidebar-title">
+              <h1>英语</h1>
+              <p>English Learning</p>
+              <span className="english-sidebar-accent" aria-hidden="true" />
+            </div>
 
-          <nav className="english-menu">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? 'english-menu-item english-menu-item-active'
-                    : 'english-menu-item'
-                }
-              >
-                <span className="english-menu-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
-        </aside>
+            <nav className="english-menu">
+              {NAV_ITEMS.map((item) => (
+                <NavLink
+                  key={item.id}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'english-menu-item english-menu-item-active'
+                      : 'english-menu-item'
+                  }
+                >
+                  <span className="english-menu-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          </aside>
+        )}
 
         {/* 右侧内容 */}
         <main
