@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     # 演示模式：比赛展示期间免登录访问（true 时自动使用演示用户 demo@zhian.com）
     demo_mode: bool = False
 
+    # 比赛期间跳过科目选择页（/dashboard），点「使用网页版」直接进入英语学习页
+    skip_dashboard: bool = False
+
     # CORS（逗号分隔的允许来源）
     backend_cors_origins: str = "http://localhost:5173"
 

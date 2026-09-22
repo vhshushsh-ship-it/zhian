@@ -31,5 +31,5 @@ def health():
 
 @app.get("/api/config")
 def get_config():
-    """前端启动时拉取：返回演示模式开关（无需登录）。"""
-    return {"demo_mode": settings.demo_mode}
+    """前端启动时拉取：返回演示模式与跳过科目选择页开关（无需登录）。"""
+    return {"demo_mode": settings.demo_mode, "skip_dashboard": settings.skip_dashboard}
