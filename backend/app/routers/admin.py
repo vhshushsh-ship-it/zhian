@@ -5,6 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..demo import clear_demo_data, seed_demo_data
 from ..deps import get_current_admin
 from ..models import User
 from ..schemas import (
@@ -115,3 +116,14 @@ def unban_user(
     user.banned_until = None
     db.commit()
     return {"message": "解封成功"}
+
+
+@router.post("/reset-demo-data")
+def reset_demo_data(
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """重置演示数据：清空演示用户全部学习数据后重新预置。"""
+    clear_demo_data(db)
+    seed_demo_data(db)
+    return {"message": "演示数据已重置"}

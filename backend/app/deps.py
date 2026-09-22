@@ -4,7 +4,9 @@ from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from .config import settings
 from .database import get_db
+from .demo import get_or_create_demo_user
 from .models import User
 from .security import decode_access_token
 
@@ -51,12 +53,19 @@ def _authenticate(token: str | None, db: Session) -> User:
     return user
 
 
+def _resolve_current_user(token: str | None, db: Session) -> User:
+    """解析当前用户：演示模式下直接返回演示用户，否则走 JWT 校验。"""
+    if settings.demo_mode:
+        return get_or_create_demo_user(db)
+    return _authenticate(token, db)
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     """从 Authorization 请求头解析当前用户（常规接口）。"""
-    return _authenticate(credentials.credentials if credentials else None, db)
+    return _resolve_current_user(credentials.credentials if credentials else None, db)
 
 
 def get_current_user_from_query(
@@ -64,13 +73,17 @@ def get_current_user_from_query(
     db: Session = Depends(get_db),
 ) -> User:
     """从 query 参数 token 解析当前用户（用于 <audio>/<img> 等无法携带请求头的场景）。"""
-    return _authenticate(token, db)
+    return _resolve_current_user(token, db)
 
 
-def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
-    """管理员权限依赖：非管理员返回 403。"""
-    if current_user.role != "admin":
+def get_current_admin(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    """管理员权限依赖：始终校验真实管理员 token（演示模式不旁路），非管理员返回 403。"""
+    user = _authenticate(credentials.credentials if credentials else None, db)
+    if user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="需要管理员权限"
         )
-    return current_user
+    return user

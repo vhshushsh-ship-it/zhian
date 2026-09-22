@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
 
+    # 演示模式：比赛展示期间免登录访问（true 时自动使用演示用户 demo@zhian.com）
+    demo_mode: bool = False
+
     # CORS（逗号分隔的允许来源）
     backend_cors_origins: str = "http://localhost:5173"
 

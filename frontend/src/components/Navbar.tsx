@@ -16,7 +16,7 @@ interface NavbarProps {
  * 「管理后台」菜单仅管理员可见。
  */
 export default function Navbar({ active, trailing }: NavbarProps) {
-  const { user } = useAuth()
+  const { user, demoMode } = useAuth()
   const navigate = useNavigate()
 
   /** 返回浏览器上一页；无历史记录时回退到学习首页 */
@@ -65,7 +65,7 @@ export default function Navbar({ active, trailing }: NavbarProps) {
             管理后台
           </Link>
         )}
-        {trailing}
+        {demoMode ? <span className="navbar-demo-tag">演示模式</span> : trailing}
       </div>
     </header>
   )
