@@ -1,10 +1,15 @@
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 import './Welcome.css'
 
 export default function Welcome() {
   const navigate = useNavigate()
+  const { demoMode } = useAuth()
+
+  // 演示模式下「使用网页版」直接进入学习首页，跳过登录
+  const entry = demoMode ? '/dashboard' : '/login'
 
   return (
     <div className="welcome">
@@ -22,7 +27,7 @@ export default function Welcome() {
         <div className="welcome-left">
           <h1 className="welcome-title">知岸</h1>
           <p className="welcome-subtitle">AI 加持，让每一次学习都更加高效</p>
-          <button className="welcome-cta" onClick={() => navigate('/login')}>
+          <button className="welcome-cta" onClick={() => navigate(entry)}>
             使用网页版
           </button>
         </div>

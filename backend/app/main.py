@@ -27,3 +27,9 @@ app.include_router(words.router, prefix="/api")
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+def get_config():
+    """前端启动时拉取：返回演示模式开关（无需登录）。"""
+    return {"demo_mode": settings.demo_mode}

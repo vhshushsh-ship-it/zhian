@@ -15,8 +15,10 @@ import { StatsContent } from './pages/english/Stats'
 import Words from './pages/english/Words'
 
 function Protected({ children }: { children: ReactElement }) {
-  const { user, loading } = useAuth()
+  const { user, loading, demoMode } = useAuth()
   if (loading) return <div className="center">加载中…</div>
+  // 演示模式：免登录直接放行
+  if (demoMode) return children
   if (!user) return <Navigate to="/login" replace />
   return children
 }
