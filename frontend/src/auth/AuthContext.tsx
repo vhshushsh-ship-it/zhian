@@ -8,6 +8,7 @@ interface AuthContextValue {
   user: User | null
   loading: boolean
   demoMode: boolean
+  skipDashboard: boolean
   login: (email: string, password: string) => Promise<void>
   register: (
     email: string,
@@ -24,20 +25,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
   const [demoMode, setDemoMode] = useState(false)
+  const [skipDashboard, setSkipDashboard] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // 应用启动时：先拉取演示模式开关，再按需加载当前用户信息
   useEffect(() => {
     ;(async () => {
-      // 1. 拉取演示模式开关（无需登录）
+      // 1. 拉取演示模式与跳过科目选择页开关（无需登录）
       let demo = false
+      let skipDashboard = false
       try {
-        const cfg = await api.get<{ demo_mode: boolean }>('/config')
+        const cfg = await api.get<{ demo_mode: boolean; skip_dashboard: boolean }>('/config')
         demo = !!cfg.data.demo_mode
+        skipDashboard = !!cfg.data.skip_dashboard
       } catch {
         demo = false
+        skipDashboard = false
       }
       setDemoMode(demo)
+      setSkipDashboard(skipDashboard)
 
       if (demo) {
         // 演示模式：免登录，清掉可能残留的 token（后端自动识别演示用户）
@@ -86,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, demoMode, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, demoMode, skipDashboard, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

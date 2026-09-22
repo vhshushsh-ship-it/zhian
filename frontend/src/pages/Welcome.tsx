@@ -6,10 +6,11 @@ import './Welcome.css'
 
 export default function Welcome() {
   const navigate = useNavigate()
-  const { demoMode } = useAuth()
+  const { demoMode, skipDashboard } = useAuth()
 
-  // 演示模式下「使用网页版」直接进入学习首页，跳过登录
-  const entry = demoMode ? '/dashboard' : '/login'
+  // 比赛期间跳过科目选择页：直接进入英语学习页；
+  // 否则演示模式进学习首页，正常模式跳登录
+  const entry = skipDashboard ? '/english' : demoMode ? '/dashboard' : '/login'
 
   return (
     <div className="welcome">

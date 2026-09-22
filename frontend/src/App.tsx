@@ -23,6 +23,13 @@ function Protected({ children }: { children: ReactElement }) {
   return children
 }
 
+/** 比赛期间跳过科目选择页：访问 /dashboard 时重定向到英语学习页 */
+function DashboardGate({ children }: { children: ReactElement }) {
+  const { skipDashboard } = useAuth()
+  if (skipDashboard) return <Navigate to="/english" replace />
+  return children
+}
+
 /** 仅管理员可访问的路由 */
 function AdminRoute({ children }: { children: ReactElement }) {
   const { user, loading } = useAuth()
@@ -43,7 +50,9 @@ export default function App() {
           path="/dashboard"
           element={
             <Protected>
-              <Dashboard />
+              <DashboardGate>
+                <Dashboard />
+              </DashboardGate>
             </Protected>
           }
         />
