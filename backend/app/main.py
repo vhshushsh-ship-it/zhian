@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import admin, ai_tutor, auth, english_speaking, reading, stats, tts, words
+from .routers import admin, ai_tutor, asr, auth, english_speaking, reading, stats, tts, words
 
 app = FastAPI(title="zhian API")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(ai_tutor.router, prefix="/api")
+app.include_router(asr.router, prefix="/api")
 app.include_router(english_speaking.router, prefix="/api")
 app.include_router(reading.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")

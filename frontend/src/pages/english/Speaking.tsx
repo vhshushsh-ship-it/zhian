@@ -19,6 +19,7 @@ import {
   type SpeakingSuggestion,
   type Topic,
 } from '../../api/english'
+import { recognizeAudio } from '../../api/asr'
 import './Speaking.css'
 
 /** 页面内的一条消息（system 用于本地提示，不带翻译、不入库） */
@@ -110,6 +111,16 @@ export default function Speaking() {
   const [error, setError] = useState('')
   const [historyOpen, setHistoryOpen] = useState(true)
 
+  // 语音输入（ASR）相关状态
+  const [recording, setRecording] = useState(false)
+  const [recognizing, setRecognizing] = useState(false)
+  const [micSupported] = useState(
+    () =>
+      typeof navigator !== 'undefined' &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== 'undefined',
+  )
+
   // TTS 语音朗读相关状态
   const [currentPlayingId, setCurrentPlayingId] = useState<number | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -128,6 +139,8 @@ export default function Speaking() {
   const initializedRef = useRef(false)
   // 全局 Audio 对象（复用一个实例，切换 src 即停止上一段播放）
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  // 语音输入：MediaRecorder 实例（用于「再次点击停止录音」）
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -355,6 +368,69 @@ export default function Speaking() {
     setInput(s.en)
   }
 
+  /** 上传音频到后端转写，识别文字回填输入框 */
+  const transcribe = async (blob: Blob) => {
+    setRecognizing(true)
+    try {
+      const { text } = await recognizeAudio(blob)
+      if (text) {
+        setInput((prev) => {
+          const sep = prev && !prev.endsWith(' ') ? ' ' : ''
+          return prev + sep + text
+        })
+      } else {
+        setError('未识别到内容，请重试')
+      }
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setRecognizing(false)
+    }
+  }
+
+  /** 点击麦克风：开始 / 停止录音，停止后自动转写 */
+  const handleMicClick = async () => {
+    if (recognizing) return
+
+    // 正在录音 → 停止（停止后 onstop 里触发转写）
+    if (recording) {
+      mediaRecorderRef.current?.stop()
+      return
+    }
+
+    if (!micSupported) return
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : ''
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream)
+      const chunks: Blob[] = []
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data)
+      }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop())
+        setRecording(false)
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })
+        if (blob.size === 0) {
+          setError('未录到声音，请重试')
+          return
+        }
+        await transcribe(blob)
+      }
+
+      recorder.start()
+      mediaRecorderRef.current = recorder
+      setRecording(true)
+      setError('')
+    } catch {
+      setError('无法访问麦克风，请检查浏览器权限')
+    }
+  }
+
   /** 切换自动朗读开关并持久化到 localStorage */
   const handleToggleAutoPlay = () => {
     setAutoPlay((prev) => {
@@ -494,13 +570,35 @@ export default function Speaking() {
                 placeholder="用英语输入你想说的话..."
               />
               {error && <p className="speaking-error">{error}</p>}
-              <button
-                className="speaking-send-btn"
-                onClick={handleSend}
-                disabled={sending || currentId == null}
-              >
-                {sending ? '发送中...' : '发送'}
-              </button>
+              <div className="speaking-input-actions">
+                {recording && <span className="speaking-recording-hint">正在说话...</span>}
+                <button
+                  className={
+                    recording
+                      ? 'speaking-mic-btn speaking-mic-btn-recording'
+                      : 'speaking-mic-btn'
+                  }
+                  onClick={handleMicClick}
+                  disabled={!micSupported || recognizing}
+                  title={
+                    !micSupported
+                      ? '当前浏览器不支持录音'
+                      : recording
+                        ? '停止录音'
+                        : '语音输入'
+                  }
+                  aria-label={recording ? '停止录音' : '语音输入'}
+                >
+                  {recognizing ? <span className="speaking-mic-spinner" /> : '🎤'}
+                </button>
+                <button
+                  className="speaking-send-btn"
+                  onClick={handleSend}
+                  disabled={sending || currentId == null}
+                >
+                  {sending ? '发送中...' : '发送'}
+                </button>
+              </div>
             </div>
           </section>
 
