@@ -29,8 +29,11 @@ from ..schemas import (
     CreateConversationRequest,
     SendMessageRequest,
     SendMessageResponse,
+    ScoreErrorItem,
     SpeakingChatRequest,
     SpeakingChatResponse,
+    SpeakingScoreRequest,
+    SpeakingScoreResponse,
     SpeakingSuggestion,
 )
 
@@ -297,3 +300,92 @@ def chat(
 
     content = call_deepseek(messages)
     return parse_response(content)
+
+
+# ---------- 口语评分（不持久化，实时计算） ----------
+
+# 三项分数满分：语法 40 / 用词 30 / 流利度 30
+SCORE_MAX = {"grammar": 40, "vocab": 30, "fluency": 30}
+
+
+def build_score_prompt(sentence: str, context: str) -> str:
+    """构建评分系统提示词：扮演英语老师，对用户句子打分并给中文分析。"""
+    return (
+        "你是一名严格的英语口语老师，请对学生的英语句子打分，并用中文给出分析。\n\n"
+        f"对话上下文：{context or '无'}\n"
+        f"学生句子：{sentence}\n\n"
+        "评分要求：\n"
+        "1. grammar 满分 40 分，考察时态、主谓一致、大小写、标点、句式完整度。\n"
+        "2. vocab 满分 30 分，考察词汇丰富度、搭配是否地道。\n"
+        "3. fluency 满分 30 分，考察是否像母语者表达、是否过于中式英语。\n"
+        "4. total 必须等于 grammar + vocab + fluency 三项之和。\n"
+        "5. errors 列出句子中的具体错误，用中文写错误类型、原句、问题说明和修改建议；"
+        "如果句子没有错误，errors 返回空数组。\n"
+        "6. suggestion 用中文给出整体优化建议。\n\n"
+        "你必须只输出一个 JSON 对象，不要输出任何多余文字或代码块标记，格式如下：\n"
+        '{"total": 85, "grammar": 28, "vocab": 27, "fluency": 30, '
+        '"errors": [{"type": "语法", "original": "hello", "issue": "句首未大写，且过于简短", '
+        '"fix": "Hello!"}], '
+        '"suggestion": "可以回答得更完整：I\'m doing great, thanks for asking!"}'
+    )
+
+
+def _clamp_score(value, max_val: int) -> int:
+    """把模型返回的分值安全转成 0..max_val 内的整数，异常时给 0。"""
+    try:
+        n = int(float(value))
+    except (TypeError, ValueError):
+        n = 0
+    return max(0, min(n, max_val))
+
+
+def parse_score_response(content: str) -> SpeakingScoreResponse:
+    """解析评分 JSON；总分由三项之和重算，保证一致。"""
+    try:
+        data = json.loads(content)
+    except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AI 评分失败",
+        )
+
+    grammar = _clamp_score(data.get("grammar"), SCORE_MAX["grammar"])
+    vocab = _clamp_score(data.get("vocab"), SCORE_MAX["vocab"])
+    fluency = _clamp_score(data.get("fluency"), SCORE_MAX["fluency"])
+
+    errors: list[ScoreErrorItem] = []
+    raw_errors = data.get("errors")
+    if isinstance(raw_errors, list):
+        for e in raw_errors:
+            if isinstance(e, dict):
+                errors.append(
+                    ScoreErrorItem(
+                        type=str(e.get("type") or "语法").strip(),
+                        original=str(e.get("original") or "").strip(),
+                        issue=str(e.get("issue") or "").strip(),
+                        fix=str(e.get("fix") or "").strip(),
+                    )
+                )
+
+    return SpeakingScoreResponse(
+        total=grammar + vocab + fluency,
+        grammar=grammar,
+        vocab=vocab,
+        fluency=fluency,
+        errors=errors,
+        suggestion=str(data.get("suggestion") or "").strip(),
+    )
+
+
+@router.post("/score", response_model=SpeakingScoreResponse)
+def score_sentence(
+    payload: SpeakingScoreRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """对用户的一句英语打分（语法/用词/流利度），不持久化。"""
+    messages = [
+        {"role": "system", "content": build_score_prompt(payload.sentence, payload.context)},
+        {"role": "user", "content": payload.sentence},
+    ]
+    content = call_deepseek(messages)
+    return parse_score_response(content)

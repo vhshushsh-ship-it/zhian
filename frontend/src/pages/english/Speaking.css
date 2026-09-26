@@ -664,6 +664,145 @@
   color: #999;
 }
 
+/* ---------- 右栏：AI 评分 ---------- */
+
+.speaking-score-placeholder {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+.speaking-score-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.speaking-score-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.speaking-score-total-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.speaking-score-total-unit {
+  margin-left: 4px;
+  font-size: 14px;
+  color: #666;
+}
+
+.speaking-score-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.speaking-score-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.speaking-score-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.speaking-score-bar-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.speaking-score-bar-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+
+.speaking-score-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.speaking-score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #e60012;
+  transition: width 0.4s ease;
+}
+
+.speaking-score-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.speaking-score-error-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.speaking-score-error-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e60012;
+  color: #fff;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.speaking-score-error-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.speaking-score-error-original {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.speaking-score-error-arrow {
+  color: #999;
+}
+
+.speaking-score-error-fix {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.speaking-score-error-issue {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.speaking-score-suggestion {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+}
+
 /* ---------- 细滚动条 ---------- */
 
 .speaking-chat-list::-webkit-scrollbar,
