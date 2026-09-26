@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from ..config import settings
 from ..database import get_db
 from ..deps import get_current_user
-from ..models import SpeakingConversation, SpeakingMessage, User
+from ..models import SpeakingConversation, SpeakingMessage, SpeakingScore, User
 from ..stats_service import update_daily_stats
 from ..schemas import (
     ConversationDetail,
@@ -302,7 +302,7 @@ def chat(
     return parse_response(content)
 
 
-# ---------- 口语评分（不持久化，实时计算） ----------
+# ---------- 口语评分（实时计算 + 持久化） ----------
 
 # 三项分数满分：语法 40 / 用词 30 / 流利度 30
 SCORE_MAX = {"grammar": 40, "vocab": 30, "fluency": 30}
@@ -380,12 +380,33 @@ def parse_score_response(content: str) -> SpeakingScoreResponse:
 @router.post("/score", response_model=SpeakingScoreResponse)
 def score_sentence(
     payload: SpeakingScoreRequest,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """对用户的一句英语打分（语法/用词/流利度），不持久化。"""
+    """对用户的一句英语打分（语法/用词/流利度），并将结果持久化到 speaking_scores。"""
     messages = [
         {"role": "system", "content": build_score_prompt(payload.sentence, payload.context)},
         {"role": "user", "content": payload.sentence},
     ]
     content = call_deepseek(messages)
-    return parse_score_response(content)
+    parsed = parse_score_response(content)
+
+    # 持久化评分结果，供 AI 导师查看评分历史与进步趋势
+    score = SpeakingScore(
+        user_id=current_user.id,
+        conversation_id=None,
+        message_id=None,
+        sentence=payload.sentence,
+        total=parsed.total,
+        grammar=parsed.grammar,
+        vocab=parsed.vocab,
+        fluency=parsed.fluency,
+        errors_json=json.dumps(
+            [e.model_dump() for e in parsed.errors], ensure_ascii=False
+        ),
+        suggestion=parsed.suggestion,
+    )
+    db.add(score)
+    db.commit()
+
+    return parsed

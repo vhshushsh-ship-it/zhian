@@ -100,6 +100,42 @@ class SpeakingMessage(Base):
     )
 
 
+class SpeakingScore(Base):
+    """口语评分记录：AI 评分结果持久化，供 AI 导师查看评分历史与进步趋势。"""
+
+    __tablename__ = "speaking_scores"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 所属对话 / 消息：评分可从对话页发起，也可独立发起，故均可空
+    conversation_id: Mapped[int | None] = mapped_column(
+        ForeignKey("speaking_conversations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    message_id: Mapped[int | None] = mapped_column(
+        ForeignKey("speaking_messages.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    # 用户原句
+    sentence: Mapped[str] = mapped_column(Text, nullable=False)
+    # 总分 = grammar + vocab + fluency
+    total: Mapped[int] = mapped_column(Integer, nullable=False)
+    grammar: Mapped[int] = mapped_column(Integer, nullable=False)
+    vocab: Mapped[int] = mapped_column(Integer, nullable=False)
+    fluency: Mapped[int] = mapped_column(Integer, nullable=False)
+    # 错误列表（JSON 字符串）
+    errors_json: Mapped[str] = mapped_column(Text, default="[]", nullable=False)
+    # 整体优化建议
+    suggestion: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+
 class Word(Base):
     """词库单词：公共数据，所有用户共享。一个词可有多条释义与例句。"""
 
