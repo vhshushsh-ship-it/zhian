@@ -39,7 +39,13 @@ rm -rf /var/www/zhian/dist
 cp -r dist /var/www/zhian/
 
 echo "=== 6. 更新 Nginx 配置 ==="
-cp "$PROJECT_DIR/nginx/nginx.conf" /etc/nginx/conf.d/zhian.conf
+NGINX_CONF="/etc/nginx/conf.d/zhian.conf"
+if [ -f "$NGINX_CONF" ]; then
+    echo "    已存在 $NGINX_CONF，跳过复制（保留 certbot 配置的 SSL，避免覆盖）"
+else
+    echo "    首次部署，复制 Nginx 配置模板"
+    cp "$PROJECT_DIR/nginx/nginx.conf" "$NGINX_CONF"
+fi
 nginx -t
 systemctl reload nginx
 
