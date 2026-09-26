@@ -9,6 +9,7 @@
 - 阅读摘要：查 reading_history / reading_articles（篇数、正确率）。
 """
 
+import json
 from datetime import date, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ from .models import (
     ReadingHistory,
     SpeakingConversation,
     SpeakingMessage,
+    SpeakingScore,
     User,
     UserWordProgress,
 )
@@ -42,11 +44,67 @@ LEVEL_LABELS = {
 ALL_TOPICS = list(TOPIC_LABELS.keys())
 
 
-def get_speaking_summary(db: Session, user_id: int) -> str:
-    """口语练习摘要：近 7 天对话次数、累计句子数、话题/难度覆盖。
+def _count_error_types(scores: list[SpeakingScore]) -> dict[str, int]:
+    """统计若干条评分里各类错误出现的次数（错误类型 → 次数）。"""
+    counts: dict[str, int] = {}
+    for s in scores:
+        try:
+            errors = json.loads(s.errors_json) if s.errors_json else []
+        except (json.JSONDecodeError, TypeError):
+            errors = []
+        for e in errors:
+            if isinstance(e, dict) and e.get("type"):
+                t = str(e["type"]).strip()
+                counts[t] = counts.get(t, 0) + 1
+    return counts
 
-    注意：当前口语评分接口（/english/speaking/score）不持久化，历史库中
-    没有评分与错误数据，故此处不统计平均分与常见错误，待评分落库后再补。
+
+def _build_score_text(scores: list[SpeakingScore]) -> str:
+    """把最近若干条评分拼成一句话：平均分 + 语法分趋势 + 常见错误。
+
+    scores 已按时间倒序（最新在前），最多 10 条。
+    """
+    if not scores:
+        return ""
+
+    n = len(scores)
+    avg_total = round(sum(s.total for s in scores) / n)
+    avg_grammar = round(sum(s.grammar for s in scores) / n)
+    avg_vocab = round(sum(s.vocab for s in scores) / n)
+    avg_fluency = round(sum(s.fluency for s in scores) / n)
+
+    text = (
+        f"最近{n}次评分平均{avg_total}分"
+        f"（语法{avg_grammar}/用词{avg_vocab}/流利{avg_fluency}）"
+    )
+
+    # 趋势：取最近 5 次（按时间正序比较最早与最新一次）
+    recent5 = list(reversed(scores[:5]))
+    if len(recent5) >= 2:
+        first = recent5[0].grammar
+        last = recent5[-1].grammar
+        diff = last - first
+        if diff >= 5:
+            text += f"，语法分从{first}升到{last}，进步明显"
+        elif diff <= -5:
+            text += f"，语法分从{first}降到{last}，需要加强"
+        else:
+            text += f"，语法分稳定在{last}左右"
+    text += "。"
+
+    # 常见错误：按出现次数降序，最多列 3 类
+    top = sorted(_count_error_types(scores).items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    if top:
+        text += "常见错误：" + "、".join(f"{t}({c}次)" for t, c in top) + "。"
+
+    return text
+
+
+def get_speaking_summary(db: Session, user_id: int) -> str:
+    """口语练习摘要：对话次数 / 话题覆盖 + 评分历史 / 趋势 / 常见错误。
+
+    评分数据来自 speaking_scores（/english/speaking/score 已持久化）。
+    无对话也无评分时返回「尚未开始」。
     """
     now = datetime.now()
     week_ago = now - timedelta(days=7)
@@ -57,41 +115,54 @@ def get_speaking_summary(db: Session, user_id: int) -> str:
         .order_by(SpeakingConversation.updated_at.desc())
         .all()
     )
-    if not convs:
+    scores = (
+        db.query(SpeakingScore)
+        .filter(SpeakingScore.user_id == user_id)
+        .order_by(SpeakingScore.created_at.desc(), SpeakingScore.id.desc())
+        .limit(10)
+        .all()
+    )
+
+    if not convs and not scores:
         return "口语练习：尚未开始"
 
-    convs_7d = sum(
-        1 for c in convs if c.updated_at is not None and c.updated_at >= week_ago
-    )
+    parts: list[str] = []
 
-    total_sentences = (
-        db.query(SpeakingMessage)
-        .join(
-            SpeakingConversation,
-            SpeakingConversation.id == SpeakingMessage.conversation_id,
+    if convs:
+        convs_7d = sum(
+            1 for c in convs if c.updated_at is not None and c.updated_at >= week_ago
         )
-        .filter(
-            SpeakingConversation.user_id == user_id,
-            SpeakingMessage.role == "user",
+
+        total_sentences = (
+            db.query(SpeakingMessage)
+            .join(
+                SpeakingConversation,
+                SpeakingConversation.id == SpeakingMessage.conversation_id,
+            )
+            .filter(
+                SpeakingConversation.user_id == user_id,
+                SpeakingMessage.role == "user",
+            )
+            .count()
         )
-        .count()
-    )
 
-    practiced = sorted({c.topic for c in convs if c.topic})
-    practiced_labels = "、".join(TOPIC_LABELS.get(t, t) for t in practiced)
-    missing = [TOPIC_LABELS.get(t, t) for t in ALL_TOPICS if t not in practiced]
+        practiced = sorted({c.topic for c in convs if c.topic})
+        practiced_labels = "、".join(TOPIC_LABELS.get(t, t) for t in practiced)
+        missing = [TOPIC_LABELS.get(t, t) for t in ALL_TOPICS if t not in practiced]
 
-    latest = convs[0]  # 已按 updated_at 倒序
-    latest_topic = TOPIC_LABELS.get(latest.topic, latest.topic)
-    latest_level = LEVEL_LABELS.get(latest.level, latest.level)
+        latest = convs[0]  # 已按 updated_at 倒序
+        latest_topic = TOPIC_LABELS.get(latest.topic, latest.topic)
+        latest_level = LEVEL_LABELS.get(latest.level, latest.level)
 
-    parts = [f"最近7天对话{convs_7d}次，累计说{total_sentences}句英语。"]
-    parts.append(f"练过话题：{practiced_labels or '无'}。")
-    if missing:
-        parts.append(f"还没练过：{'、'.join(missing)}。")
-    parts.append(f"最近一次是{latest_topic}（{latest_level}）。")
-    # 评分 / 错误数据尚未落库，避免 AI 臆造分数
-    parts.append("暂无评分与错误数据。")
+        parts.append(f"最近7天对话{convs_7d}次，累计说{total_sentences}句英语。")
+        parts.append(f"练过话题：{practiced_labels or '无'}。")
+        if missing:
+            parts.append(f"还没练过：{'、'.join(missing)}。")
+        parts.append(f"最近一次是{latest_topic}（{latest_level}）。")
+
+    score_text = _build_score_text(scores)
+    if score_text:
+        parts.append(score_text)
 
     return "口语练习：" + "".join(parts)
 
