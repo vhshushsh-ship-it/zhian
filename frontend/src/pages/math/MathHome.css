@@ -1,0 +1,195 @@
+/* 数学模块外壳：左侧导航 + 右侧内容布局，遵循知岸统一设计风格（与英语模块一致） */
+
+.math-page {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #f8f8f8;
+  padding-top: 64px;
+}
+
+/* 主体左右分栏 */
+.math-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ===== 左侧导航 ===== */
+.math-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* 学科标题区 */
+.math-sidebar-title {
+  padding: 20px 20px 20px;
+}
+
+.math-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #e60012;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.math-back:hover {
+  opacity: 0.75;
+}
+
+.math-sidebar-title h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.math-sidebar-title p {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #999;
+}
+
+.math-sidebar-accent {
+  display: block;
+  width: 32px;
+  height: 3px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+/* 功能菜单 */
+.math-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.math-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 48px;
+  padding: 0 20px;
+  background: transparent;
+  color: #333;
+  border: none;
+  border-radius: 0;
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.math-menu-item:hover {
+  opacity: 1;
+  background: #f5f5f5;
+}
+
+.math-menu-item-active {
+  color: #e60012;
+  background: #fef0f0;
+  font-weight: 600;
+}
+
+.math-menu-item-active:hover {
+  background: #fef0f0;
+}
+
+/* 选中项左侧红色竖条 */
+.math-menu-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #e60012;
+}
+
+.math-menu-icon {
+  font-size: 18px;
+}
+
+/* ===== 右侧内容 ===== */
+.math-content-area {
+  flex: 1;
+  min-width: 0;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+/* 内容容器（居中限宽） */
+.math-content {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* 标题区 */
+.math-content-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.math-content-accent {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-top: 12px;
+  background: #e60012;
+  border-radius: 2px;
+}
+
+.math-content-subtitle {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.math-content-header {
+  margin-bottom: 28px;
+}
+
+/* 响应式：移动端上下堆叠 */
+@media (max-width: 768px) {
+  .math-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .math-layout {
+    flex-direction: column;
+  }
+
+  .math-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .math-content-area {
+    padding: 24px 20px;
+    overflow: visible;
+  }
+}

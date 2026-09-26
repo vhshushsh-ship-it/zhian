@@ -1,0 +1,92 @@
+/* 例题精讲页 */
+
+.example-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* 题目公式 */
+.example-question {
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  background: #fafafa;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.example-question sub {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 解题步骤 */
+.example-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.example-step {
+  position: relative;
+  padding-left: 40px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* 步骤序号 */
+.example-step::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #fef0f0;
+  color: #e60012;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 答案 */
+.example-answer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: #fef0f0;
+  border-radius: 12px;
+}
+
+.example-answer-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e60012;
+}
+
+.example-answer-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #e60012;
+}
+
+/* 更新提示 */
+.example-note {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: #bbb;
+}
