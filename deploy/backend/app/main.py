@@ -1,0 +1,36 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .config import settings
+from .routers import admin, ai_tutor, asr, auth, english_speaking, reading, stats, tts, words
+
+app = FastAPI(title="zhian API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(ai_tutor.router, prefix="/api")
+app.include_router(asr.router, prefix="/api")
+app.include_router(english_speaking.router, prefix="/api")
+app.include_router(reading.router, prefix="/api")
+app.include_router(stats.router, prefix="/api")
+app.include_router(tts.router, prefix="/api")
+app.include_router(words.router, prefix="/api")
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/api/config")
+def get_config():
+    """前端启动时拉取：返回演示模式与跳过科目选择页开关（无需登录）。"""
+    return {"demo_mode": settings.demo_mode, "skip_dashboard": settings.skip_dashboard}

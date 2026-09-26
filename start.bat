@@ -1,25 +1,68 @@
 @echo off
-chcp 65001 >nul
-title zhian æœ¬åœ°å¼€å‘çŽ¯å¢ƒ
+chcp 936 >nul
+title zhian ±¾µØ¿ª·¢»·¾³
+setlocal
+
+rem ÏîÄ¿¸ùÄ¿Â¼£¨½Å±¾ËùÔÚÄ¿Â¼£¬%~dp0 ×Ô´øÎ²²¿·´Ð±¸Ü£©
+set "ROOT=%~dp0"
+set "BACKEND_DIR=%ROOT%deploy\backend"
+set "FRONTEND_DIR=%ROOT%frontend"
+set "TIMEOUT=%SystemRoot%\System32\timeout.exe"
+
 echo ========================================
-echo   zhian ä¸€é”®å¯åŠ¨æœ¬åœ°å¼€å‘çŽ¯å¢ƒ
-echo ========================================
-echo.
-
-echo [1/2] å¯åŠ¨åŽç«¯ FastAPI (ç«¯å£ 8000)...
-start "Backend - FastAPI" cmd /k "cd /d %~dp0backend && .venv\Scripts\activate && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
-
-timeout /t 2 /nobreak >nul
-
-echo [2/2] å¯åŠ¨å‰ç«¯ Vite (ç«¯å£ 5173)...
-start "Frontend - Vite" cmd /k "cd /d %~dp0frontend && npm run dev"
-
-echo.
-echo ========================================
-echo   å¯åŠ¨å®Œæˆï¼
-echo   åŽç«¯ API:  http://localhost:8000/docs
-echo   å‰ç«¯é¡µé¢:  http://localhost:5173
+echo   zhian Ò»¼üÆô¶¯±¾µØ¿ª·¢»·¾³
 echo ========================================
 echo.
-echo å…³é—­ä¸¤ä¸ªå¼¹çª—å³å¯åœæ­¢æœåŠ¡
+
+rem ---------- Æô¶¯Ç°¼ì²é ----------
+if not exist "%BACKEND_DIR%\app\main.py" (
+    echo [´íÎó] ÕÒ²»µ½ºó¶ËÈë¿Ú£º%BACKEND_DIR%\app\main.py
+    echo        ÇëÈ·ÈÏºó¶ËÄ¿Â¼½á¹¹ÊÇ·ñÎª deploy\backend\app\main.py
+    echo.
+    pause
+    exit /b 1
+)
+
+if not exist "%BACKEND_DIR%\.venv\Scripts\activate.bat" (
+    echo [´íÎó] ÕÒ²»µ½ÐéÄâ»·¾³£º%BACKEND_DIR%\.venv\Scripts\activate.bat
+    echo        ÇëÏÈÔÚ deploy\backend ÏÂ´´½¨ venv ²¢°²×°ÒÀÀµ£º
+    echo            python -m venv .venv
+    echo            .venv\Scripts\activate
+    echo            pip install -r requirements.txt
+    echo.
+    pause
+    exit /b 1
+)
+
+if not exist "%FRONTEND_DIR%\package.json" (
+    echo [´íÎó] ÕÒ²»µ½Ç°¶ËÄ¿Â¼£º%FRONTEND_DIR%\package.json
+    echo.
+    pause
+    exit /b 1
+)
+
+rem ---------- 1) ºó¶Ë FastAPI ----------
+echo [1/3] Æô¶¯ºó¶Ë FastAPI (¶Ë¿Ú 8000)...
+start "Backend - FastAPI" /d "%BACKEND_DIR%" cmd /k ".venv\Scripts\activate && uvicorn app.main:app --reload --port 8000"
+
+"%TIMEOUT%" /t 3 /nobreak >nul
+
+rem ---------- 2) Ç°¶Ë Vite ----------
+echo [2/3] Æô¶¯Ç°¶Ë Vite (¶Ë¿Ú 5173)...
+start "Frontend - Vite" /d "%FRONTEND_DIR%" cmd /k "npm run dev"
+
+rem ---------- 3) µÈÇ°¶Ë±àÒëÍê³Éºó´ò¿ªä¯ÀÀÆ÷ ----------
+echo [3/3] µÈ´ýÇ°¶Ë±àÒë£¬Ëæºó´ò¿ªä¯ÀÀÆ÷...
+"%TIMEOUT%" /t 8 /nobreak >nul
+start "" "http://localhost:5173"
+
+echo.
+echo ========================================
+echo   Æô¶¯Íê³É£¡
+echo   ºó¶Ë API:  http://localhost:8000/docs
+echo   Ç°¶ËÒ³Ãæ:  http://localhost:5173
+echo ========================================
+echo.
+echo Á½¸ö·þÎñ·Ö±ðÔÚ¶ÀÁ¢´°¿ÚÔËÐÐ£¬¹Ø±Õ¶ÔÓ¦´°¿Ú¼´¿ÉÍ£Ö¹·þÎñ
+echo.
 pause
