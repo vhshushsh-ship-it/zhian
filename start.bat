@@ -5,7 +5,7 @@ setlocal
 
 rem 项目根目录（脚本所在目录，%~dp0 自带尾部反斜杠）
 set "ROOT=%~dp0"
-set "BACKEND_DIR=%ROOT%deploy\backend"
+set "BACKEND_DIR=%ROOT%backend"
 set "FRONTEND_DIR=%ROOT%frontend"
 set "TIMEOUT=%SystemRoot%\System32\timeout.exe"
 
@@ -17,7 +17,7 @@ echo.
 rem ---------- 启动前检查 ----------
 if not exist "%BACKEND_DIR%\app\main.py" (
     echo [错误] 找不到后端入口：%BACKEND_DIR%\app\main.py
-    echo        请确认后端目录结构是否为 deploy\backend\app\main.py
+    echo        请确认后端目录结构是否为 backend\app\main.py
     echo.
     pause
     exit /b 1
@@ -25,7 +25,7 @@ if not exist "%BACKEND_DIR%\app\main.py" (
 
 if not exist "%BACKEND_DIR%\.venv\Scripts\activate.bat" (
     echo [错误] 找不到虚拟环境：%BACKEND_DIR%\.venv\Scripts\activate.bat
-    echo        请先在 deploy\backend 下创建 venv 并安装依赖：
+    echo        请先在 backend 下创建 venv 并安装依赖：
     echo            python -m venv .venv
     echo            .venv\Scripts\activate
     echo            pip install -r requirements.txt

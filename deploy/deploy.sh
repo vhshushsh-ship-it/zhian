@@ -3,13 +3,13 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND_DIR="$PROJECT_DIR/deploy/backend"
+BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 SERVICE_NAME="zhian"
 
 cd "$PROJECT_DIR"
 
-# 检查 .env 是否存在（在 deploy/backend 目录下）
+# 检查 .env 是否存在（在 backend 目录下）
 if [ ! -f "$BACKEND_DIR/.env" ]; then
     echo "错误：$BACKEND_DIR/.env 不存在，请先 cp .env.example .env 并配置"
     exit 1
