@@ -8,9 +8,9 @@ export default function Welcome() {
   const navigate = useNavigate()
   const { demoMode, skipDashboard } = useAuth()
 
-  // 比赛期间跳过科目选择页：直接进入英语学习页；
-  // 否则演示模式进学习首页，正常模式跳登录
-  const entry = skipDashboard ? '/english' : demoMode ? '/dashboard' : '/login'
+  // 演示模式 / 比赛期间跳过科目选择页：直接进入英语学习页；
+  // 否则正常模式跳登录
+  const entry = demoMode || skipDashboard ? '/english' : '/login'
 
   return (
     <div className="welcome">

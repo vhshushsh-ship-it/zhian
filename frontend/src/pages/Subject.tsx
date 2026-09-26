@@ -50,7 +50,7 @@ export default function Subject() {
             <span className="subject-cone-stripe" />
             <div className="subject-cone-base" />
           </div>
-          <p className="subject-placeholder-title">功能建设中，敬请期待</p>
+          <p className="subject-placeholder-title">即将上线</p>
           <p className="subject-placeholder-sub">
             AI 学习功能正在紧张开发中，稍后再来看看吧
           </p>
