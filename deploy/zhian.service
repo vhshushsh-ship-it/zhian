@@ -6,8 +6,8 @@ After=network.target mysql.service
 Type=simple
 User=root
 Group=root
-WorkingDirectory=/opt/zhian/deploy/backend
-ExecStart=/opt/zhian/deploy/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/opt/zhian/backend
+ExecStart=/opt/zhian/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=3
 
