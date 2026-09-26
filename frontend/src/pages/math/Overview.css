@@ -1,0 +1,82 @@
+/* 数学概览：三章入口卡片（风格与 Dashboard 学科卡片一致） */
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.chapter-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chapter-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 图标：彩色圆形徽章 */
+.chapter-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  font-size: 30px;
+}
+
+.chapter-icon-red {
+  background: #e60012;
+}
+
+.chapter-icon-yellow {
+  background: #ffc107;
+}
+
+.chapter-icon-blue {
+  background: #4f8cff;
+}
+
+/* 章节标签 */
+.chapter-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+}
+
+.chapter-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}

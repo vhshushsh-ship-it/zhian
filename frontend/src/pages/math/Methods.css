@@ -1,0 +1,86 @@
+/* 题型方法页 */
+
+.methods-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.methods-card-title {
+  position: relative;
+  margin: 0 0 24px;
+  padding-left: 14px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.methods-card-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e60012;
+}
+
+/* 步骤列表 */
+.methods-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.methods-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.methods-step-num {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 2px;
+  background: #fef0f0;
+  color: #e60012;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.methods-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.methods-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.methods-step-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* 更新提示 */
+.methods-note {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: #bbb;
+}
