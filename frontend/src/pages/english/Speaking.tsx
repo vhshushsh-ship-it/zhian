@@ -13,9 +13,11 @@ import {
   getConversation,
   getConversations,
   getTtsUrl,
+  scoreSentence,
   sendMessage,
   type ConversationSummary,
   type Level,
+  type SpeakingScoreResponse,
   type SpeakingSuggestion,
   type Topic,
 } from '../../api/english'
@@ -94,6 +96,36 @@ function formatRelativeTime(iso: string): string {
   return `${d.getMonth() + 1}月${d.getDate()}日`
 }
 
+/** 根据总分返回颜色：90+ 绿色，70-89 橙色，<70 红色（知岸红） */
+function scoreColor(total: number): string {
+  if (total >= 90) return '#16a34a'
+  if (total >= 70) return '#f59e0b'
+  return '#e60012'
+}
+
+/** 构建评分上下文：话题难度 + AI 最近一句（若有） */
+function buildScoreContext(topic: Topic, level: Level, messages: Message[]): string {
+  const lastAi = [...messages].reverse().find((m) => m.role === 'assistant')
+  const base = `${topicLabel(topic)}${levelLabel(level)}难度`
+  return lastAi ? `${base}，AI刚说${lastAi.content}` : base
+}
+
+/** 单项评分进度条：标签 + 分数 + 知岸红进度条 */
+function ScoreBar({ label, value, max }: { label: string; value: number; max: number }) {
+  const pct = Math.max(0, Math.min(100, Math.round((value / max) * 100)))
+  return (
+    <div className="speaking-score-bar-item">
+      <div className="speaking-score-bar-head">
+        <span className="speaking-score-bar-label">{label}</span>
+        <span className="speaking-score-bar-value">{value}</span>
+      </div>
+      <div className="speaking-score-bar-track">
+        <div className="speaking-score-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
 /** 英语口语练习：AI 对话 + 翻译 + 辅助功能 三栏布局 */
 export default function Speaking() {
   const navigate = useNavigate()
@@ -110,6 +142,10 @@ export default function Speaking() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [historyOpen, setHistoryOpen] = useState(true)
+
+  // AI 评分相关状态
+  const [score, setScore] = useState<SpeakingScoreResponse | null>(null)
+  const [scoreStatus, setScoreStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
 
   // 语音输入（ASR）相关状态
   const [recording, setRecording] = useState(false)
@@ -141,6 +177,8 @@ export default function Speaking() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // 语音输入：MediaRecorder 实例（用于「再次点击停止录音」）
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  // AI 评分：用于丢弃切对话后迟到的评分结果
+  const scoreSeqRef = useRef(0)
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -225,6 +263,10 @@ export default function Speaking() {
     setSuggestions([])
     setInput('')
     setError('')
+    // 切换对话不重新评分，重置评分卡片
+    scoreSeqRef.current += 1
+    setScore(null)
+    setScoreStatus('idle')
   }
 
   /** 重新拉取对话列表 */
@@ -243,6 +285,10 @@ export default function Speaking() {
       setSuggestions([])
       setInput('')
       setError('')
+      // 新建对话重置评分卡片
+      scoreSeqRef.current += 1
+      setScore(null)
+      setScoreStatus('idle')
       await refreshConversations()
     } catch (err) {
       setError(getErrorMessage(err))
@@ -299,6 +345,20 @@ export default function Speaking() {
     setInput('')
     setSending(true)
     setError('')
+
+    // 触发评分（并发，不阻塞对话；失败仅让卡片显示「暂无法评分」）
+    const scoreSeq = ++scoreSeqRef.current
+    setScoreStatus('loading')
+    scoreSentence(text, buildScoreContext(topic, level, nextMessages))
+      .then((res) => {
+        if (scoreSeq !== scoreSeqRef.current) return
+        setScore(res.data)
+        setScoreStatus('done')
+      })
+      .catch(() => {
+        if (scoreSeq !== scoreSeqRef.current) return
+        setScoreStatus('error')
+      })
 
     try {
       const res = await sendMessage(currentId, text)
@@ -710,6 +770,65 @@ export default function Speaking() {
                       <span className="speaking-suggestion-zh">{s.zh}</span>
                     </button>
                   ))
+                )}
+              </div>
+
+              {/* AI 评分 */}
+              <div className="speaking-tool-block">
+                <p className="speaking-tool-label">🔥 AI 评分</p>
+                {scoreStatus === 'idle' && (
+                  <p className="speaking-score-placeholder">发送一句话后自动评分</p>
+                )}
+                {scoreStatus === 'loading' && (
+                  <p className="speaking-score-placeholder">评分中...</p>
+                )}
+                {scoreStatus === 'error' && (
+                  <p className="speaking-score-placeholder">暂无法评分</p>
+                )}
+                {scoreStatus === 'done' && score && (
+                  <div className="speaking-score-card">
+                    <div className="speaking-score-total">
+                      <span
+                        className="speaking-score-total-number"
+                        style={{ color: scoreColor(score.total) }}
+                      >
+                        {score.total}
+                      </span>
+                      <span className="speaking-score-total-unit">分</span>
+                    </div>
+
+                    <div className="speaking-score-items">
+                      <ScoreBar label="语法" value={score.grammar} max={40} />
+                      <ScoreBar label="用词" value={score.vocab} max={30} />
+                      <ScoreBar label="流利度" value={score.fluency} max={30} />
+                    </div>
+
+                    {score.errors.length > 0 && (
+                      <div className="speaking-score-errors">
+                        {score.errors.map((e, i) => (
+                          <div key={i} className="speaking-score-error-item">
+                            <span className="speaking-score-error-type">{e.type}</span>
+                            <div className="speaking-score-error-line">
+                              {e.original && (
+                                <span className="speaking-score-error-original">{e.original}</span>
+                              )}
+                              {e.original && e.fix && (
+                                <span className="speaking-score-error-arrow">→</span>
+                              )}
+                              {e.fix && <span className="speaking-score-error-fix">{e.fix}</span>}
+                            </div>
+                            {e.issue && (
+                              <p className="speaking-score-error-issue">{e.issue}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {score.suggestion && (
+                      <div className="speaking-score-suggestion">{score.suggestion}</div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

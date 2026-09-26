@@ -181,6 +181,36 @@ class SendMessageResponse(BaseModel):
     suggestions: list[SpeakingSuggestion]
 
 
+# ---------- 口语评分 ----------
+
+
+class ScoreErrorItem(BaseModel):
+    """评分中的一处错误分析"""
+
+    type: str = "语法"
+    original: str = ""
+    issue: str = ""
+    fix: str = ""
+
+
+class SpeakingScoreRequest(BaseModel):
+    """口语评分请求：用户句子 + 对话上下文"""
+
+    sentence: str
+    context: str = ""
+
+
+class SpeakingScoreResponse(BaseModel):
+    """口语评分响应：总分 + 三项分 + 错误分析 + 优化建议"""
+
+    total: int
+    grammar: int
+    vocab: int
+    fluency: int
+    errors: list[ScoreErrorItem]
+    suggestion: str = ""
+
+
 # ---------- 背单词 ----------
 
 Feedback = Literal["known", "vague", "forgotten"]

@@ -72,6 +72,26 @@ export interface SendMessageResponse {
   suggestions: SpeakingSuggestion[]
 }
 
+// ---------- 口语评分 ----------
+
+/** 评分中的一处错误分析 */
+export interface ScoreErrorItem {
+  type: string
+  original: string
+  issue: string
+  fix: string
+}
+
+/** 口语评分响应 */
+export interface SpeakingScoreResponse {
+  total: number
+  grammar: number
+  vocab: number
+  fluency: number
+  errors: ScoreErrorItem[]
+  suggestion: string
+}
+
 // ---------- 接口 ----------
 
 /** 发送口语对话消息（无状态，兼容保留） */
@@ -99,6 +119,11 @@ export function sendMessage(id: number, content: string) {
   return api.post<SendMessageResponse>(`/english/speaking/conversations/${id}/messages`, {
     content,
   })
+}
+
+/** 对一句英语打分（语法/用词/流利度），不持久化 */
+export function scoreSentence(sentence: string, context: string) {
+  return api.post<SpeakingScoreResponse>('/english/speaking/score', { sentence, context })
 }
 
 /** 删除对话 */
