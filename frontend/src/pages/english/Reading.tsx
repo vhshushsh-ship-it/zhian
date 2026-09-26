@@ -21,6 +21,9 @@ import './Reading.css'
 const DIFFICULTIES = ['考研', '四级', '六级']
 const TOPICS = ['科技', '经济', '文化', '教育', '社会']
 
+// 生成数量选项
+const GEN_COUNTS = [1, 3, 5, 10]
+
 const PAGE_SIZE = 8
 
 // 正文字号：14-22px，默认 16，存 localStorage 记住
@@ -175,6 +178,8 @@ export function ReadingContent() {
   const [showGenerate, setShowGenerate] = useState(false)
   const [genDifficulty, setGenDifficulty] = useState('考研')
   const [genTopic, setGenTopic] = useState('科技')
+  const [genCount, setGenCount] = useState(1)
+  const [genProgress, setGenProgress] = useState('')
   const [generating, setGenerating] = useState(false)
 
   // 提示 + 标记已读
@@ -419,30 +424,54 @@ export function ReadingContent() {
     }
   }
 
-  /** 生成文章 */
+  /** 生成文章（逐篇请求以显示进度，一篇失败不影响其他篇） */
   const handleGenerate = async () => {
     setGenerating(true)
+    setGenProgress('')
     setError('')
-    try {
-      const res = await generateArticle(genDifficulty, genTopic)
-      setShowGenerate(false)
-      showToast('已生成新文章')
-      setDifficulty('')
-      setTopic('')
-      void loadList(1, '', '')
-      void openArticle(res.data.id)
-    } catch (err) {
-      setError(getErrorMessage(err))
-    } finally {
-      setGenerating(false)
+
+    let success = 0
+    let failed = 0
+    let firstId: number | null = null
+
+    for (let i = 0; i < genCount; i++) {
+      setGenProgress(genCount > 1 ? `正在生成第${i + 1}/${genCount}篇...` : '')
+      try {
+        const res = await generateArticle(genDifficulty, genTopic, 1)
+        const item = res.data.generated[0]
+        if (item) {
+          if (firstId == null) firstId = item.id
+          success += 1
+        } else {
+          failed += 1
+        }
+      } catch {
+        failed += 1
+      }
     }
+
+    setShowGenerate(false)
+    setGenProgress('')
+    setDifficulty('')
+    setTopic('')
+
+    if (success > 0) {
+      showToast(failed > 0 ? `成功生成${success}篇文章，${failed}篇失败` : `成功生成${success}篇文章`)
+      void loadList(1, '', '')
+      // 单篇：保持原有行为，直接打开生成的文章
+      if (genCount === 1 && firstId != null) void openArticle(firstId)
+    } else {
+      showToast('生成失败，请重试')
+    }
+
+    setGenerating(false)
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   // 生成文章弹窗（介绍页与列表页共用）
   const generateModal = showGenerate ? (
-    <div className="reading-modal-mask" onClick={() => setShowGenerate(false)}>
+    <div className="reading-modal-mask" onClick={() => { if (!generating) setShowGenerate(false) }}>
       <div className="reading-modal" onClick={(e) => e.stopPropagation()}>
         <h3>AI 生成外刊文章</h3>
         <label className="reading-modal-label">难度</label>
@@ -450,6 +479,7 @@ export function ReadingContent() {
           className="reading-select"
           value={genDifficulty}
           onChange={(e) => setGenDifficulty(e.target.value)}
+          disabled={generating}
         >
           {DIFFICULTIES.map((d) => (
             <option key={d} value={d}>{d}</option>
@@ -460,17 +490,29 @@ export function ReadingContent() {
           className="reading-select"
           value={genTopic}
           onChange={(e) => setGenTopic(e.target.value)}
+          disabled={generating}
         >
           {TOPICS.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
+        <label className="reading-modal-label">生成数量</label>
+        <select
+          className="reading-select"
+          value={genCount}
+          onChange={(e) => setGenCount(Number(e.target.value))}
+          disabled={generating}
+        >
+          {GEN_COUNTS.map((c) => (
+            <option key={c} value={c}>{c} 篇</option>
+          ))}
+        </select>
         <div className="reading-modal-actions">
-          <button className="reading-modal-cancel" onClick={() => setShowGenerate(false)}>
+          <button className="reading-modal-cancel" onClick={() => setShowGenerate(false)} disabled={generating}>
             取消
           </button>
           <button className="reading-modal-confirm" onClick={() => void handleGenerate()} disabled={generating}>
-            {generating ? '生成中...' : '开始生成'}
+            {generating ? (genProgress || '生成中...') : genCount > 1 ? `开始生成（共${genCount}篇）` : '开始生成'}
           </button>
         </div>
       </div>

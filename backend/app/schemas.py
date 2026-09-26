@@ -556,6 +556,27 @@ class GenerateArticleRequest(BaseModel):
 
     difficulty: str
     topic: str
+    # 一次生成的文章数量（1-10）
+    count: int = 1
+
+
+class GeneratedArticleItem(BaseModel):
+    """批量生成结果中的一篇文章（精简信息）"""
+
+    id: int
+    title: str
+    difficulty: str
+    topic: str
+    word_count: int
+
+
+class GenerateArticleResponse(BaseModel):
+    """批量生成文章响应：成功文章列表 + 统计"""
+
+    generated: list[GeneratedArticleItem]
+    total: int
+    success: int
+    failed: int
 
 
 class QuizSubmitRequest(BaseModel):

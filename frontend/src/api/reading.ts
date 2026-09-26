@@ -80,6 +80,23 @@ export interface ExplainResponse {
   analysis: string
 }
 
+/** 批量生成结果中的一篇文章（精简信息） */
+export interface GeneratedArticleItem {
+  id: number
+  title: string
+  difficulty: string
+  topic: string
+  word_count: number
+}
+
+/** 批量生成文章响应 */
+export interface GenerateArticleResponse {
+  generated: GeneratedArticleItem[]
+  total: number
+  success: number
+  failed: number
+}
+
 /** 文章列表查询参数 */
 export interface ArticleListParams {
   difficulty?: string
@@ -90,9 +107,9 @@ export interface ArticleListParams {
 
 // ---------- 接口 ----------
 
-/** 管理员 AI 生成文章 */
-export function generateArticle(difficulty: string, topic: string) {
-  return api.post<ReadingArticleDetail>('/reading/generate', { difficulty, topic })
+/** 管理员 AI 生成文章（count 为一次生成数量） */
+export function generateArticle(difficulty: string, topic: string, count = 1) {
+  return api.post<GenerateArticleResponse>('/reading/generate', { difficulty, topic, count })
 }
 
 /** 文章列表（支持难度 / 话题筛选 + 分页） */
