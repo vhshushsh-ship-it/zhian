@@ -1,0 +1,56 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 后端目录：backend/app/config.py -> 上溯两级到 backend/
+# 后端环境变量文件位于 backend/.env
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=str(BACKEND_DIR / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # 数据库
+    database_url: str = "mysql+pymysql://root:password@localhost:3306/zhian?charset=utf8mb4"
+
+    # 认证
+    secret_key: str = "change-me-in-production"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
+    # 演示模式：比赛展示期间免登录访问（true 时自动使用演示用户 demo@zhian.com）
+    demo_mode: bool = False
+
+    # 比赛期间跳过科目选择页（/dashboard），点「使用网页版」直接进入英语学习页
+    skip_dashboard: bool = False
+
+    # CORS（逗号分隔的允许来源）
+    backend_cors_origins: str = "http://localhost:5173"
+
+    # SMTP 邮件（QQ 邮箱，发送注册验证码）
+    smtp_host: str = "smtp.qq.com"
+    smtp_port: int = 465
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+
+    # DeepSeek（英语口语 AI 对话）
+    deepseek_api_key: str = ""
+    deepseek_model: str = "deepseek-v4-flash"
+    deepseek_base_url: str = "https://api.deepseek.com/v1"
+
+    # 阿里云百炼（DashScope）语音合成
+    dashscope_api_key: str = ""
+    dashscope_base_url: str = "https://dashscope.aliyuncs.com/api/v1"
+    dashscope_model: str = "cosyvoice-v3-flash"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [o.strip() for o in self.backend_cors_origins.split(",") if o.strip()]
+
+
+settings = Settings()
