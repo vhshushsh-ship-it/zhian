@@ -72,7 +72,7 @@ export default function App() {
             </Protected>
           }
         >
-          <Route index element={<Navigate to="/english/words" replace />} />
+          <Route index element={<Navigate to="/english/speaking" replace />} />
           <Route path="words/*" element={<Words />} />
           <Route path="speaking/*" element={<Speaking />} />
           <Route path="reading/*" element={<ReadingContent />} />
