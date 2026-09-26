@@ -36,10 +36,14 @@ const SUBJECTS: SubjectItem[] = [
   },
 ]
 
-/** 登录后的首页：学科选择 */
+/** 登录后的首页：学科选择（仅管理员可进，普通用户被路由守卫重定向到英语学习页） */
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const isAdmin = user?.role === 'admin'
+  // 英语所有人可见；数学 / 计算机网络仅管理员可见（与路由守卫保持一致）
+  const subjects = isAdmin ? SUBJECTS : SUBJECTS.filter((s) => s.theme === 'english')
 
   return (
     <div className="dashboard">
@@ -61,7 +65,7 @@ export default function Dashboard() {
         <p className="dashboard-subtitle">AI 加持，让每一次学习都更加高效</p>
 
         <div className="dashboard-grid">
-          {SUBJECTS.map((s) => (
+          {subjects.map((s) => (
             <div key={s.id} className={`subject-card subject-card-${s.theme}`}>
               <div className={`subject-card-bar subject-card-bar-${s.theme}`} />
               <div className={`subject-icon subject-icon-${s.theme}`}>{s.icon}</div>

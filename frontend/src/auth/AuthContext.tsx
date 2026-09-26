@@ -68,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await apiLogin(email, password)
     localStorage.setItem('token', res.data.access_token)
     setUser(res.data.user)
-    // 按角色跳转：管理员进后台，普通用户进学科选择
-    navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard')
+    // 按角色跳转：管理员进仪表盘，普通用户直接进英语学习
+    navigate(res.data.user.role === 'admin' ? '/dashboard' : '/english')
   }
 
   const register = async (
@@ -81,8 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await apiRegister(email, code, password, confirmPassword)
     localStorage.setItem('token', res.data.access_token)
     setUser(res.data.user)
-    // 注册的都是普通用户
-    navigate('/dashboard')
+    // 注册的都是普通用户，直接进英语学习
+    navigate('/english')
   }
 
   const logout = () => {

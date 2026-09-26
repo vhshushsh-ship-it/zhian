@@ -25,8 +25,17 @@ function Protected({ children }: { children: ReactElement }) {
 
 /** 比赛期间跳过科目选择页：访问 /dashboard 时重定向到英语学习页 */
 function DashboardGate({ children }: { children: ReactElement }) {
-  const { skipDashboard } = useAuth()
+  const { user, skipDashboard } = useAuth()
   if (skipDashboard) return <Navigate to="/english" replace />
+  // 普通用户（非管理员）不经过仪表盘，直接进英语学习
+  if (user && user.role !== 'admin') return <Navigate to="/english" replace />
+  return children
+}
+
+/** 数学 / 计算机网络占位页：仅管理员可访问，普通用户重定向到英语学习页 */
+function SubjectGate({ children }: { children: ReactElement }) {
+  const { user } = useAuth()
+  if (user && user.role !== 'admin') return <Navigate to="/english" replace />
   return children
 }
 
@@ -60,10 +69,15 @@ export default function App() {
           path="/subject/:id"
           element={
             <Protected>
-              <Subject />
+              <SubjectGate>
+                <Subject />
+              </SubjectGate>
             </Protected>
           }
         />
+        {/* 数学 / 计算机网络占位页的短路径别名（普通用户直接访问会重定向到英语学习页） */}
+        <Route path="/math" element={<Navigate to="/subject/math" replace />} />
+        <Route path="/cs" element={<Navigate to="/subject/cs" replace />} />
         <Route
           path="/english"
           element={
