@@ -23,6 +23,8 @@ from ..schemas import (
     ExplainRequest,
     ExplainResponse,
     GenerateArticleRequest,
+    GenerateArticleResponse,
+    GeneratedArticleItem,
     QuizResultItem,
     QuizSubmitRequest,
     QuizSubmitResponse,
@@ -43,6 +45,9 @@ REQUEST_TIMEOUT = 60.0
 # 难度 / 话题允许值（与前端下拉一致）
 DIFFICULTIES = {"考研", "四级", "六级"}
 TOPICS = {"科技", "经济", "文化", "教育", "社会"}
+
+# 单次批量生成的文章数量上限（与前端「生成数量」选项一致）
+MAX_GENERATE_COUNT = 10
 
 # ---------- AI 提示词 ----------
 
@@ -245,30 +250,13 @@ def _article_detail(
 # ---------- 接口 ----------
 
 
-@router.post(
-    "/generate",
-    response_model=ReadingArticleDetail,
-    status_code=status.HTTP_201_CREATED,
-)
-def generate_article(
-    payload: GenerateArticleRequest,
-    db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin),
-):
-    """管理员用 AI 生成一篇外刊精读文章（正文 + 长难句 + 题目）。"""
-    difficulty = payload.difficulty.strip()
-    topic = payload.topic.strip()
-    if difficulty not in DIFFICULTIES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"难度必须是 {'/'.join(sorted(DIFFICULTIES))} 之一",
-        )
-    if topic not in TOPICS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"话题必须是 {'/'.join(sorted(TOPICS))} 之一",
-        )
+def _generate_one(
+    db: Session, difficulty: str, topic: str, admin_id: int
+) -> ReadingArticle:
+    """生成并保存一篇外刊精读文章（正文 + 长难句 + 题目）。
 
+    单篇逻辑保持不变，仅抽出供批量生成循环复用。
+    """
     messages = [
         {"role": "system", "content": ARTICLE_PROMPT},
         {
@@ -292,13 +280,67 @@ def generate_article(
         word_count=len(content.split()),
         long_sentences=json.dumps(data.get("long_sentences") or [], ensure_ascii=False),
         quiz=json.dumps(data.get("quiz") or [], ensure_ascii=False),
-        created_by=current_admin.id,
+        created_by=admin_id,
     )
     db.add(article)
     db.commit()
     db.refresh(article)
+    return article
 
-    return _article_detail(db, article, current_admin.id)
+
+@router.post(
+    "/generate",
+    response_model=GenerateArticleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def generate_article(
+    payload: GenerateArticleRequest,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin),
+):
+    """管理员用 AI 生成外刊精读文章，可一次生成多篇。
+
+    每篇文章独立生成、独立提交，一篇失败不影响其他篇；
+    全部完成后返回成功生成的文章列表。
+    """
+    difficulty = payload.difficulty.strip()
+    topic = payload.topic.strip()
+    if difficulty not in DIFFICULTIES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"难度必须是 {'/'.join(sorted(DIFFICULTIES))} 之一",
+        )
+    if topic not in TOPICS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"话题必须是 {'/'.join(sorted(TOPICS))} 之一",
+        )
+
+    count = max(1, min(payload.count, MAX_GENERATE_COUNT))
+
+    generated: list[GeneratedArticleItem] = []
+    for _ in range(count):
+        try:
+            article = _generate_one(db, difficulty, topic, current_admin.id)
+        except Exception:
+            # 单篇失败不影响其他篇，继续生成
+            continue
+        generated.append(
+            GeneratedArticleItem(
+                id=article.id,
+                title=article.title,
+                difficulty=article.difficulty,
+                topic=article.topic,
+                word_count=article.word_count,
+            )
+        )
+
+    return GenerateArticleResponse(
+        generated=generated,
+        total=count,
+        success=len(generated),
+        failed=count - len(generated),
+    )
 
 
 @router.get("/articles", response_model=ReadingArticleListResponse)
