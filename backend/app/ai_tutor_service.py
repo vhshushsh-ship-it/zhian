@@ -258,40 +258,66 @@ def _count_writing_error_types(subs: list[WritingSubmission]) -> dict[str, int]:
 
 
 def get_writing_summary(db: Session, user_id: int) -> str:
-    """写作练习摘要：最近写了几篇 + 平均分趋势 + 常见错误类型。"""
-    scored = (
+    """写作练习摘要：最近写了几篇 + 平均分 + 分项弱项 + 常见错误 + 最近题目。"""
+    subs = (
         db.query(WritingSubmission)
-        .filter(WritingSubmission.user_id == user_id, WritingSubmission.score.isnot(None))
+        .filter(WritingSubmission.user_id == user_id)
         .order_by(WritingSubmission.created_at.desc(), WritingSubmission.id.desc())
         .limit(10)
         .all()
     )
-
-    if not scored:
+    if not subs:
         return "写作练习：尚未开始"
 
+    scored = [s for s in subs if s.score is not None]
+    if not scored:
+        return f"写作练习：最近写了{len(subs)}篇，尚未批改"
+
     n = len(scored)
-    avg = round(sum(s.score for s in scored) / n)
-    text = f"写作练习：最近写了{n}篇，平均{avg}分。"
+    avg_total = round(sum(s.score for s in scored) / n)
+    text = f"最近写了{n}篇，平均{avg_total}分"
 
-    # 趋势：取最近 5 次（按时间正序比较最早与最新一次）
-    recent5 = list(reversed(scored[:5]))
-    if len(recent5) >= 2:
-        first = recent5[0].score
-        last = recent5[-1].score
-        diff = last - first
-        if diff >= 5:
-            text += f"分数从{first}升到{last}，进步明显。"
-        elif diff <= -5:
-            text += f"分数从{first}降到{last}，需要加强。"
-        else:
-            text += f"分数稳定在{last}左右。"
+    # 分项平均（语法40 / 结构30 / 用词30），取最近 3 篇
+    dims: dict[str, list[float]] = {"语法": [], "结构": [], "用词": []}
+    fulls = {"语法": 40, "结构": 30, "用词": 30}
+    for s in scored[:3]:
+        try:
+            fb = json.loads(s.feedback_json) if s.feedback_json else {}
+        except (json.JSONDecodeError, TypeError):
+            fb = {}
+        for label, field in (
+            ("语法", "grammar_score"),
+            ("结构", "structure_score"),
+            ("用词", "vocab_score"),
+        ):
+            v = fb.get(field)
+            if isinstance(v, (int, float)):
+                dims[label].append(float(v))
 
-    top = sorted(_count_writing_error_types(scored).items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    # 弱项：三项都有时，按得分率最低的分项
+    weak_dim = ""
+    if all(dims.values()):
+        rates = {
+            label: sum(vals) / (len(vals) * fulls[label])
+            for label, vals in dims.items()
+        }
+        weak_dim = min(rates, key=rates.get)
+
+    if weak_dim:
+        text += f"，{weak_dim}分偏低"
+
+    top = sorted(
+        _count_writing_error_types(scored).items(), key=lambda kv: (-kv[1], kv[0])
+    )[:3]
     if top:
-        text += "常见错误：" + "、".join(f"{t}({c}次)" for t, c in top) + "。"
+        text += "，常见错误：" + "、".join(f"{t}({c}次)" for t, c in top)
+    text += "。"
 
-    return text
+    topics = [s.topic for s in scored[:3] if s.topic]
+    if topics:
+        text += "最近写了《" + "》《".join(topics) + "》。"
+
+    return "写作练习：" + text
 
 
 def build_user_snapshot(db: Session, user_id: int) -> str:

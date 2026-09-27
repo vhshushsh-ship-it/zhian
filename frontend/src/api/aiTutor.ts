@@ -24,13 +24,6 @@ export interface UpdateAiProfilePayload {
   preferences?: Record<string, unknown>
 }
 
-/** 对话列表项 */
-export interface AiTutorConversationSummary {
-  id: number
-  title: string
-  created_at: string
-}
-
 /** 对话详情中的一条消息 */
 export interface AiTutorMessage {
   role: 'user' | 'assistant'
@@ -58,32 +51,19 @@ export function updateAiProfile(data: UpdateAiProfilePayload) {
   return api.put<AiProfile>('/ai-tutor/profile', data)
 }
 
-/** 获取 AI 导师对话列表（按创建时间倒序） */
-export function getAiConversations() {
-  return api.get<AiTutorConversationSummary[]>('/ai-tutor/conversations')
+/** 获取唯一对话（不存在则自动创建），含全部消息 */
+export function getChatConversation() {
+  return api.get<AiTutorConversationDetail>('/ai-tutor/chat')
 }
 
-/** 新建 AI 导师对话，返回对话 id */
-export function createAiConversation() {
-  return api.post<{ id: number }>('/ai-tutor/conversations')
+/** 发送消息（单对话，后端自动创建 + 超长自动压缩） */
+export function sendChatMessage(content: string, page: AiPage) {
+  return api.post<{ ai_reply: string }>('/ai-tutor/chat', { content, page })
 }
 
-/** 获取对话详情（含全部消息） */
-export function getAiConversation(id: number) {
-  return api.get<AiTutorConversationDetail>(`/ai-tutor/conversations/${id}`)
-}
-
-/** 发送消息：content 用户文本，page 当前页面标识 */
-export function sendAiMessage(id: number, content: string, page: AiPage) {
-  return api.post<{ ai_reply: string }>(`/ai-tutor/conversations/${id}/messages`, {
-    content,
-    page,
-  })
-}
-
-/** 删除对话 */
-export function deleteAiConversation(id: number) {
-  return api.delete(`/ai-tutor/conversations/${id}`)
+/** 清空当前用户对话的所有消息 */
+export function clearConversation() {
+  return api.post('/ai-tutor/clear')
 }
 
 // ---------- 学习日历 / 每日任务 ----------
