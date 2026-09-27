@@ -539,6 +539,90 @@
   background: #e60012;
 }
 
+/* ---------- 右栏：话题选择（antd Collapse 折叠面板 + 胶囊标签） ---------- */
+
+/* 固定高度滚动容器：话题区域保持紧凑，约显示一行话题标签，超出部分上下滚动 */
+.speaking-topic-scroll {
+  max-height: 132px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.speaking-topic-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.speaking-topic-scroll::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.speaking-topic-scroll::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+.speaking-topic-collapse {
+  background: #fff;
+  border: none;
+  border-radius: 0;
+}
+
+.speaking-topic-collapse .ant-collapse-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.speaking-topic-collapse .ant-collapse-item:last-child {
+  border-bottom: none;
+}
+
+/* 面板标题：紧凑、加粗，展开/收起箭头用知岸红 */
+.speaking-topic-collapse .ant-collapse-header {
+  padding: 8px 0 !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.speaking-topic-collapse .ant-collapse-header .ant-collapse-expand-icon,
+.speaking-topic-collapse .ant-collapse-header .ant-collapse-arrow {
+  color: #e60012;
+}
+
+/* 面板内容：去掉默认内边距，留出胶囊标签间距 */
+.speaking-topic-collapse .ant-collapse-content-box {
+  padding: 4px 0 12px !important;
+}
+
+/* 具体话题胶囊标签 */
+.speaking-topic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.speaking-topic-tag {
+  padding: 5px 12px;
+  border: 1px solid #e60012;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speaking-topic-tag:hover {
+  background: #fef0f0;
+}
+
+/* 选中：知岸红背景白字 */
+.speaking-topic-tag-active,
+.speaking-topic-tag-active:hover {
+  background: #e60012;
+  color: #fff;
+}
+
 /* 朗读设置：自动朗读开关 */
 .speaking-autoplay-row {
   display: flex;
