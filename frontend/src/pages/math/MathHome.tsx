@@ -11,9 +11,9 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'overview', label: '数学概览', icon: '📐', path: '/math/overview' },
-  { id: 'methods', label: '题型方法', icon: '🧮', path: '/math/methods' },
-  { id: 'examples', label: '例题精讲', icon: '📝', path: '/math/examples' },
+  { id: 'videos', label: '视频讲解', icon: '📺', path: '/math/videos' },
+  { id: 'notes', label: '知识点梳理', icon: '📖', path: '/math/notes' },
+  { id: 'practice', label: '例题练习', icon: '✏️', path: '/math/practice' },
 ]
 
 /**

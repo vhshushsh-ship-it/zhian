@@ -10,9 +10,9 @@ import Subject from './pages/Subject'
 import Welcome from './pages/Welcome'
 import EnglishHome from './pages/EnglishHome'
 import MathHome from './pages/math/MathHome'
-import Overview from './pages/math/Overview'
-import Methods from './pages/math/Methods'
-import Examples from './pages/math/Examples'
+import Videos from './pages/math/Videos'
+import Notes from './pages/math/Notes'
+import Practice from './pages/math/Practice'
 import { ReadingContent } from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
 import { StatsContent } from './pages/english/Stats'
@@ -90,10 +90,10 @@ export default function App() {
             </Protected>
           }
         >
-          <Route index element={<Navigate to="/math/overview" replace />} />
-          <Route path="overview" element={<Overview />} />
-          <Route path="methods" element={<Methods />} />
-          <Route path="examples" element={<Examples />} />
+          <Route index element={<Navigate to="/math/videos" replace />} />
+          <Route path="videos" element={<Videos />} />
+          <Route path="notes" element={<Notes />} />
+          <Route path="practice" element={<Practice />} />
         </Route>
         {/* 计算机网络占位页的短路径别名（普通用户直接访问会重定向到英语学习页） */}
         <Route path="/cs" element={<Navigate to="/subject/cs" replace />} />

@@ -1,0 +1,179 @@
+/* 例题练习页 */
+
+.practice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 例题卡片 */
+.practice-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.practice-head {
+  margin-bottom: 20px;
+}
+
+.practice-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+/* 题目公式 */
+.practice-question {
+  padding: 18px 22px;
+  background: #fafafa;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.practice-question sub {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.practice-question sup {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 步骤提示 */
+.practice-step-label {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+}
+
+/* 题型选项 */
+.practice-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.practice-option {
+  padding: 10px 22px;
+  background: #fff;
+  color: #333;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.practice-option:hover:not(:disabled) {
+  border-color: #e60012;
+  color: #e60012;
+  background: #fef0f0;
+}
+
+.practice-option:disabled {
+  cursor: default;
+}
+
+.practice-option.is-correct {
+  border-color: #16a34a;
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.practice-option.is-wrong {
+  border-color: #e60012;
+  color: #e60012;
+  background: #fef0f0;
+}
+
+/* 反馈区 */
+.practice-feedback {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border-radius: 12px;
+}
+
+.practice-feedback-correct {
+  background: #ecfdf3;
+}
+
+.practice-feedback-wrong {
+  background: #fef0f0;
+}
+
+.practice-feedback-line {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.practice-feedback-correct .practice-feedback-line {
+  color: #16a34a;
+}
+
+.practice-feedback-wrong .practice-feedback-line {
+  color: #e60012;
+}
+
+.practice-correct-answer {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* 解题步骤 */
+.practice-steps {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.practice-steps li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+}
+
+.practice-steps li::before {
+  content: counter(step);
+  counter-increment: step;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.practice-steps {
+  counter-reset: step;
+}
+
+/* 答案 */
+.practice-answer {
+  margin-top: 14px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #16a34a;
+}

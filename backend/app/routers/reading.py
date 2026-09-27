@@ -481,7 +481,8 @@ def collect_word(
     current_user: User = Depends(get_current_user),
 ):
     """收集生词：词库命中则 upsert 用户单词进度并标记来源文章，否则报错。"""
-    _get_article(db, article_id)
+    article = _get_article(db, article_id)
+    source_label = f"来自《{article.title}》"
 
     word_text = payload.word.strip()
     if not word_text:
@@ -509,11 +510,13 @@ def collect_word(
             word_id=word.id,
             memory_strength=0.0,
             source_article_id=article_id,
+            source=source_label,
         )
         db.add(progress)
     elif progress.source_article_id is None:
         # 已有进度（正常背单词来的），补记来源文章
         progress.source_article_id = article_id
+        progress.source = source_label
 
     history = _get_or_create_history(db, current_user.id, article_id)
     history.words_collected = (history.words_collected or 0) + 1

@@ -1,0 +1,110 @@
+/* 视频讲解页 */
+
+.video-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 章节标题 */
+.video-chapter {
+  position: relative;
+  margin: 0 0 4px;
+  padding-left: 14px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.video-chapter::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e60012;
+}
+
+/* 视频卡片 */
+.video-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.video-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.video-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.video-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* 观看按钮 */
+.video-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  background: #e60012;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-btn:hover {
+  opacity: 1;
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(230, 0, 18, 0.25);
+}
+
+/* 占位卡 */
+.video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  background: #fff;
+  border: 1px dashed #e5e5e5;
+  border-radius: 16px;
+}
+
+.video-placeholder-text {
+  margin: 0;
+  font-size: 14px;
+  color: #bbb;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .video-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .video-btn {
+    justify-content: center;
+  }
+}
