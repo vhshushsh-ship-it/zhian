@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useLocation } from 'react-router-dom'
+import { Modal } from 'antd'
+import { DeleteOutlined } from '@ant-design/icons'
 import { getErrorMessage } from '../api/client'
 import {
-  createAiConversation,
-  deleteAiConversation,
-  getAiConversation,
-  getAiConversations,
+  clearConversation,
   getAiProfile,
-  sendAiMessage,
+  getChatConversation,
+  sendChatMessage,
   updateAiProfile,
   type AiPage,
-  type AiTutorConversationSummary,
 } from '../api/aiTutor'
 import './AiTutor.css'
 
@@ -45,8 +44,6 @@ export default function AiTutor() {
   const pathname = location.pathname
 
   const [open, setOpen] = useState(false)
-  const [conversations, setConversations] = useState<AiTutorConversationSummary[]>([])
-  const [currentId, setCurrentId] = useState<number | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -86,68 +83,17 @@ export default function AiTutor() {
     }
   }
 
-  /** 初始化：首次展开抽屉时加载画像 + 对话列表 */
+  /** 初始化：首次展开抽屉时加载画像 + 唯一对话 */
   const ensureInit = async () => {
     if (initializedRef.current) return
     initializedRef.current = true
     await loadProfile()
     try {
-      const res = await getAiConversations()
-      const list = res.data
-      setConversations(list)
-      if (list.length > 0) {
-        await loadConversation(list[0].id)
-      } else {
-        await handleNewConversation()
-      }
-    } catch (err) {
-      setError(getErrorMessage(err))
-    }
-  }
-
-  /** 加载指定对话详情 */
-  const loadConversation = async (id: number) => {
-    try {
-      const res = await getAiConversation(id)
-      const detail = res.data
-      setCurrentId(detail.id)
+      const res = await getChatConversation()
       setMessages(
-        detail.messages.map((m) => ({ role: m.role, content: m.content })),
+        res.data.messages.map((m) => ({ role: m.role, content: m.content })),
       )
       setError('')
-    } catch (err) {
-      setError(getErrorMessage(err))
-    }
-  }
-
-  /** 新建对话 */
-  const handleNewConversation = async () => {
-    try {
-      const res = await createAiConversation()
-      setCurrentId(res.data.id)
-      setMessages([])
-      setInput('')
-      setError('')
-      const listRes = await getAiConversations()
-      setConversations(listRes.data)
-    } catch (err) {
-      setError(getErrorMessage(err))
-    }
-  }
-
-  /** 删除对话 */
-  const handleDeleteConversation = async (id: number) => {
-    try {
-      await deleteAiConversation(id)
-      const remaining = conversations.filter((c) => c.id !== id)
-      setConversations(remaining)
-      if (id === currentId) {
-        if (remaining.length > 0) {
-          await loadConversation(remaining[0].id)
-        } else {
-          await handleNewConversation()
-        }
-      }
     } catch (err) {
       setError(getErrorMessage(err))
     }
@@ -162,7 +108,7 @@ export default function AiTutor() {
   /** 发送消息 */
   const handleSend = async () => {
     const text = input.trim()
-    if (!text || sending || currentId == null) return
+    if (!text || sending) return
 
     setMessages((prev) => [...prev, { role: 'user', content: text }])
     setInput('')
@@ -170,7 +116,7 @@ export default function AiTutor() {
     setError('')
 
     try {
-      const res = await sendAiMessage(currentId, text, page)
+      const res = await sendChatMessage(text, page)
       setMessages((prev) => [...prev, { role: 'assistant', content: res.data.ai_reply }])
     } catch (err) {
       setError(getErrorMessage(err))
@@ -209,6 +155,25 @@ export default function AiTutor() {
     }
   }
 
+  /** 清空对话：确认后删除所有消息，回到欢迎语 */
+  const handleClear = () => {
+    Modal.confirm({
+      title: '确定清空所有对话记录吗？',
+      okText: '清空',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await clearConversation()
+          setMessages([])
+          setError('')
+        } catch (err) {
+          setError(getErrorMessage(err))
+        }
+      },
+    })
+  }
+
   return (
     <>
       {/* 悬浮按钮 */}
@@ -244,11 +209,11 @@ export default function AiTutor() {
               </button>
               <button
                 className="ai-tutor-icon-btn"
-                onClick={handleNewConversation}
-                title="新对话"
-                aria-label="新对话"
+                onClick={handleClear}
+                title="清空对话"
+                aria-label="清空对话"
               >
-                ＋
+                <DeleteOutlined />
               </button>
               <button
                 className="ai-tutor-icon-btn"
@@ -298,34 +263,6 @@ export default function AiTutor() {
             </section>
           )}
 
-          {/* 历史对话 */}
-          {conversations.length > 0 && (
-            <div className="ai-tutor-history">
-              {conversations.map((c) => (
-                <div
-                  key={c.id}
-                  className={
-                    c.id === currentId
-                      ? 'ai-tutor-history-item ai-tutor-history-item-active'
-                      : 'ai-tutor-history-item'
-                  }
-                  onClick={() => loadConversation(c.id)}
-                >
-                  <span className="ai-tutor-history-title">{c.title}</span>
-                  <button
-                    className="ai-tutor-history-delete"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeleteConversation(c.id)
-                    }}
-                  >
-                    删除
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* 消息列表 */}
           <div className="ai-tutor-chat-list" ref={chatListRef}>
             {messages.length === 0 ? (
@@ -363,7 +300,7 @@ export default function AiTutor() {
             <button
               className="ai-tutor-send"
               onClick={handleSend}
-              disabled={sending || currentId == null}
+              disabled={sending}
             >
               {sending ? '发送中…' : '发送'}
             </button>

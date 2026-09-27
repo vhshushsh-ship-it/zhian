@@ -55,6 +55,17 @@ REQUEST_TIMEOUT = 60.0
 # 短期记忆：每次只带最近 N 条历史消息
 RECENT_MESSAGE_LIMIT = 20
 
+# 对话自动压缩：超过该条数触发压缩，压缩后保留最近 N 条
+COMPRESS_THRESHOLD = 50
+KEEP_MESSAGES = 10
+
+# 压缩时的总结提示词：提炼关键信息存入长期画像
+SUMMARIZE_PROMPT = (
+    "你是「知岸」英语学习平台的 AI 导师「小岸」。下面是一段已经结束的对话历史，"
+    "请总结其中的关键信息：用户的学习目标、薄弱项、学习偏好，以及你给过的建议要点。"
+    "用简洁的中文输出一段 150 字以内的摘要，只输出摘要文字，不要任何前缀或标记。"
+)
+
 # 页面标识 → 中文名（场景感知）
 PAGE_NAMES = {
     "words": "背单词",
@@ -150,7 +161,7 @@ def build_system_prompt(
     weak_points = _parse_list(profile.weak_points)
     weak_text = "、".join(weak_points) if weak_points else "未填写"
 
-    return (
+    base = (
         "你是「知岸」英语学习平台的一对一 AI 导师「小岸」，一位亲切、专业、善于鼓励的学习伙伴。\n\n"
         f"用户当前所在页面：{page_name}。\n\n"
         "## 用户长期画像\n"
@@ -172,6 +183,10 @@ def build_system_prompt(
         "3. 若用户目标/考试日期未设置，可主动引导其设定。\n"
         "4. 回答控制在 150 字以内，除非用户要求详细展开。"
     )
+    notes = (profile.ai_notes or "").strip()
+    if notes:
+        base += f"\n\n## 历史对话摘要（AI 观察，压缩自之前的对话）\n{notes}\n"
+    return base
 
 
 def _get_owned_conversation(
@@ -343,6 +358,120 @@ def delete_conversation(
     return {"message": "删除成功"}
 
 
+def _get_or_create_conversation(db: Session, user_id: int) -> AiTutorConversation:
+    """获取用户唯一的 AI 导师对话，不存在则自动创建。"""
+    conv = (
+        db.query(AiTutorConversation)
+        .filter(AiTutorConversation.user_id == user_id)
+        .order_by(AiTutorConversation.created_at.asc())
+        .first()
+    )
+    if conv is None:
+        conv = AiTutorConversation(user_id=user_id, title="AI 导师小岸")
+        db.add(conv)
+        db.commit()
+        db.refresh(conv)
+    return conv
+
+
+def _summarize_messages(existing: str, history: list[dict]) -> str:
+    """调 AI 总结一段对话历史，返回摘要；失败返回空串。"""
+    msgs = [{"role": "system", "content": SUMMARIZE_PROMPT}]
+    if existing:
+        msgs.append(
+            {
+                "role": "user",
+                "content": "之前已记录的历史摘要：\n" + existing + "\n\n"
+                "请结合下面这段新的对话，更新并输出合并后的摘要。",
+            }
+        )
+    msgs.extend(history)
+    try:
+        return _call_deepseek_text(msgs)
+    except HTTPException:
+        return ""
+
+
+def _compress_conversation(
+    db: Session, user_id: int, conv: AiTutorConversation
+) -> None:
+    """对话超过阈值时：总结旧消息存入画像，只保留最近 N 条。"""
+    messages = conv.messages  # 按 id 正序
+    if len(messages) <= COMPRESS_THRESHOLD:
+        return
+    to_summarize = messages[:-KEEP_MESSAGES]
+    history = [{"role": m.role, "content": m.content} for m in to_summarize]
+
+    profile = _get_profile(db, user_id)
+    summary = _summarize_messages(profile.ai_notes or "", history)
+    if not summary:
+        # 总结失败则本次不压缩，保留消息下次再试
+        return
+    profile.ai_notes = summary
+    for m in to_summarize:
+        db.delete(m)
+    db.commit()
+
+
+@router.get("/chat", response_model=AiTutorConversationDetail)
+def get_chat(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """获取唯一的 AI 导师对话（不存在则自动创建），含全部消息。"""
+    return _get_or_create_conversation(db, current_user.id)
+
+
+@router.post("/chat", response_model=AiTutorSendResponse)
+def send_chat(
+    payload: AiTutorSendRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """发送消息：无活跃对话自动创建，存消息后检查条数触发压缩。"""
+    conv = _get_or_create_conversation(db, current_user.id)
+
+    history = [{"role": m.role, "content": m.content} for m in conv.messages]
+    recent = history[-RECENT_MESSAGE_LIMIT:] if history else []
+
+    profile = _get_profile(db, current_user.id)
+    messages = [
+        {
+            "role": "system",
+            "content": build_system_prompt(db, current_user, profile, payload.page),
+        }
+    ]
+    messages += recent
+    messages.append({"role": "user", "content": payload.content})
+
+    reply = _call_deepseek_text(messages)
+
+    db.add(AiTutorMessage(conversation_id=conv.id, role="user", content=payload.content))
+    db.add(AiTutorMessage(conversation_id=conv.id, role="assistant", content=reply))
+    db.commit()
+
+    _compress_conversation(db, current_user.id, conv)
+
+    return AiTutorSendResponse(ai_reply=reply)
+
+
+@router.post("/clear")
+def clear_conversation(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """清空当前用户对话：删除所有对话及其消息，下次发送自动新建。"""
+    convs = (
+        db.query(AiTutorConversation)
+        .filter(AiTutorConversation.user_id == current_user.id)
+        .all()
+    )
+    for conv in convs:
+        db.delete(conv)
+    db.commit()
+    return {"message": "ok"}
+
+
 # ---------- 学习日历 / 每日任务 ----------
 
 # 周几 → 当天附加任务类型（0=周一 ... 6=周日）
@@ -409,7 +538,8 @@ PLAN_PROMPT = (
     "2. type 只能是 words / speaking / reading / writing 之一，同一天 type 不重复。\n"
     "3. 每天必须有一个 type=words 的任务。\n"
     "4. 标题具体到词/话题/文章/题目，例如「复习12个到期词（abandon, absorb）」「口语：练日常对话，重点注意时态」「外刊：重做《AI 进课堂》」「写作：写一篇关于环保的作文」。\n"
-    "5. 只输出 JSON。"
+    "5. 若距上次写作超过 3 天，安排一次写作任务；若结构分偏低，写作任务推荐议论文并带上具体题目。\n"
+    "6. 只输出 JSON。"
 )
 
 
@@ -479,6 +609,47 @@ def _writing_recommendation(db: Session, user_id: int) -> str | None:
     return "关于环保的重要性"
 
 
+def _writing_last_days(db: Session, user_id: int) -> int | None:
+    """距上次写作的天数；从未写过返回 None。"""
+    last = (
+        db.query(WritingSubmission.created_at)
+        .filter(WritingSubmission.user_id == user_id)
+        .order_by(WritingSubmission.created_at.desc())
+        .first()
+    )
+    if last is None or last[0] is None:
+        return None
+    return (datetime.now() - last[0]).days
+
+
+def _writing_structure_low(db: Session, user_id: int) -> bool:
+    """最近 3 篇作文的结构分平均是否偏低（满分 30，低于 20 视为偏低）。"""
+    subs = (
+        db.query(WritingSubmission)
+        .filter(
+            WritingSubmission.user_id == user_id,
+            WritingSubmission.feedback_json.isnot(None),
+        )
+        .order_by(WritingSubmission.created_at.desc(), WritingSubmission.id.desc())
+        .limit(3)
+        .all()
+    )
+    if not subs:
+        return False
+    structs: list[float] = []
+    for s in subs:
+        try:
+            fb = json.loads(s.feedback_json) if s.feedback_json else {}
+        except (json.JSONDecodeError, TypeError):
+            fb = {}
+        v = fb.get("structure_score")
+        if isinstance(v, (int, float)):
+            structs.append(float(v))
+    if not structs:
+        return False
+    return sum(structs) / len(structs) < 20
+
+
 def _speaking_focus(db: Session, user_id: int) -> str:
     """最近口语评分里出现最多的错误类型，作为口语练习重点。"""
     scores = (
@@ -537,7 +708,7 @@ def _catchup_flags(db: Session, user_id: int) -> dict[str, bool]:
         "reading": extra_tomorrow != "reading"
         and (last_reading is None or last_reading < now - timedelta(days=7)),
         "writing": extra_tomorrow != "writing"
-        and (last_writing is None or last_writing < now - timedelta(days=5)),
+        and (last_writing is None or last_writing < now - timedelta(days=3)),
     }
 
 
@@ -552,6 +723,8 @@ def _plan_context(db: Session, user_id: int) -> dict:
         "speaking_focus": _speaking_focus(db, user_id),
         "reading_article": _reading_recommendation(db, user_id),
         "writing_topic": _writing_recommendation(db, user_id),
+        "writing_last_days": _writing_last_days(db, user_id),
+        "writing_structure_low": _writing_structure_low(db, user_id),
     }
 
 
@@ -587,11 +760,11 @@ def _fallback_title(d: date, task_type: str, ctx: dict) -> str:
             else "外刊精读：读1篇文章"
         )
     if task_type == "writing":
-        return (
-            f"写作练习：{ctx['writing_topic']}"
-            if ctx["writing_topic"]
-            else "写作练习：写一篇作文"
-        )
+        if ctx["writing_topic"]:
+            if ctx.get("writing_structure_low"):
+                return f"写作练习：写议论文《{ctx['writing_topic']}》"
+            return f"写作练习：{ctx['writing_topic']}"
+        return "写作练习：写一篇作文"
     return "学习任务"
 
 
@@ -636,7 +809,9 @@ def _ai_generate_plan(
         f"{'、'.join(ctx['due_words']) if ctx['due_words'] else '暂无'}\n"
         f"## 口语推荐：话题 {ctx['topic']}；{ctx['speaking_focus'] or '暂无重点'}\n"
         f"## 阅读推荐文章：{ctx['reading_article'] or '暂无'}\n"
-        f"## 写作推荐题目：{ctx['writing_topic'] or '暂无'}\n\n"
+        f"## 写作推荐题目：{ctx['writing_topic'] or '暂无'}；"
+        f"距上次写作 {ctx['writing_last_days'] if ctx['writing_last_days'] is not None else '从未'} 天"
+        f"{'，结构分偏低建议练议论文' if ctx['writing_structure_low'] else ''}\n\n"
         f"## 需要安排的 7 天日期（顺序对应 days 数组）：{day_lines}"
     )
     try:

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../api/client'
-import { createAiConversation, sendAiMessage } from '../../api/aiTutor'
+import { sendChatMessage } from '../../api/aiTutor'
 import { getEnglishStats, type EnglishStats } from '../../api/stats'
 import WeekPlan from './WeekPlan'
 import './Stats.css'
@@ -57,7 +57,6 @@ export function StatsContent() {
   const [analysis, setAnalysis] = useState('')
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [analysisError, setAnalysisError] = useState('')
-  const convIdRef = useRef<number | null>(null)
   const analysisStartedRef = useRef(false)
 
   /** 拉取学习数据 */
@@ -72,16 +71,12 @@ export function StatsContent() {
     }
   }
 
-  /** 触发 AI 分析（复用同一个导师对话，避免每次新建污染历史列表） */
+  /** 触发 AI 分析（复用唯一的导师对话） */
   const runAnalysis = async () => {
     setAnalysisLoading(true)
     setAnalysisError('')
     try {
-      if (convIdRef.current == null) {
-        const res = await createAiConversation()
-        convIdRef.current = res.data.id
-      }
-      const res = await sendAiMessage(convIdRef.current, ANALYSIS_PROMPT, 'english')
+      const res = await sendChatMessage(ANALYSIS_PROMPT, 'english')
       setAnalysis(res.data.ai_reply)
     } catch (err) {
       setAnalysisError(getErrorMessage(err))
