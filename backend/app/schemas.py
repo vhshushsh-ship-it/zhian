@@ -634,3 +634,71 @@ class ExplainResponse(BaseModel):
 
     translation: str
     analysis: str
+
+
+# ---------- 英语写作练习 ----------
+
+
+class WritingSubmitRequest(BaseModel):
+    """提交作文请求：题目 / 分类 / 难度 / 内容"""
+
+    topic: str
+    category: str
+    difficulty: str
+    content: str
+
+
+class WritingErrorItem(BaseModel):
+    """批改中的一处错误：原句（英文）+ 错误说明（中文）+ 修改建议（英文）"""
+
+    sentence: str = ""
+    error: str = ""
+    fix: str = ""
+
+
+class WritingFeedback(BaseModel):
+    """AI 批改结果：三个分项分 + 错误列表 + 建议 + 范文"""
+
+    grammar_score: int = 0
+    structure_score: int = 0
+    vocab_score: int = 0
+    errors: list[WritingErrorItem] = []
+    suggestions: str = ""
+    sample: str = ""
+
+
+class WritingSubmitResponse(BaseModel):
+    """提交作文响应：完整批改结果"""
+
+    id: int
+    topic: str
+    category: str
+    difficulty: str
+    content: str
+    score: int | None = None
+    feedback: WritingFeedback
+    created_at: datetime
+
+
+class WritingHistoryItem(BaseModel):
+    """写作历史列表项：题目 + 分数 + 时间"""
+
+    id: int
+    topic: str
+    category: str
+    difficulty: str
+    score: int | None = None
+    created_at: datetime
+
+
+class WritingDetailResponse(BaseModel):
+    """写作详情：内容 + 批改结果"""
+
+    id: int
+    topic: str
+    category: str
+    difficulty: str
+    content: str
+    score: int | None = None
+    feedback: WritingFeedback
+    created_at: datetime
