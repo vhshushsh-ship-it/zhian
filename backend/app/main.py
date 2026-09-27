@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import admin, ai_tutor, asr, auth, english_speaking, reading, stats, tts, words
+from .routers import admin, ai_tutor, asr, auth, english_speaking, reading, stats, tts, words, writing
 
 app = FastAPI(title="zhian API")
 
@@ -23,6 +23,7 @@ app.include_router(reading.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(tts.router, prefix="/api")
 app.include_router(words.router, prefix="/api")
+app.include_router(writing.router, prefix="/api")
 
 
 @app.get("/api/health")

@@ -22,6 +22,7 @@ from .models import (
     SpeakingScore,
     User,
     UserWordProgress,
+    WritingSubmission,
 )
 from .stats_service import compute_english_stats
 
@@ -223,6 +224,76 @@ def get_reading_summary(db: Session, user_id: int) -> str:
     return text
 
 
+# 写作错误关键词 → 类型（用于 AI 导师摘要里的「常见错误类型」）
+WRITING_ERROR_TYPES = [
+    ("时态", "时态"), ("语态", "语态"), ("主谓", "主谓一致"),
+    ("拼写", "拼写"), ("标点", "标点"), ("大小写", "大小写"),
+    ("冠词", "冠词"), ("介词", "介词"), ("连词", "连词"),
+    ("搭配", "搭配"), ("用词", "用词"), ("词汇", "用词"),
+    ("句式", "句式"), ("结构", "结构"), ("衔接", "衔接"), ("逻辑", "逻辑"),
+]
+
+
+def _classify_writing_error(text: str) -> str:
+    """根据错误说明文字里的关键词，粗分类错误类型。"""
+    for kw, label in WRITING_ERROR_TYPES:
+        if kw in text:
+            return label
+    return "其他"
+
+
+def _count_writing_error_types(subs: list[WritingSubmission]) -> dict[str, int]:
+    """统计若干篇写作里各类错误出现的次数（错误类型 → 次数）。"""
+    counts: dict[str, int] = {}
+    for s in subs:
+        try:
+            data = json.loads(s.feedback_json) if s.feedback_json else {}
+        except (json.JSONDecodeError, TypeError):
+            data = {}
+        for e in data.get("errors") or []:
+            if isinstance(e, dict) and e.get("error"):
+                t = _classify_writing_error(str(e["error"]).strip())
+                counts[t] = counts.get(t, 0) + 1
+    return counts
+
+
+def get_writing_summary(db: Session, user_id: int) -> str:
+    """写作练习摘要：最近写了几篇 + 平均分趋势 + 常见错误类型。"""
+    scored = (
+        db.query(WritingSubmission)
+        .filter(WritingSubmission.user_id == user_id, WritingSubmission.score.isnot(None))
+        .order_by(WritingSubmission.created_at.desc(), WritingSubmission.id.desc())
+        .limit(10)
+        .all()
+    )
+
+    if not scored:
+        return "写作练习：尚未开始"
+
+    n = len(scored)
+    avg = round(sum(s.score for s in scored) / n)
+    text = f"写作练习：最近写了{n}篇，平均{avg}分。"
+
+    # 趋势：取最近 5 次（按时间正序比较最早与最新一次）
+    recent5 = list(reversed(scored[:5]))
+    if len(recent5) >= 2:
+        first = recent5[0].score
+        last = recent5[-1].score
+        diff = last - first
+        if diff >= 5:
+            text += f"分数从{first}升到{last}，进步明显。"
+        elif diff <= -5:
+            text += f"分数从{first}降到{last}，需要加强。"
+        else:
+            text += f"分数稳定在{last}左右。"
+
+    top = sorted(_count_writing_error_types(scored).items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    if top:
+        text += "常见错误：" + "、".join(f"{t}({c}次)" for t, c in top) + "。"
+
+    return text
+
+
 def build_user_snapshot(db: Session, user_id: int) -> str:
     """查询用户真实学习数据，返回文本快照，拼进 AI 系统提示词。"""
     user = db.get(User, user_id)
@@ -297,8 +368,9 @@ def build_user_snapshot(db: Session, user_id: int) -> str:
     else:
         lines.append("- 最薄弱词：暂无")
 
-    # 口语 / 阅读摘要（单独函数，返回自然语言一句话）
+    # 口语 / 阅读 / 写作摘要（单独函数，返回自然语言一句话）
     lines.append(get_speaking_summary(db, user_id))
     lines.append(get_reading_summary(db, user_id))
+    lines.append(get_writing_summary(db, user_id))
 
     return "\n".join(lines)

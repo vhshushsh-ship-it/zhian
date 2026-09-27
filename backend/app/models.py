@@ -456,3 +456,29 @@ class ReadingHistory(Base):
     words_collected: Mapped[int] = mapped_column(
         Integer, server_default="0", nullable=False
     )
+
+
+class WritingSubmission(Base):
+    """英语写作练习提交：用户作文 + AI 批改结果（总分 + 结构化反馈）。"""
+
+    __tablename__ = "writing_submissions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 作文题目
+    topic: Mapped[str] = mapped_column(String(200), nullable=False)
+    # 分类：考研 / 四六级 / 日常
+    category: Mapped[str] = mapped_column(String(20), nullable=False)
+    # 难度：初级 / 中级 / 高级
+    difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
+    # 用户写的内容
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    # 总分（语法 40 + 结构 30 + 用词 30，AI 批改后填写，批改前为空）
+    score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # AI 批改结果（JSON 字符串：分项分 / 错误列表 / 建议 / 范文）
+    feedback_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False, index=True
+    )
