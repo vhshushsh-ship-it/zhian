@@ -14,10 +14,11 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..deps import get_current_user
-from ..models import User, UserWordProgress, UserWordSettings, Word
+from ..models import ReadingArticle, User, UserWordProgress, UserWordSettings, Word
 from ..stats_service import update_daily_stats
 from ..schemas import (
     BookItem,
+    CollectedWordItem,
     IntervalPreview,
     ReviewRequest,
     ReviewResponse,
@@ -209,6 +210,39 @@ def get_or_create_settings(db: Session, user_id: int) -> UserWordSettings:
     return settings
 
 
+def _resolve_source_labels(
+    db: Session, progresses: list[UserWordProgress]
+) -> dict[int, str | None]:
+    """word_id → 来源标题（如「来自《The Future of AI》」）。
+
+    优先取 progress.source；旧数据 source 为空但 source_article_id 有值时，
+    反查 reading_articles.title 兜底。
+    """
+    need_ids = {
+        p.source_article_id
+        for p in progresses
+        if p.source is None and p.source_article_id is not None
+    }
+    titles: dict[int, str] = {}
+    if need_ids:
+        titles = {
+            a.id: a.title
+            for a in db.query(ReadingArticle)
+            .filter(ReadingArticle.id.in_(need_ids))
+            .all()
+        }
+
+    labels: dict[int, str | None] = {}
+    for p in progresses:
+        if p.source:
+            labels[p.word_id] = p.source
+        elif p.source_article_id is not None and p.source_article_id in titles:
+            labels[p.word_id] = f"来自《{titles[p.source_article_id]}》"
+        else:
+            labels[p.word_id] = None
+    return labels
+
+
 # ---------- 接口 ----------
 
 
@@ -217,49 +251,75 @@ def today_queue(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """今日复习队列：当前词书下到期词（按当前 S 升序）+ 新词。"""
+    """今日复习队列：当前词书下到期词（按当前 S 升序）+ 新词。
+
+    - 普通词书（考研/四级/六级）：到期词 + 词库中未学新词（受每日上限约束）；
+    - 我的生词：从外刊收集的生词（source_article_id 非空），
+      到期词 + 已收集未复习的新词，不设每日上限。
+    """
     today = date.today()
 
     settings = get_or_create_settings(db, current_user.id)
-    tag = _book_tag(settings.current_book)
-    like = f"%{tag}%"
-
-    # 当前词书下的全部词 + 该用户全部进度
-    book_word_ids = {
-        w.id for w in db.query(Word).filter(Word.tags.like(like)).all()
-    }
 
     progresses = (
         db.query(UserWordProgress)
         .filter(UserWordProgress.user_id == current_user.id)
         .all()
     )
-    progressed_word_ids = [p.word_id for p in progresses]
+    source_by_word_id = _resolve_source_labels(db, progresses)
 
-    # a. 到期词：属于当前词书且 next_review_date <= 今天，按当前 S 升序
-    due = [
-        (current_strength(p.memory_strength, p.last_review_at), p)
-        for p in progresses
-        if p.word_id in book_word_ids
-        and p.next_review_date is not None
-        and p.next_review_date <= today
-    ]
+    is_mine = settings.current_book == "mine"
+
+    due: list[tuple[float, UserWordProgress]] = []
+    new_words: list[Word] = []
+    empty_message: str | None = None
+
+    if is_mine:
+        collected = [p for p in progresses if p.source_article_id is not None]
+        if not collected:
+            empty_message = "还没有生词，去外刊精读里添加吧"
+        # a. 到期词：已收集且 next_review_date <= 今天，按当前 S 升序
+        due = [
+            (current_strength(p.memory_strength, p.last_review_at), p)
+            for p in collected
+            if p.next_review_date is not None and p.next_review_date <= today
+        ]
+        # b. 新词：已收集但从未复习的生词全部进入队列（不设每日上限）
+        for p in sorted(
+            (p for p in collected if p.last_review_at is None),
+            key=lambda p: p.word_id,
+        ):
+            w = db.get(Word, p.word_id)
+            if w is not None:
+                new_words.append(w)
+    else:
+        tag = _book_tag(settings.current_book)
+        like = f"%{tag}%"
+        book_word_ids = {
+            w.id for w in db.query(Word).filter(Word.tags.like(like)).all()
+        }
+        due = [
+            (current_strength(p.memory_strength, p.last_review_at), p)
+            for p in progresses
+            if p.word_id in book_word_ids
+            and p.next_review_date is not None
+            and p.next_review_date <= today
+        ]
+        # 新词上限：读用户设置；到期词 > 30 时递减（每多 1 个复习词减 1，最少 0）
+        target_new = settings.daily_new_goal
+        if len(due) > 30:
+            target_new = max(0, settings.daily_new_goal - (len(due) - 30))
+        if target_new > 0:
+            progressed_word_ids = [p.word_id for p in progresses]
+            q = db.query(Word).filter(Word.tags.like(like))
+            if progressed_word_ids:
+                q = q.filter(~Word.id.in_(progressed_word_ids))
+            new_words = q.order_by(Word.id.asc()).limit(target_new).all()
+
     due.sort(key=lambda x: x[0])
     review_count = len(due)
 
-    # c. 新词上限：读用户设置；到期词 > 30 时递减（每多 1 个复习词减 1，最少 0）
-    target_new = settings.daily_new_goal
-    if review_count > 30:
-        target_new = max(0, settings.daily_new_goal - (review_count - 30))
-
-    new_words: list[Word] = []
-    if target_new > 0:
-        q = db.query(Word).filter(Word.tags.like(like))
-        if progressed_word_ids:
-            q = q.filter(~Word.id.in_(progressed_word_ids))
-        new_words = q.order_by(Word.id.asc()).limit(target_new).all()
-
-    # d. 组装队列：先到期词，再新词（每项带三档间隔预览）
+    # 组装队列：先到期词，再新词（每项带三档间隔预览 + 来源标题）
     items: list[TodayQueueItem] = []
     index = 0
     for cur_s, p in due:
@@ -276,6 +336,7 @@ def today_queue(
                 is_new=False,
                 index=index,
                 previews=_previews_for(cur_s),
+                source=source_by_word_id.get(p.word_id),
             )
         )
         index += 1
@@ -290,6 +351,7 @@ def today_queue(
                 is_new=True,
                 index=index,
                 previews=_previews_for(0.0),
+                source=source_by_word_id.get(w.id),
             )
         )
         index += 1
@@ -299,6 +361,7 @@ def today_queue(
         review_count=review_count,
         new_count=len(new_words),
         items=items,
+        empty_message=empty_message,
     )
 
 
@@ -354,7 +417,7 @@ def books(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """三本词书的统计信息（只统计考研/四级/六级）。"""
+    """词书统计：考研/四级/六级 + 我的生词。"""
     progresses = (
         db.query(UserWordProgress)
         .filter(UserWordProgress.user_id == current_user.id)
@@ -402,7 +465,70 @@ def books(
             )
         )
 
+    # 我的生词：从外刊精读收集的生词（source_article_id 非空）
+    collected = [p for p in progresses if p.source_article_id is not None]
+    total = len(collected)
+    learned = 0
+    mastered = 0
+    familiar = 0
+    medium = 0
+    weak = 0
+    for p in collected:
+        if p.last_review_at is None:
+            continue
+        learned += 1
+        if p.is_mastered:
+            mastered += 1
+        s = current_strength(p.memory_strength, p.last_review_at)
+        if s >= 70:
+            familiar += 1
+        elif s >= 30:
+            medium += 1
+        else:
+            weak += 1
+
+    result.append(
+        BookItem(
+            key="mine",  # type: ignore[arg-type]
+            label="我的生词",
+            total=total,
+            learned=learned,
+            mastered=mastered,
+            familiar=familiar,
+            medium=medium,
+            weak=weak,
+            unlearned=total - learned,
+        )
+    )
+
     return result
+
+
+@router.get("/collected", response_model=list[CollectedWordItem])
+def collected_words(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """我的生词：从外刊精读收集的生词列表（含来源文章标题），用于选词页展示。"""
+    progresses = (
+        db.query(UserWordProgress)
+        .filter(
+            UserWordProgress.user_id == current_user.id,
+            UserWordProgress.source_article_id.isnot(None),
+        )
+        .order_by(UserWordProgress.id.desc())
+        .all()
+    )
+    labels = _resolve_source_labels(db, progresses)
+    items: list[CollectedWordItem] = []
+    for p in progresses:
+        word = db.get(Word, p.word_id)
+        if word is None:
+            continue
+        items.append(
+            CollectedWordItem(id=word.id, word=word.word, source=labels.get(p.word_id))
+        )
+    return items
 
 
 @router.get("/settings", response_model=WordSettingsResponse)

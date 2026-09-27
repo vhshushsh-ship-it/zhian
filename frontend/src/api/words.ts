@@ -5,8 +5,8 @@ import api from './client'
 /** 复习反馈：认识 / 不确定 / 不认识 */
 export type Feedback = 'known' | 'vague' | 'forgotten'
 
-/** 词书 key：考研 / 四级 / 六级 */
-export type BookKey = 'kaoyan' | 'cet4' | 'cet6'
+/** 词书 key：考研 / 四级 / 六级 / 我的生词 */
+export type BookKey = 'kaoyan' | 'cet4' | 'cet6' | 'mine'
 
 /** 单个反馈档位的间隔预览文案 */
 export interface IntervalPreview {
@@ -30,6 +30,7 @@ export interface TodayQueueItem {
   is_new: boolean
   index: number
   previews: TodayQueuePreviews
+  source: string | null
 }
 
 /** 今日复习队列 */
@@ -38,6 +39,7 @@ export interface TodayQueueResponse {
   review_count: number
   new_count: number
   items: TodayQueueItem[]
+  empty_message: string | null
 }
 
 /** 单词释义 */
@@ -102,6 +104,13 @@ export interface BookItem {
   unlearned: number
 }
 
+/** 我的生词列表项 */
+export interface CollectedWord {
+  id: number
+  word: string
+  source: string | null
+}
+
 /** 用户背单词设置 */
 export interface WordSettings {
   current_book: BookKey
@@ -130,9 +139,14 @@ export function getStats() {
   return api.get<WordStats>('/words/stats')
 }
 
-/** 获取三本词书的统计信息 */
+/** 获取各词书的统计信息（考研 / 四级 / 六级 / 我的生词） */
 export function getBooks() {
   return api.get<BookItem[]>('/words/books')
+}
+
+/** 获取我的生词列表（从外刊精读收集的生词 + 来源标题） */
+export function getCollectedWords() {
+  return api.get<CollectedWord[]>('/words/collected')
 }
 
 /** 获取用户背单词设置 */

@@ -264,6 +264,8 @@ class UserWordProgress(Base):
     source_article_id: Mapped[int | None] = mapped_column(
         ForeignKey("reading_articles.id"), nullable=True, index=True
     )
+    # 来源文章标题（如「来自《The Future of AI》」）：用于「我的生词」展示来源；词库正常学习的词为 NULL
+    source: Mapped[str | None] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )

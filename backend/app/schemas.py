@@ -255,6 +255,8 @@ class TodayQueueItem(BaseModel):
     is_new: bool
     index: int
     previews: TodayQueuePreviews
+    # 来源文章标题（如「来自《The Future of AI》」）：仅「我的生词」中的生词非空
+    source: str | None = None
 
 
 class TodayQueueResponse(BaseModel):
@@ -264,6 +266,8 @@ class TodayQueueResponse(BaseModel):
     review_count: int
     new_count: int
     items: list[TodayQueueItem]
+    # 空态文案：当前词书无词时的提示（如「我的生词」为空时提示去外刊精读添加）
+    empty_message: str | None = None
 
 
 class WordDetailResponse(BaseModel):
@@ -313,7 +317,7 @@ class WordStatsResponse(BaseModel):
     streak_days: int
 
 
-BookKey = Literal["kaoyan", "cet4", "cet6"]
+BookKey = Literal["kaoyan", "cet4", "cet6", "mine"]
 
 
 class BookItem(BaseModel):
@@ -328,6 +332,14 @@ class BookItem(BaseModel):
     medium: int
     weak: int
     unlearned: int
+
+
+class CollectedWordItem(BaseModel):
+    """我的生词列表项：单词 + 来源文章标题"""
+
+    id: int
+    word: str
+    source: str | None = None
 
 
 class WordSettingsResponse(BaseModel):

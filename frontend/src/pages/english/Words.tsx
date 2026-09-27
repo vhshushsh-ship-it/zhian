@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../api/client'
 import { getTtsUrl } from '../../api/english'
 import {
   getBooks,
+  getCollectedWords,
   getSettings,
   getStats,
   getTodayQueue,
@@ -14,6 +15,7 @@ import {
   updateSettings,
   type BookItem,
   type BookKey,
+  type CollectedWord,
   type Feedback,
   type TodayQueueItem,
   type WordDetail,
@@ -160,6 +162,7 @@ function ReviewPanel({ onNavigate }: { onNavigate: (v: WordsView) => void }) {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [emptyMessage, setEmptyMessage] = useState<string | null>(null)
 
   const [knownCount, setKnownCount] = useState(0)
   const [vagueCount, setVagueCount] = useState(0)
@@ -180,6 +183,7 @@ function ReviewPanel({ onNavigate }: { onNavigate: (v: WordsView) => void }) {
       try {
         const res = await getTodayQueue()
         setQueue(res.data.items)
+        setEmptyMessage(res.data.empty_message ?? null)
       } catch (err) {
         setError(getErrorMessage(err))
       }
@@ -279,7 +283,10 @@ function ReviewPanel({ onNavigate }: { onNavigate: (v: WordsView) => void }) {
     setDetail(null)
     setLoading(true)
     getTodayQueue()
-      .then((res) => setQueue(res.data.items))
+      .then((res) => {
+        setQueue(res.data.items)
+        setEmptyMessage(res.data.empty_message ?? null)
+      })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false))
   }
@@ -300,8 +307,8 @@ function ReviewPanel({ onNavigate }: { onNavigate: (v: WordsView) => void }) {
         </div>
       ) : total === 0 ? (
         <div className="review-empty">
-          <div className="review-empty-icon">✅</div>
-          <p className="review-empty-text">今日任务已完成</p>
+          <div className="review-empty-icon">{emptyMessage ? '📖' : '✅'}</div>
+          <p className="review-empty-text">{emptyMessage ?? '今日任务已完成'}</p>
           <button className="review-done-btn" onClick={() => onNavigate('select')}>
             去选词
           </button>
@@ -365,6 +372,9 @@ function ReviewPanel({ onNavigate }: { onNavigate: (v: WordsView) => void }) {
                     </svg>
                   </button>
                 </div>
+                {currentItem.source && (
+                  <div className="review-source">{currentItem.source}</div>
+                )}
               </div>
 
               {/* 主体：正面回忆 / 背面答案 */}
@@ -482,19 +492,22 @@ function SelectPanel() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [collected, setCollected] = useState<CollectedWord[]>([])
   const [search, setSearch] = useState('')
   const [editingGoal, setEditingGoal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
 
   const load = async () => {
     try {
-      const [booksRes, settingsRes, queueRes] = await Promise.all([
+      const [booksRes, settingsRes, queueRes, collectedRes] = await Promise.all([
         getBooks(),
         getSettings(),
         getTodayQueue(),
+        getCollectedWords(),
       ])
       setBooks(booksRes.data)
       setSettings(settingsRes.data)
+      setCollected(collectedRes.data)
       setQueueCounts({
         review: queueRes.data.review_count,
         newCount: queueRes.data.new_count,
@@ -614,6 +627,7 @@ function SelectPanel() {
           <div className="select-books">
             {filteredBooks.map((book) => {
               const isCurrent = book.key === settings?.current_book
+              const isMine = book.key === 'mine'
               const pct = book.total > 0 ? Math.round((book.learned / book.total) * 100) : 0
               return (
                 <div
@@ -627,23 +641,49 @@ function SelectPanel() {
                       {isCurrent ? '当前学习 ✓' : '点击切换'}
                     </span>
                   </div>
-                  <div className="select-book-progress">
-                    <div className="select-book-progress-track">
-                      <div
-                        className="select-book-progress-fill"
-                        style={{ width: `${pct}%` }}
-                      />
+                  {isMine ? (
+                    <div className="select-mine">
+                      {collected.length === 0 ? (
+                        <p className="select-mine-empty">还没有生词，去外刊精读里添加吧</p>
+                      ) : (
+                        <>
+                          <div className="select-mine-count">
+                            共 {collected.length} 个生词
+                          </div>
+                          <ul className="select-mine-list">
+                            {collected.map((cw) => (
+                              <li key={cw.id} className="select-mine-item">
+                                <span className="select-mine-word">{cw.word}</span>
+                                {cw.source && (
+                                  <span className="select-mine-source">{cw.source}</span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
                     </div>
-                  </div>
-                  <div className="select-book-stats">
-                    <span className="s-familiar">熟悉 {book.familiar}</span>
-                    <span className="s-medium">一般 {book.medium}</span>
-                    <span className="s-weak">不熟 {book.weak}</span>
-                    <span className="s-unlearned">未学 {book.unlearned}</span>
-                  </div>
-                  <div className="select-book-count">
-                    已学 {book.learned} / 共 {book.total}
-                  </div>
+                  ) : (
+                    <>
+                      <div className="select-book-progress">
+                        <div className="select-book-progress-track">
+                          <div
+                            className="select-book-progress-fill"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="select-book-stats">
+                        <span className="s-familiar">熟悉 {book.familiar}</span>
+                        <span className="s-medium">一般 {book.medium}</span>
+                        <span className="s-weak">不熟 {book.weak}</span>
+                        <span className="s-unlearned">未学 {book.unlearned}</span>
+                      </div>
+                      <div className="select-book-count">
+                        已学 {book.learned} / 共 {book.total}
+                      </div>
+                    </>
+                  )}
                 </div>
               )
             })}
