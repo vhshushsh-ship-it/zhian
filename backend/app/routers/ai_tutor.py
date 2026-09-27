@@ -44,7 +44,8 @@ from ..schemas import (
     UpdateAiProfileRequest,
     WeekDayTasks,
 )
-from ..ai_tutor_service import TOPIC_LABELS, build_user_snapshot
+from ..ai_tutor_service import build_user_snapshot
+from ..speaking_topics import topic_display
 from .english_speaking import call_deepseek
 
 router = APIRouter(prefix="/ai-tutor", tags=["ai-tutor"])
@@ -521,7 +522,7 @@ def _speaking_advice(db: Session, user_id: int) -> tuple[str, bool]:
         .order_by(SpeakingConversation.updated_at.desc())
         .first()
     )
-    topic = TOPIC_LABELS.get(conv.topic, conv.topic) if conv else "日常对话"
+    topic = topic_display(conv.topic) if conv else "日常对话"
     return topic, grammar_low
 
 

@@ -2,8 +2,8 @@ import api from './client'
 
 // ---------- 类型定义 ----------
 
-/** 话题：日常对话 / 面试 / 旅游 / 校园 */
-export type Topic = 'daily' | 'interview' | 'travel' | 'campus'
+/** 话题：具体话题中文名（如「打招呼」），归属某个大类 */
+export type Topic = string
 
 /** 难度：初级 / 中级 / 高级 */
 export type Level = 'beginner' | 'intermediate' | 'advanced'

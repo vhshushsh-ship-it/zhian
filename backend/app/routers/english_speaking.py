@@ -21,6 +21,7 @@ from ..config import settings
 from ..database import get_db
 from ..deps import get_current_user
 from ..models import SpeakingConversation, SpeakingMessage, SpeakingScore, User
+from ..speaking_topics import topic_display_with_group
 from ..stats_service import update_daily_stats
 from ..schemas import (
     ConversationDetail,
@@ -39,14 +40,7 @@ from ..schemas import (
 
 router = APIRouter(prefix="/english/speaking", tags=["english-speaking"])
 
-# 话题中文名与难度中文名映射
-TOPIC_NAMES = {
-    "daily": "日常对话",
-    "interview": "面试",
-    "travel": "旅游",
-    "campus": "校园",
-}
-
+# 难度中文名映射
 LEVEL_NAMES = {
     "beginner": "初级",
     "intermediate": "中级",
@@ -66,7 +60,7 @@ REQUEST_TIMEOUT = 60.0
 
 def build_system_prompt(topic: str, level: str) -> str:
     """构建系统提示词：角色 + 话题 + 难度 + JSON 输出要求。"""
-    topic_name = TOPIC_NAMES[topic]
+    topic_name = topic_display_with_group(topic)
     level_name = LEVEL_NAMES[level]
     level_guide = LEVEL_GUIDE[level]
 

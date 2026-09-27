@@ -18,17 +18,10 @@ from .models import (
     UserWordSettings,
     Word,
 )
+from .speaking_topics import topic_display
 
 # 词书 key → 显示名（与 words.py 的 BOOKS 保持一致）
 BOOK_LABELS = {"kaoyan": "考研英语", "cet4": "四级英语", "cet6": "六级英语"}
-
-# 口语话题 key → 显示名（与 english_speaking.py 的 TOPIC_NAMES 保持一致）
-TOPIC_LABELS = {
-    "daily": "日常对话",
-    "interview": "面试",
-    "travel": "旅游",
-    "campus": "校园",
-}
 
 # update_daily_stats 允许累加的字段白名单（避免 setattr 到任意属性）
 _DAILY_FIELDS = {
@@ -177,7 +170,7 @@ def compute_english_stats(db: Session, user_id: int) -> dict:
     # 常练话题 TOP5（按次数降序）
     topic_counts: dict[str, int] = {}
     for c in convs:
-        label = TOPIC_LABELS.get(c.topic, c.topic)
+        label = topic_display(c.topic)
         topic_counts[label] = topic_counts.get(label, 0) + 1
     topics = [
         {"topic": label, "count": count}

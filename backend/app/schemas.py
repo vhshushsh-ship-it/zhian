@@ -82,7 +82,7 @@ class AdminStatsResponse(BaseModel):
 
 # ---------- 英语口语练习 ----------
 
-Topic = Literal["daily", "interview", "travel", "campus"]
+Topic = str  # 口语话题：存具体话题中文名（如「打招呼」），见 speaking_topics.py
 Level = Literal["beginner", "intermediate", "advanced"]
 
 

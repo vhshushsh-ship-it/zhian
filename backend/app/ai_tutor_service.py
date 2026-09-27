@@ -24,15 +24,8 @@ from .models import (
     UserWordProgress,
     WritingSubmission,
 )
+from .speaking_topics import GROUP_LABELS, topic_display, topic_group_label
 from .stats_service import compute_english_stats
-
-# 口语话题 key → 显示名（与 stats_service / english_speaking 保持一致）
-TOPIC_LABELS = {
-    "daily": "日常对话",
-    "interview": "面试",
-    "travel": "旅游",
-    "campus": "校园",
-}
 
 # 口语难度 key → 显示名（与 english_speaking 保持一致）
 LEVEL_LABELS = {
@@ -40,9 +33,6 @@ LEVEL_LABELS = {
     "intermediate": "中级",
     "advanced": "高级",
 }
-
-# 全部口语话题（用于识别「没练过」的话题）
-ALL_TOPICS = list(TOPIC_LABELS.keys())
 
 
 def _count_error_types(scores: list[SpeakingScore]) -> dict[str, int]:
@@ -148,17 +138,18 @@ def get_speaking_summary(db: Session, user_id: int) -> str:
         )
 
         practiced = sorted({c.topic for c in convs if c.topic})
-        practiced_labels = "、".join(TOPIC_LABELS.get(t, t) for t in practiced)
-        missing = [TOPIC_LABELS.get(t, t) for t in ALL_TOPICS if t not in practiced]
+        practiced_labels = "、".join(topic_display(t) for t in practiced)
+        practiced_groups = {topic_group_label(t) for t in practiced if topic_group_label(t)}
+        missing_groups = [label for label in GROUP_LABELS.values() if label not in practiced_groups]
 
         latest = convs[0]  # 已按 updated_at 倒序
-        latest_topic = TOPIC_LABELS.get(latest.topic, latest.topic)
+        latest_topic = topic_display(latest.topic)
         latest_level = LEVEL_LABELS.get(latest.level, latest.level)
 
         parts.append(f"最近7天对话{convs_7d}次，累计说{total_sentences}句英语。")
         parts.append(f"练过话题：{practiced_labels or '无'}。")
-        if missing:
-            parts.append(f"还没练过：{'、'.join(missing)}。")
+        if missing_groups:
+            parts.append(f"还没练过：{'、'.join(missing_groups)}。")
         parts.append(f"最近一次是{latest_topic}（{latest_level}）。")
 
     score_text = _build_score_text(scores)

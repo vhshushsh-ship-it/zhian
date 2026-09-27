@@ -6,6 +6,7 @@ import {
   type MouseEvent,
 } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Collapse } from 'antd'
 import { getErrorMessage } from '../../api/client'
 import {
   createConversation,
@@ -42,13 +43,31 @@ function genMessageId(): number {
 /** 语速选项（倍速） */
 const RATES = [0.5, 0.75, 1, 1.25, 1.5]
 
-/** 话题选项 */
-const TOPICS: { id: Topic; label: string }[] = [
-  { id: 'daily', label: '日常对话' },
-  { id: 'interview', label: '面试' },
-  { id: 'travel', label: '旅游' },
-  { id: 'campus', label: '校园' },
+/** 话题目录：10 个大类，每个大类下若干具体话题（topic 存具体话题中文名） */
+const TOPIC_GROUPS: { key: string; label: string; topics: string[] }[] = [
+  { key: 'daily', label: '日常对话', topics: ['打招呼', '天气', '兴趣爱好', '食物', '购物', '周末计划'] },
+  { key: 'interview', label: '面试求职', topics: ['自我介绍', '优缺点', '职业规划', '团队合作', '失败经历', '薪资期望'] },
+  { key: 'travel', label: '旅游出行', topics: ['机场值机', '酒店入住', '问路点餐', '景点游览', '购物砍价', '迷路求助'] },
+  { key: 'campus', label: '校园生活', topics: ['选课考试', '宿舍生活', '社团活动', '图书馆', '毕业规划'] },
+  { key: 'work', label: '工作办公', topics: ['邮件沟通', '会议讨论', '项目汇报', '同事协作', '远程办公'] },
+  { key: 'tech', label: '科技AI', topics: ['人工智能', '手机APP', '社交媒体', '网购', '未来科技'] },
+  { key: 'culture', label: '文化节日', topics: ['春节', '中秋', '圣诞节', '生日礼物', '餐桌礼仪'] },
+  { key: 'health', label: '健康运动', topics: ['健身', '饮食', '睡眠', '跑步', '心理健康'] },
+  { key: 'environment', label: '环境自然', topics: ['气候变化', '垃圾分类', '动物保护', '城市污染'] },
+  { key: 'society', label: '社会热点', topics: ['教育公平', '城市化', '老龄化', '远程办公趋势'] },
 ]
+
+/** 旧话题 key → 该类下第一个具体话题（兼容历史对话数据） */
+const LEGACY_TOPIC_MAP: Record<string, string> = {
+  daily: '打招呼',
+  interview: '自我介绍',
+  travel: '机场值机',
+  campus: '选课考试',
+}
+
+function normalizeTopic(raw: string): string {
+  return LEGACY_TOPIC_MAP[raw] ?? raw
+}
 
 /** 难度选项 */
 const LEVELS: { id: Level; label: string }[] = [
@@ -56,10 +75,6 @@ const LEVELS: { id: Level; label: string }[] = [
   { id: 'intermediate', label: '中级' },
   { id: 'advanced', label: '高级' },
 ]
-
-function topicLabel(id: Topic): string {
-  return TOPICS.find((t) => t.id === id)?.label ?? id
-}
 
 function levelLabel(id: Level): string {
   return LEVELS.find((l) => l.id === id)?.label ?? id
@@ -70,7 +85,7 @@ function welcomeMessage(topic: Topic, level: Level): Message {
   return {
     id: genMessageId(),
     role: 'system',
-    content: `欢迎来到口语练习！当前话题：${topicLabel(topic)}，难度：${levelLabel(level)}。用英语输入开始对话吧。`,
+    content: `欢迎来到口语练习！当前话题：${topic}，难度：${levelLabel(level)}。用英语输入开始对话吧。`,
   }
 }
 
@@ -106,7 +121,7 @@ function scoreColor(total: number): string {
 /** 构建评分上下文：话题难度 + AI 最近一句（若有） */
 function buildScoreContext(topic: Topic, level: Level, messages: Message[]): string {
   const lastAi = [...messages].reverse().find((m) => m.role === 'assistant')
-  const base = `${topicLabel(topic)}${levelLabel(level)}难度`
+  const base = `${topic}${levelLabel(level)}难度`
   return lastAi ? `${base}，AI刚说${lastAi.content}` : base
 }
 
@@ -135,7 +150,7 @@ export default function Speaking() {
   const [messages, setMessages] = useState<Message[]>([
     { id: genMessageId(), role: 'system', content: '加载中...' },
   ])
-  const [topic, setTopic] = useState<Topic>('daily')
+  const [topic, setTopic] = useState<Topic>('打招呼')
   const [level, setLevel] = useState<Level>('beginner')
   const [input, setInput] = useState('')
   const [suggestions, setSuggestions] = useState<SpeakingSuggestion[]>([])
@@ -249,7 +264,7 @@ export default function Speaking() {
     const res = await getConversation(id)
     const detail = res.data
     setCurrentId(detail.id)
-    setTopic(detail.topic)
+    setTopic(normalizeTopic(detail.topic))
     setLevel(detail.level)
     const loaded: Message[] = detail.messages.map((m) => ({
       id: genMessageId(),
@@ -683,20 +698,33 @@ export default function Speaking() {
               {/* 话题选择 */}
               <div className="speaking-tool-block">
                 <p className="speaking-tool-label">选择话题</p>
-                <div className="speaking-tool-buttons">
-                  {TOPICS.map((t) => (
-                    <button
-                      key={t.id}
-                      className={
-                        t.id === topic
-                          ? 'speaking-tool-btn speaking-tool-btn-active'
-                          : 'speaking-tool-btn'
-                      }
-                      onClick={() => handleTopicChange(t.id)}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
+                <div className="speaking-topic-scroll">
+                  <Collapse
+                    className="speaking-topic-collapse"
+                    accordion
+                    defaultActiveKey={TOPIC_GROUPS[0].key}
+                    items={TOPIC_GROUPS.map((g) => ({
+                      key: g.key,
+                      label: g.label,
+                      children: (
+                        <div className="speaking-topic-tags">
+                          {g.topics.map((t) => (
+                            <button
+                              key={t}
+                              className={
+                                t === topic
+                                  ? 'speaking-topic-tag speaking-topic-tag-active'
+                                  : 'speaking-topic-tag'
+                              }
+                              onClick={() => handleTopicChange(t)}
+                            >
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      ),
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -851,7 +879,7 @@ function SpeakingIntro({ onStart }: { onStart: () => void }) {
         <section className="english-detail-section">
           <h3 className="english-detail-heading">学习方法</h3>
           <ul className="english-detail-list">
-            <li>与 AI 进行真实场景对话，支持日常对话、面试、旅游、校园四大话题</li>
+            <li>与 AI 进行真实场景对话，覆盖日常、面试、旅游、校园、科技、文化等十大类话题</li>
             <li>三档难度适配：初级开口 → 中级流畅 → 高级思辨</li>
             <li>左侧对话区打字交流，中间实时翻译，右侧话题难度辅助</li>
             <li>AI 回复自动美式朗读，语速 0.5x-1.5x 可调</li>
