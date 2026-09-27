@@ -12,15 +12,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..deps import get_current_user
-from ..models import User, WritingSubmission
+from ..deps import get_current_admin, get_current_user
+from ..models import User, WritingSubmission, WritingTopic
 from ..schemas import (
+    GenerateTopicsRequest,
     WritingDetailResponse,
     WritingErrorItem,
     WritingFeedback,
     WritingHistoryItem,
     WritingSubmitRequest,
     WritingSubmitResponse,
+    WritingTopicItem,
 )
 from .english_speaking import call_deepseek
 
@@ -34,6 +36,21 @@ CATEGORY_NAMES = {"考研": "考研作文", "四六级": "四六级", "日常": 
 
 # 难度 key → 显示名（与前端一致）
 DIFFICULTY_NAMES = {"初级": "初级", "中级": "中级", "高级": "高级"}
+
+# 难度允许值（生成题目时校验 / 兜底）
+VALID_DIFFICULTIES = {"初级", "中级", "高级"}
+
+# 管理员 AI 生成题目：一次返回多个题目 + 各自难度
+TOPIC_GEN_PROMPT = (
+    "你是「知岸」英语学习平台的写作出题老师，为英语作文练习生成题目。\n"
+    "请严格只输出一个 JSON 对象（不要输出任何多余文字或代码块标记），格式如下：\n"
+    '{"topics": [{"topic": "作文题目1", "difficulty": "初级"}, '
+    '{"topic": "作文题目2", "difficulty": "中级"}]}\n'
+    "要求：\n"
+    "1. topics 数组长度必须恰好等于用户要求的数量。\n"
+    "2. difficulty 只能是「初级」「中级」「高级」之一。\n"
+    "3. 题目要契合分类，适合英语作文练习。"
+)
 
 
 def build_writing_prompt(topic: str, category: str, difficulty: str, content: str) -> str:
@@ -223,6 +240,99 @@ def writing_history(
         )
         for s in subs
     ]
+
+
+def _parse_topic_list(content: str) -> list[tuple[str, str]]:
+    """解析 AI 生成的题目列表，返回 (题目, 难度) 列表。"""
+    try:
+        data = json.loads(content)
+    except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AI 生成失败，请重试",
+        )
+    raw = data.get("topics") if isinstance(data, dict) else None
+    if not isinstance(raw, list):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AI 生成失败，请重试",
+        )
+    result: list[tuple[str, str]] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        topic = str(item.get("topic") or "").strip()
+        if not topic:
+            continue
+        difficulty = str(item.get("difficulty") or "").strip()
+        if difficulty not in VALID_DIFFICULTIES:
+            difficulty = "中级"
+        result.append((topic, difficulty))
+    return result
+
+
+@router.get("/topics", response_model=list[WritingTopicItem])
+def list_topics(
+    category: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """返回该分类下管理员生成的题目（预设题目由前端硬编码）。"""
+    topics = (
+        db.query(WritingTopic)
+        .filter(WritingTopic.category == category)
+        .order_by(WritingTopic.id.desc())
+        .limit(100)
+        .all()
+    )
+    return [
+        WritingTopicItem(id=t.id, category=t.category, topic=t.topic, difficulty=t.difficulty)
+        for t in topics
+    ]
+
+
+@router.post("/generate-topics", response_model=list[WritingTopicItem])
+def generate_topics(
+    payload: GenerateTopicsRequest,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin),
+):
+    """管理员调用 AI 生成该分类的作文题目，落库后返回生成的题目列表。"""
+    category = payload.category.strip()
+    if category not in CATEGORY_NAMES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="分类必须是 考研 / 四六级 / 日常 之一",
+        )
+
+    count = max(1, min(payload.count, 5))
+    messages = [
+        {"role": "system", "content": TOPIC_GEN_PROMPT},
+        {
+            "role": "user",
+            "content": f"请生成 {count} 个「{CATEGORY_NAMES[category]}」分类的作文题目。",
+        },
+    ]
+    raw = call_deepseek(messages)
+    pairs = _parse_topic_list(raw)
+    if not pairs:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AI 生成失败，请重试",
+        )
+
+    created = [
+        WritingTopic(category=category, topic=topic, difficulty=difficulty)
+        for topic, difficulty in pairs
+    ]
+    db.add_all(created)
+    db.flush()
+    result = [
+        WritingTopicItem(id=t.id, category=t.category, topic=t.topic, difficulty=t.difficulty)
+        for t in created
+    ]
+    db.commit()
+    return result
 
 
 @router.get("/{submission_id}", response_model=WritingDetailResponse)

@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'speaking', label: '口语练习', icon: '🎤', path: '/english/speaking' },
   { id: 'words', label: '单词背诵', icon: '📖', path: '/english/words' },
   { id: 'reading', label: '外刊精读', icon: '📚', path: '/english/reading' },
+  { id: 'writing', label: '写作练习', icon: '✍️', path: '/english/writing' },
   { id: 'stats', label: '学习数据', icon: '📊', path: '/english/stats' },
 ]
 
@@ -26,15 +27,17 @@ export default function EnglishHome() {
   const { user, logout } = useAuth()
   const location = useLocation()
 
-  // 单词 / 口语是应用式满高布局（含介绍页与主界面），内容区需去掉内边距、自身滚动
+  // 单词 / 口语 / 写作是应用式满高布局（含介绍页与主界面），内容区需去掉内边距、自身滚动
   const isFullBleed =
     location.pathname.startsWith('/english/words') ||
-    location.pathname.startsWith('/english/speaking')
+    location.pathname.startsWith('/english/speaking') ||
+    location.pathname.startsWith('/english/writing')
 
   // 全屏页面：隐藏左侧导航，内容占满整个屏幕宽度（主界面 / 文章列表 / 文章详情）
   const hideSidebar =
     location.pathname === '/english/words/practice' ||
     location.pathname === '/english/speaking/practice' ||
+    location.pathname === '/english/writing/practice' ||
     location.pathname === '/english/reading/list' ||
     /^\/english\/reading\/\d+$/.test(location.pathname)
 

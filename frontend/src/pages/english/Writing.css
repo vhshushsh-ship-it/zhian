@@ -1,0 +1,688 @@
+/* 英语写作练习：写作区 + AI 批改反馈 + 辅助功能 三栏布局 */
+
+/* 介绍页：复用 EnglishHome 的标题/卡片/按钮类，撑满内容区 */
+.writing-intro {
+  flex: 1;
+  min-height: 0;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+/* 外层容器：占满导航栏以下高度，左右各留 5% 边距 */
+.writing-layout {
+  width: 100%;
+  height: calc(100vh - 64px);
+  padding: 0 5%;
+  background: #f5f5f5;
+  display: flex;
+  gap: 0;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* 三栏卡片容器 */
+.writing-cards {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* 每栏卡片 */
+.writing-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+  border-right: 2px solid #f0f0f0;
+}
+
+/* 左栏 40% / 中栏 30% / 右栏 30% */
+.writing-write {
+  flex: 0 0 40%;
+}
+
+.writing-feedback {
+  flex: 0 0 30%;
+}
+
+/* 最后一栏（右栏）去掉右边框 */
+.writing-tools {
+  flex: 0 0 30%;
+  border-right: none;
+}
+
+/* 每栏标题区：浅灰背景 + 红色底边线 */
+.writing-col-header {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  background: #f8f8f8;
+  border-bottom: 2px solid #e60012;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* 栏目内容区：白色背景，内部滚动 */
+.writing-feedback-body,
+.writing-tools-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  background: #fff;
+}
+
+/* ---------- 左栏：写作区 ---------- */
+
+.writing-write-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  background: #fff;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* 题目行：标签 + 输入框 */
+.writing-topic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.writing-topic-label {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+}
+
+.writing-topic-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.writing-topic-input:focus {
+  border-color: #e60012;
+}
+
+/* 大文本框：至少 400px 高 */
+.writing-textarea {
+  flex: 1;
+  min-height: 400px;
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.writing-textarea:focus {
+  outline: none;
+  border-color: #e60012;
+}
+
+/* 底部：字数 + 提交按钮 */
+.writing-write-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.writing-word-count {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+.writing-error {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  color: #e60012;
+}
+
+/* 提交按钮：知岸红胶囊 */
+.writing-submit-btn {
+  flex-shrink: 0;
+  background: #e60012;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.writing-submit-btn:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(230, 0, 18, 0.28);
+}
+
+.writing-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- 中栏：AI 批改反馈 ---------- */
+
+.writing-feedback-placeholder {
+  margin: 0;
+  padding: 40px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+}
+
+.writing-score-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.writing-score-total-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.writing-score-total-unit {
+  margin-left: 4px;
+  font-size: 14px;
+  color: #666;
+}
+
+.writing-score-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.writing-score-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.writing-score-bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.writing-score-bar-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.writing-score-bar-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+
+.writing-score-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.writing-score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #e60012;
+  transition: width 0.4s ease;
+}
+
+/* 错误列表 */
+.writing-errors {
+  margin-bottom: 14px;
+}
+
+.writing-errors-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.writing-error-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.writing-error-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.writing-error-original {
+  color: #e60012;
+  text-decoration: line-through;
+}
+
+.writing-error-arrow {
+  color: #999;
+}
+
+.writing-error-fix {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.writing-error-issue {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 整体建议 */
+.writing-suggestions {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f5f5f5;
+}
+
+.writing-suggestions-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+
+.writing-suggestions-text {
+  margin: 0;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 参考范文（可折叠） */
+.writing-sample-toggle {
+  border: none;
+  background: none;
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+}
+
+.writing-sample-toggle:hover {
+  color: #e60012;
+}
+
+.writing-sample-text {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fafafa;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------- 右栏：辅助功能 ---------- */
+
+.writing-tool-block {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.writing-tool-block:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.writing-tool-label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+}
+
+.writing-tool-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 分类 / 难度按钮：未选中白底红边灰字，选中红色白字 */
+.writing-tool-btn {
+  padding: 8px 16px;
+  border: 1px solid #e60012;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.writing-tool-btn:hover {
+  background: #fef0f0;
+}
+
+.writing-tool-btn-active {
+  background: #e60012;
+  color: #fff;
+}
+
+.writing-tool-btn-active:hover {
+  background: #e60012;
+}
+
+/* 写作历史列表 */
+.writing-history-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+}
+
+.writing-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.writing-history-item:hover {
+  border-color: #e60012;
+  background: #fef0f0;
+}
+
+.writing-history-topic {
+  font-size: 13px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.writing-history-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ---------- 细滚动条 ---------- */
+
+.writing-write-body::-webkit-scrollbar,
+.writing-feedback-body::-webkit-scrollbar,
+.writing-tools-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.writing-write-body::-webkit-scrollbar-thumb,
+.writing-feedback-body::-webkit-scrollbar-thumb,
+.writing-tools-content::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.writing-write-body::-webkit-scrollbar-thumb:hover,
+.writing-feedback-body::-webkit-scrollbar-thumb:hover,
+.writing-tools-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* ---------- 响应式：窄屏下三栏纵向堆叠 ---------- */
+
+@media (max-width: 900px) {
+  .writing-layout {
+    height: auto;
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .writing-cards {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  .writing-write,
+  .writing-feedback,
+  .writing-tools {
+    flex: none;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .writing-tools {
+    border-bottom: none;
+  }
+
+  .writing-textarea {
+    min-height: 300px;
+  }
+}
+
+/* ---------- 右栏：题目选择 & AI 生成题目 ---------- */
+
+/* AI 生成题目按钮：浅红底 + 红色虚线边框 */
+.writing-gen-btn {
+  width: 100%;
+  padding: 10px 0;
+  border: 1px dashed #e60012;
+  border-radius: 10px;
+  background: #fef0f0;
+  color: #e60012;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.writing-gen-btn:hover {
+  background: #fde8ea;
+}
+
+/* 题目卡片列表：内部滚动（显示约 5 个，超出滚动）
+   块级布局；卡片间距用相邻兄弟 margin-top，末张卡片不设 margin-bottom，
+   避免最后一张卡片的 margin 被裁出滚动区导致滚不到 */
+.writing-topic-list {
+  display: block;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-bottom: 16px;
+  margin-bottom: 10px;
+}
+
+/* 题目卡片：白底、浅灰边框、圆角 8px，hover 变知岸红边框 */
+.writing-topic-card {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.writing-topic-card + .writing-topic-card {
+  margin-top: 8px;
+}
+
+.writing-topic-card:hover {
+  border-color: #e60012;
+}
+
+/* 选中：知岸红边框 + 浅红背景 */
+.writing-topic-card-active,
+.writing-topic-card-active:hover {
+  border-color: #e60012;
+  background: #fef0f0;
+  color: #e60012;
+  font-weight: 600;
+}
+
+/* ---------- AI 生成题目弹窗 ---------- */
+
+.writing-gen-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.writing-gen-modal {
+  width: 360px;
+  max-width: 90vw;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.writing-gen-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.writing-gen-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.writing-gen-modal-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.writing-gen-modal-close:hover {
+  color: #333;
+}
+
+.writing-gen-modal-body {
+  padding: 16px 20px;
+}
+
+.writing-gen-field-label {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+}
+
+.writing-gen-field-label:not(:first-child) {
+  margin-top: 16px;
+}
+
+.writing-gen-error {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #e60012;
+}
+
+.writing-gen-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.writing-gen-cancel {
+  padding: 8px 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  background: #fff;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.writing-gen-cancel:hover {
+  background: #f5f5f5;
+}
+
+.writing-gen-start {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 999px;
+  background: #e60012;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.writing-gen-start:hover:not(:disabled) {
+  background: #c5000f;
+}
+
+.writing-gen-start:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -702,3 +702,19 @@ class WritingDetailResponse(BaseModel):
     score: int | None = None
     feedback: WritingFeedback
     created_at: datetime
+
+
+class WritingTopicItem(BaseModel):
+    """管理员 AI 生成的写作题目"""
+
+    id: int
+    category: str
+    topic: str
+    difficulty: str
+
+
+class GenerateTopicsRequest(BaseModel):
+    """管理员生成题目请求：分类 + 数量"""
+
+    category: str
+    count: int = 3

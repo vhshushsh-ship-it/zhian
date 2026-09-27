@@ -482,3 +482,20 @@ class WritingSubmission(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False, index=True
     )
+
+
+class WritingTopic(Base):
+    """管理员 AI 生成的写作题目：按分类 / 难度存储，与前端预设题目一起展示。"""
+
+    __tablename__ = "writing_topics"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    # 分类：考研 / 四六级 / 日常
+    category: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    # 题目内容
+    topic: Mapped[str] = mapped_column(String(200), nullable=False)
+    # 难度：初级 / 中级 / 高级
+    difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False, index=True
+    )

@@ -17,6 +17,8 @@ import { ReadingContent } from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
 import { StatsContent } from './pages/english/Stats'
 import Words from './pages/english/Words'
+import WritingIntro from './pages/english/WritingIntro'
+import WritingPractice from './pages/english/WritingPractice'
 
 function Protected({ children }: { children: ReactElement }) {
   const { user, loading, demoMode } = useAuth()
@@ -109,6 +111,8 @@ export default function App() {
           <Route path="words/*" element={<Words />} />
           <Route path="speaking/*" element={<Speaking />} />
           <Route path="reading/*" element={<ReadingContent />} />
+          <Route path="writing" element={<WritingIntro />} />
+          <Route path="writing/practice" element={<WritingPractice />} />
           <Route path="stats" element={<StatsContent />} />
         </Route>
         <Route
