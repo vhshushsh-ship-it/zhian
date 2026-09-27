@@ -11,6 +11,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { id: 'tasks', label: '学习任务', icon: '📅', path: '/english/tasks' },
   { id: 'speaking', label: '口语练习', icon: '🎤', path: '/english/speaking' },
   { id: 'words', label: '单词背诵', icon: '📖', path: '/english/words' },
   { id: 'reading', label: '外刊精读', icon: '📚', path: '/english/reading' },

@@ -1,3 +1,4 @@
+import { ConfigProvider } from 'antd'
 import { type ReactElement } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
@@ -16,6 +17,7 @@ import Practice from './pages/math/Practice'
 import { ReadingContent } from './pages/english/Reading'
 import Speaking from './pages/english/Speaking'
 import { StatsContent } from './pages/english/Stats'
+import Tasks from './pages/english/Tasks'
 import Words from './pages/english/Words'
 import WritingIntro from './pages/english/WritingIntro'
 import WritingPractice from './pages/english/WritingPractice'
@@ -56,7 +58,7 @@ function AdminRoute({ children }: { children: ReactElement }) {
 
 export default function App() {
   return (
-    <>
+    <ConfigProvider theme={{ token: { colorPrimary: '#e60012', borderRadius: 8 } }}>
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
@@ -108,6 +110,7 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/english/speaking" replace />} />
+          <Route path="tasks" element={<Tasks />} />
           <Route path="words/*" element={<Words />} />
           <Route path="speaking/*" element={<Speaking />} />
           <Route path="reading/*" element={<ReadingContent />} />
@@ -126,6 +129,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AiTutor />
-    </>
+    </ConfigProvider>
   )
 }
