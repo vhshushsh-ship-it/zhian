@@ -1,0 +1,221 @@
+/* 学习任务页：周/月视图 + 选中日任务 */
+
+.tasks-page {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.tasks-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.tasks-error {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #e60012;
+}
+
+.tasks-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tasks-refresh-btn {
+  border: 1px solid #e60012;
+  background: #fff;
+  color: #e60012;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tasks-refresh-btn:hover:not(:disabled) {
+  background: #e60012;
+  color: #fff;
+}
+
+.tasks-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- 周视图：7 天卡片 ---------- */
+
+.tasks-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.tasks-day-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 6px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.tasks-day-card:hover {
+  border-color: #e60012;
+}
+
+/* 今天：知岸红边框 */
+.tasks-day-card-today {
+  border: 2px solid #e60012;
+}
+
+/* 选中：浅红背景 */
+.tasks-day-card-selected {
+  background: #fef0f0;
+}
+
+.tasks-day-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.tasks-day-week {
+  font-size: 12px;
+  color: #999;
+}
+
+.tasks-day-count {
+  font-size: 11px;
+  color: #bbb;
+}
+
+/* 状态标记：有任务红点，全部完成绿勾 */
+.tasks-day-mark {
+  font-size: 14px;
+  color: #e60012;
+  height: 16px;
+  line-height: 16px;
+}
+
+.tasks-day-mark-done {
+  color: #16a34a;
+}
+
+/* ---------- 月视图：Calendar ---------- */
+
+.tasks-calendar {
+  max-width: 600px;
+  margin: 0 auto 24px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tasks-cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e60012;
+  margin-top: 2px;
+}
+
+.tasks-cal-check {
+  font-size: 11px;
+  color: #16a34a;
+  margin-top: 2px;
+}
+
+/* ---------- 选中日任务列表 ---------- */
+
+.tasks-detail {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.tasks-detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.tasks-detail-progress {
+  width: 130px;
+  margin: 0;
+}
+
+.tasks-detail-empty {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+}
+
+.tasks-detail-list .ant-list-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.tasks-detail-list .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.tasks-detail-text {
+  color: #333;
+}
+
+.tasks-detail-text-done {
+  color: #bbb;
+  text-decoration: line-through;
+}
+
+.tasks-detail-done {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+/* 响应式：窄屏下 7 卡片换行 */
+@media (max-width: 900px) {
+  .tasks-week {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

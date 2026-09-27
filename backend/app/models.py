@@ -499,3 +499,30 @@ class WritingTopic(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False, index=True
     )
+
+
+class UserDailyTask(Base):
+    """用户每日学习任务：记录每天各模块任务是否完成（任务标题由接口动态生成）。"""
+
+    __tablename__ = "user_daily_tasks"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "date", "task_type", name="uq_user_daily_tasks_user_date_type"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 任务日期
+    date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    # 任务类型：words / speaking / reading / writing
+    task_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    # 任务标题（信息冗余，展示时由接口按当天数据动态生成）
+    task_title: Mapped[str] = mapped_column(String(200), default="", nullable=False)
+    # 是否完成
+    done: Mapped[bool] = mapped_column(Boolean, server_default="0", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )

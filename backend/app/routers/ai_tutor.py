@@ -7,7 +7,7 @@
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -16,17 +16,36 @@ from sqlalchemy.orm import Session
 from ..config import settings
 from ..database import get_db
 from ..deps import get_current_user
-from ..models import AiTutorConversation, AiTutorMessage, User, UserAiProfile
+from ..models import (
+    AiTutorConversation,
+    AiTutorMessage,
+    ReadingArticle,
+    ReadingHistory,
+    SpeakingConversation,
+    SpeakingScore,
+    User,
+    UserAiProfile,
+    UserDailyTask,
+    UserWordProgress,
+    Word,
+    WritingSubmission,
+    WritingTopic,
+)
 from ..schemas import (
     AiProfileResponse,
     AiTutorConversationDetail,
     AiTutorConversationSummary,
     AiTutorSendRequest,
     AiTutorSendResponse,
+    CheckTaskRequest,
     ConversationIdResponse,
+    DailyTaskItem,
+    DailyTasksResponse,
     UpdateAiProfileRequest,
+    WeekDayTasks,
 )
-from ..ai_tutor_service import build_user_snapshot
+from ..ai_tutor_service import TOPIC_LABELS, build_user_snapshot
+from .english_speaking import call_deepseek
 
 router = APIRouter(prefix="/ai-tutor", tags=["ai-tutor"])
 
@@ -322,3 +341,486 @@ def delete_conversation(
     db.delete(conv)
     db.commit()
     return {"message": "删除成功"}
+
+
+# ---------- 学习日历 / 每日任务 ----------
+
+# 周几 → 当天附加任务类型（0=周一 ... 6=周日）
+_WEEKDAY_EXTRA = {
+    0: "speaking",  # 周一
+    1: "reading",   # 周二
+    2: "speaking",  # 周三
+    3: "reading",   # 周四
+    4: "speaking",  # 周五
+    5: "writing",   # 周六
+    6: "speaking",  # 周日（复习 + 总结）
+}
+
+# 语法分低于该值（满分 40）时标注「重点语法」
+GRAMMAR_WEAK_THRESHOLD = 28
+
+
+def _count_due_words(db: Session, user_id: int) -> int:
+    """今天到期待复习的单词数。"""
+    today = date.today()
+    return (
+        db.query(UserWordProgress)
+        .filter(
+            UserWordProgress.user_id == user_id,
+            UserWordProgress.next_review_date.isnot(None),
+            UserWordProgress.next_review_date <= today,
+        )
+        .count()
+    )
+
+
+def _speaking_advice(db: Session, user_id: int) -> tuple[str, bool]:
+    """推荐口语话题 + 是否语法薄弱（最近评分平均语法分低于阈值）。"""
+    scores = (
+        db.query(SpeakingScore)
+        .filter(SpeakingScore.user_id == user_id)
+        .order_by(SpeakingScore.created_at.desc(), SpeakingScore.id.desc())
+        .limit(10)
+        .all()
+    )
+    grammar_low = bool(scores) and (
+        sum(s.grammar for s in scores) / len(scores) < GRAMMAR_WEAK_THRESHOLD
+    )
+    conv = (
+        db.query(SpeakingConversation)
+        .filter(SpeakingConversation.user_id == user_id)
+        .order_by(SpeakingConversation.updated_at.desc())
+        .first()
+    )
+    topic = TOPIC_LABELS.get(conv.topic, conv.topic) if conv else "日常对话"
+    return topic, grammar_low
+
+
+# AI 生成任务标题的系统提示词（结合学习数据快照，产出具体可执行的任务标题）
+PLAN_PROMPT = (
+    "你是「知岸」英语学习平台的 AI 导师「小岸」，根据用户学习数据，为未来 7 天安排每日学习任务。\n"
+    "每天至少安排一个「背单词」任务，再根据到期词数、口语/阅读/写作最近表现与薄弱项，"
+    "酌情额外安排 0-3 个模块任务，每天总任务 1-4 个。\n"
+    "严格只输出一个 JSON 对象（不要输出任何多余文字或代码块标记），格式如下：\n"
+    '{"days": [{"date": "YYYY-MM-DD", "tasks": [{"type": "words", "title": "..."}, '
+    '{"type": "speaking", "title": "..."}]}]}\n'
+    "要求：\n"
+    "1. days 数组必须恰好 7 个，date 按我给的 7 天日期依次排列。\n"
+    "2. type 只能是 words / speaking / reading / writing 之一，同一天 type 不重复。\n"
+    "3. 每天必须有一个 type=words 的任务。\n"
+    "4. 标题具体到词/话题/文章/题目，例如「复习12个到期词（abandon, absorb）」「口语：练日常对话，重点注意时态」「外刊：重做《AI 进课堂》」「写作：写一篇关于环保的作文」。\n"
+    "5. 只输出 JSON。"
+)
+
+
+def _due_word_texts(db: Session, user_id: int, limit: int = 3) -> list[str]:
+    """到期待复习单词里最该复习的 N 个（按记忆强度升序、忘记次数降序）。"""
+    today = date.today()
+    rows = (
+        db.query(Word.word)
+        .join(UserWordProgress, UserWordProgress.word_id == Word.id)
+        .filter(
+            UserWordProgress.user_id == user_id,
+            UserWordProgress.next_review_date.isnot(None),
+            UserWordProgress.next_review_date <= today,
+        )
+        .order_by(
+            UserWordProgress.memory_strength.asc(),
+            UserWordProgress.forgotten_count.desc(),
+        )
+        .limit(limit)
+        .all()
+    )
+    return [r[0] for r in rows]
+
+
+def _reading_recommendation(db: Session, user_id: int) -> str | None:
+    """推荐一篇外刊：优先未读的最新文章，否则重做正确率最低的一篇。"""
+    read_ids = {
+        h.article_id
+        for h in db.query(ReadingHistory.article_id)
+        .filter(ReadingHistory.user_id == user_id)
+        .all()
+    }
+    articles = db.query(ReadingArticle).order_by(ReadingArticle.created_at.desc()).all()
+    for a in articles:
+        if a.id not in read_ids:
+            return a.title
+    worst = (
+        db.query(ReadingHistory)
+        .filter(
+            ReadingHistory.user_id == user_id,
+            ReadingHistory.quiz_score.isnot(None),
+        )
+        .order_by(ReadingHistory.quiz_score.asc())
+        .first()
+    )
+    if worst is not None:
+        art = db.get(ReadingArticle, worst.article_id)
+        if art is not None:
+            return art.title
+    return None
+
+
+def _writing_recommendation(db: Session, user_id: int) -> str | None:
+    """推荐一个写作题目：优先还没写过的，否则最新的；无库题目时给兜底题目。"""
+    written = {
+        s.topic
+        for s in db.query(WritingSubmission.topic)
+        .filter(WritingSubmission.user_id == user_id)
+        .all()
+    }
+    topics = db.query(WritingTopic).order_by(WritingTopic.created_at.desc()).all()
+    for t in topics:
+        if t.topic not in written:
+            return t.topic
+    if topics:
+        return topics[0].topic
+    return "关于环保的重要性"
+
+
+def _speaking_focus(db: Session, user_id: int) -> str:
+    """最近口语评分里出现最多的错误类型，作为口语练习重点。"""
+    scores = (
+        db.query(SpeakingScore)
+        .filter(SpeakingScore.user_id == user_id)
+        .order_by(SpeakingScore.created_at.desc(), SpeakingScore.id.desc())
+        .limit(10)
+        .all()
+    )
+    counts: dict[str, int] = {}
+    for s in scores:
+        try:
+            errors = json.loads(s.errors_json) if s.errors_json else []
+        except (json.JSONDecodeError, TypeError):
+            errors = []
+        for e in errors:
+            if isinstance(e, dict) and e.get("type"):
+                t = str(e["type"]).strip()
+                counts[t] = counts.get(t, 0) + 1
+    if counts:
+        top = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+        return f"重点注意{top}"
+    return ""
+
+
+def _last_timestamp(db: Session, user_id: int, model, column) -> datetime | None:
+    """某模块最近一次时间（按传入列倒序取最新）。"""
+    row = (
+        db.query(column)
+        .filter(model.user_id == user_id)
+        .order_by(column.desc())
+        .first()
+    )
+    return row[0] if row else None
+
+
+def _catchup_flags(db: Session, user_id: int) -> dict[str, bool]:
+    """补位开关：某模块很久没练时，把它额外安排到今天/明天。"""
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    now = datetime.now()
+    extra_today = _WEEKDAY_EXTRA[today.weekday()]
+    extra_tomorrow = _WEEKDAY_EXTRA[tomorrow.weekday()]
+
+    last_speaking = _last_timestamp(
+        db, user_id, SpeakingConversation, SpeakingConversation.updated_at
+    )
+    last_reading = _last_timestamp(db, user_id, ReadingHistory, ReadingHistory.read_at)
+    last_writing = _last_timestamp(
+        db, user_id, WritingSubmission, WritingSubmission.created_at
+    )
+
+    return {
+        "speaking": extra_today != "speaking"
+        and (last_speaking is None or last_speaking < now - timedelta(days=3)),
+        "reading": extra_tomorrow != "reading"
+        and (last_reading is None or last_reading < now - timedelta(days=7)),
+        "writing": extra_tomorrow != "writing"
+        and (last_writing is None or last_writing < now - timedelta(days=5)),
+    }
+
+
+def _plan_context(db: Session, user_id: int) -> dict:
+    """任务标题所需的模块上下文（AI 与兜底标题共用）。"""
+    topic, grammar_low = _speaking_advice(db, user_id)
+    return {
+        "due_count": _count_due_words(db, user_id),
+        "due_words": _due_word_texts(db, user_id, 3),
+        "topic": topic,
+        "grammar_low": grammar_low,
+        "speaking_focus": _speaking_focus(db, user_id),
+        "reading_article": _reading_recommendation(db, user_id),
+        "writing_topic": _writing_recommendation(db, user_id),
+    }
+
+
+# 任务的固定展示顺序（words 为每日锚点，其余按需由 AI 增补）
+TYPE_ORDER = ["words", "speaking", "reading", "writing"]
+
+# 每日任务类型（AI 生成与兜底共用这 4 类）
+VALID_TASK_TYPES = {"words", "speaking", "reading", "writing"}
+
+
+def _fallback_title(d: date, task_type: str, ctx: dict) -> str:
+    """兜底标题：AI 不可用时，用真实数据拼出具体标题。"""
+    if task_type == "words":
+        if ctx["due_count"] > 0:
+            base = f"复习{ctx['due_count']}个到期单词"
+            if ctx["due_words"]:
+                base += "（" + "、".join(ctx["due_words"][:2]) + "）"
+            return base
+        return "学习新单词"
+    if task_type == "speaking":
+        if d.weekday() == 6:
+            return "口语：总结本周所学，练10分钟"
+        base = f"口语：练10分钟{ctx['topic']}"
+        if ctx["speaking_focus"]:
+            base += "，" + ctx["speaking_focus"]
+        elif ctx["grammar_low"]:
+            base += "，重点语法"
+        return base
+    if task_type == "reading":
+        return (
+            f"外刊精读：《{ctx['reading_article']}》"
+            if ctx["reading_article"]
+            else "外刊精读：读1篇文章"
+        )
+    if task_type == "writing":
+        return (
+            f"写作练习：{ctx['writing_topic']}"
+            if ctx["writing_topic"]
+            else "写作练习：写一篇作文"
+        )
+    return "学习任务"
+
+
+def _fallback_plan(
+    days: list[date], ctx: dict, catchup: dict[str, bool]
+) -> dict[date, list[tuple[str, str]]]:
+    """兜底计划：每天背单词 + 一个附加模块（周几决定），很久没练的模块补到今天/明天。"""
+    today, tomorrow = days[0], days[1]
+    plan: dict[date, list[tuple[str, str]]] = {}
+    for d in days:
+        tasks = [
+            ("words", _fallback_title(d, "words", ctx)),
+            (
+                _WEEKDAY_EXTRA[d.weekday()],
+                _fallback_title(d, _WEEKDAY_EXTRA[d.weekday()], ctx),
+            ),
+        ]
+        if d == today and catchup["speaking"]:
+            tasks.append(("speaking", _fallback_title(d, "speaking", ctx)))
+        if d == tomorrow:
+            if catchup["reading"]:
+                tasks.append(("reading", _fallback_title(d, "reading", ctx)))
+            if catchup["writing"]:
+                tasks.append(("writing", _fallback_title(d, "writing", ctx)))
+        # 同一天类型去重，保序
+        seen: set[str] = set()
+        plan[d] = [t for t in tasks if not (t[0] in seen or seen.add(t[0]))]
+    return plan
+
+
+def _ai_generate_plan(
+    db: Session, user_id: int, days: list[date], ctx: dict
+) -> dict[date, list[tuple[str, str]]] | None:
+    """调 AI 生成未来 7 天计划（每天 1-4 个任务）；失败返回 None（由兜底计划接管）。"""
+    if not settings.deepseek_api_key:
+        return None
+    day_lines = "、".join(d.isoformat() for d in days)
+    snapshot = build_user_snapshot(db, user_id)
+    user_content = (
+        "## 用户学习数据快照\n" + snapshot + "\n\n"
+        f"## 到期单词：{ctx['due_count']} 个，最需复习："
+        f"{'、'.join(ctx['due_words']) if ctx['due_words'] else '暂无'}\n"
+        f"## 口语推荐：话题 {ctx['topic']}；{ctx['speaking_focus'] or '暂无重点'}\n"
+        f"## 阅读推荐文章：{ctx['reading_article'] or '暂无'}\n"
+        f"## 写作推荐题目：{ctx['writing_topic'] or '暂无'}\n\n"
+        f"## 需要安排的 7 天日期（顺序对应 days 数组）：{day_lines}"
+    )
+    try:
+        raw = call_deepseek(
+            [
+                {"role": "system", "content": PLAN_PROMPT},
+                {"role": "user", "content": user_content},
+            ]
+        )
+        data = json.loads(raw)
+        days_data = data.get("days")
+        if not isinstance(days_data, list) or len(days_data) != len(days):
+            return None
+        plan: dict[date, list[tuple[str, str]]] = {}
+        for d, day_data in zip(days, days_data):
+            tasks_raw = day_data.get("tasks") if isinstance(day_data, dict) else None
+            if not isinstance(tasks_raw, list):
+                return None
+            tasks: list[tuple[str, str]] = []
+            seen: set[str] = set()
+            for item in tasks_raw:
+                if not isinstance(item, dict):
+                    continue
+                t = str(item.get("type", "")).strip()
+                title = str(item.get("title", "")).strip()
+                if t in VALID_TASK_TYPES and title and t not in seen:
+                    seen.add(t)
+                    tasks.append((t, title[:200]))
+            if not tasks:
+                return None
+            plan[d] = tasks
+        return plan
+    except Exception:
+        return None
+
+
+def _persist_plan(
+    db: Session, user_id: int, plan: dict[date, list[tuple[str, str]]]
+) -> None:
+    """把计划写入 user_daily_tasks（已有行仅更新标题、保留完成状态）。"""
+    for d, tasks in plan.items():
+        for t, title in tasks:
+            row = (
+                db.query(UserDailyTask)
+                .filter(
+                    UserDailyTask.user_id == user_id,
+                    UserDailyTask.date == d,
+                    UserDailyTask.task_type == t,
+                )
+                .first()
+            )
+            if row is None:
+                db.add(
+                    UserDailyTask(
+                        user_id=user_id, date=d, task_type=t, task_title=title, done=False
+                    )
+                )
+            else:
+                row.task_title = title
+    db.commit()
+
+
+def _resolve_plan(
+    db: Session,
+    user_id: int,
+    days: list[date],
+    ctx: dict,
+    catchup: dict[str, bool],
+) -> dict[date, list[tuple[str, str]]]:
+    """计划来源：库 > AI 生成（首次/全空时）> 兜底，按固定类型顺序组装。"""
+    rows = (
+        db.query(UserDailyTask)
+        .filter(
+            UserDailyTask.user_id == user_id,
+            UserDailyTask.date >= days[0],
+            UserDailyTask.date <= days[-1],
+        )
+        .all()
+    )
+    by_key: dict[tuple[date, str], str] = {}
+    for r in rows:
+        if r.task_title:
+            by_key[(r.date, r.task_type)] = r.task_title
+
+    if not by_key:
+        plan = _ai_generate_plan(db, user_id, days, ctx) or _fallback_plan(
+            days, ctx, catchup
+        )
+        _persist_plan(db, user_id, plan)
+        by_key = {(d, t): title for d, tasks in plan.items() for t, title in tasks}
+
+    result: dict[date, list[tuple[str, str]]] = {}
+    for d in days:
+        tasks: list[tuple[str, str]] = []
+        for t in TYPE_ORDER:
+            if (d, t) in by_key:
+                tasks.append((t, by_key[(d, t)]))
+        result[d] = tasks
+    return result
+
+
+def _build_daily_tasks(db: Session, user_id: int) -> DailyTasksResponse:
+    """生成今日任务 + 未来 7 天计划，任务数量与内容由 AI 决定，完成状态从 user_daily_tasks 读取。"""
+    today = date.today()
+    days = [today + timedelta(days=i) for i in range(7)]
+    ctx = _plan_context(db, user_id)
+    catchup = _catchup_flags(db, user_id)
+    plan = _resolve_plan(db, user_id, days, ctx, catchup)
+
+    done_map = {
+        (r.date, r.task_type): r.done
+        for r in db.query(UserDailyTask)
+        .filter(
+            UserDailyTask.user_id == user_id,
+            UserDailyTask.date >= days[0],
+            UserDailyTask.date <= days[-1],
+        )
+        .all()
+    }
+
+    def _item(d: date, t: str, title: str) -> DailyTaskItem:
+        return DailyTaskItem(type=t, title=title, done=done_map.get((d, t), False))
+
+    week = [
+        WeekDayTasks(
+            date=d, tasks=[_item(d, t, title) for t, title in plan.get(d, [])]
+        )
+        for d in days
+    ]
+    today_items = [_item(today, t, title) for t, title in plan.get(today, [])]
+
+    return DailyTasksResponse(today=today_items, week=week)
+
+
+@router.get("/daily-tasks", response_model=DailyTasksResponse)
+def get_daily_tasks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """返回未来 7 天的学习任务（今日任务 + 本周计划）。"""
+    return _build_daily_tasks(db, current_user.id)
+
+
+@router.post("/refresh-plan", response_model=DailyTasksResponse)
+def refresh_plan(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """AI 重新生成未来 7 天任务：调 AI 生成计划并落库，返回最新计划。"""
+    today = date.today()
+    days = [today + timedelta(days=i) for i in range(7)]
+    ctx = _plan_context(db, current_user.id)
+    ai = _ai_generate_plan(db, current_user.id, days, ctx)
+    if ai:
+        _persist_plan(db, current_user.id, ai)
+    return _build_daily_tasks(db, current_user.id)
+
+
+@router.post("/daily-tasks/check")
+def check_daily_task(
+    payload: CheckTaskRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """标记任务完成 / 取消完成。"""
+    row = (
+        db.query(UserDailyTask)
+        .filter(
+            UserDailyTask.user_id == current_user.id,
+            UserDailyTask.date == payload.date,
+            UserDailyTask.task_type == payload.task_type,
+        )
+        .first()
+    )
+    if row is None:
+        row = UserDailyTask(
+            user_id=current_user.id,
+            date=payload.date,
+            task_type=payload.task_type,
+            task_title="",
+            done=payload.done,
+        )
+        db.add(row)
+    else:
+        row.done = payload.done
+    db.commit()
+    return {"message": "ok"}

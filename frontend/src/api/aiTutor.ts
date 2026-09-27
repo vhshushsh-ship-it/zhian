@@ -85,3 +85,39 @@ export function sendAiMessage(id: number, content: string, page: AiPage) {
 export function deleteAiConversation(id: number) {
   return api.delete(`/ai-tutor/conversations/${id}`)
 }
+
+// ---------- 学习日历 / 每日任务 ----------
+
+/** 单条每日任务 */
+export interface DailyTaskItem {
+  type: string
+  title: string
+  done: boolean
+}
+
+/** 某天的任务列表 */
+export interface WeekDayTasks {
+  date: string
+  tasks: DailyTaskItem[]
+}
+
+/** 未来 7 天任务 */
+export interface DailyTasksResponse {
+  today: DailyTaskItem[]
+  week: WeekDayTasks[]
+}
+
+/** 获取未来 7 天的学习任务（今日任务 + 本周计划） */
+export function getDailyTasks() {
+  return api.get<DailyTasksResponse>('/ai-tutor/daily-tasks')
+}
+
+/** AI 重新生成未来 7 天任务，返回最新计划 */
+export function refreshPlan() {
+  return api.post<DailyTasksResponse>('/ai-tutor/refresh-plan')
+}
+
+/** 标记任务完成 / 取消完成 */
+export function checkTask(date: string, taskType: string, done: boolean) {
+  return api.post('/ai-tutor/daily-tasks/check', { date, task_type: taskType, done })
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../api/client'
 import { createAiConversation, sendAiMessage } from '../../api/aiTutor'
 import { getEnglishStats, type EnglishStats } from '../../api/stats'
+import WeekPlan from './WeekPlan'
 import './Stats.css'
 
 /** AI 动态建议固定提示词（context 传「英语主页」= 'english'） */
@@ -155,6 +156,12 @@ export function StatsContent() {
           <span className="stats-overview-value">{overview?.reading_articles_read ?? 0}</span>
           <span className="stats-overview-label">外刊精读（篇）</span>
         </div>
+      </section>
+
+      {/* 本周计划 */}
+      <section className="stats-section">
+        <h2 className="stats-section-title">本周计划</h2>
+        <WeekPlan />
       </section>
 
       {/* 单词学习详情 */}

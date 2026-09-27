@@ -718,3 +718,36 @@ class GenerateTopicsRequest(BaseModel):
 
     category: str
     count: int = 3
+
+
+# ---------- AI 学习日历 / 每日任务 ----------
+
+
+class DailyTaskItem(BaseModel):
+    """单条每日任务"""
+
+    type: str
+    title: str
+    done: bool = False
+
+
+class WeekDayTasks(BaseModel):
+    """某天的任务列表"""
+
+    date: date
+    tasks: list[DailyTaskItem]
+
+
+class DailyTasksResponse(BaseModel):
+    """未来 7 天任务：今日任务 + 本周计划"""
+
+    today: list[DailyTaskItem]
+    week: list[WeekDayTasks]
+
+
+class CheckTaskRequest(BaseModel):
+    """标记任务完成 / 取消完成"""
+
+    date: date
+    task_type: str
+    done: bool
