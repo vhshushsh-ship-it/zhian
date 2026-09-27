@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Checkbox, List, Progress, Radio } from 'antd'
-import zhCN from 'antd/locale/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import { getErrorMessage } from '../../api/client'
@@ -159,7 +158,6 @@ export default function Tasks() {
         <Calendar
           className="tasks-calendar"
           fullscreen={false}
-          locale={zhCN.Calendar}
           cellRender={(current, info) => {
             if (info.type !== 'date') return info.originNode
             const dateStr = current.format('YYYY-MM-DD')

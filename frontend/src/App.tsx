@@ -1,4 +1,5 @@
 import { ConfigProvider } from 'antd'
+import zhCN from 'antd/locale/zh_CN'
 import { type ReactElement } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
@@ -58,7 +59,7 @@ function AdminRoute({ children }: { children: ReactElement }) {
 
 export default function App() {
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: '#e60012', borderRadius: 8 } }}>
+    <ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#e60012', borderRadius: 8 } }}>
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
