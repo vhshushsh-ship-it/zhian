@@ -1,3 +1,6 @@
+import { useParams } from 'react-router-dom'
+import ComingSoon from './ComingSoon'
+import { READY_CHAPTER_IDS } from './chapters'
 import './Videos.css'
 
 interface VideoItem {
@@ -18,6 +21,9 @@ const CHAPTER_ONE: VideoItem[] = [
 
 /** 视频讲解：B 站免费课程卡片（内容先静态写死，后续接入数据库） */
 export default function Videos() {
+  const { chapter } = useParams()
+  if (!READY_CHAPTER_IDS.has(chapter ?? '')) return <ComingSoon chapterId={chapter} />
+
   return (
     <div className="math-content">
       <header className="math-content-header">
