@@ -1,4 +1,7 @@
 import { useState, type ReactNode } from 'react'
+import { useParams } from 'react-router-dom'
+import ComingSoon from './ComingSoon'
+import { READY_CHAPTER_IDS } from './chapters'
 import './Practice.css'
 
 interface Question {
@@ -100,6 +103,9 @@ function PracticeQuestion({ q }: { q: Question }) {
 
 /** 例题练习：先判断题型，再用对应方法解题（内容先静态写死，后续接入数据库） */
 export default function Practice() {
+  const { chapter } = useParams()
+  if (!READY_CHAPTER_IDS.has(chapter ?? '')) return <ComingSoon chapterId={chapter} />
+
   return (
     <div className="math-content">
       <header className="math-content-header">

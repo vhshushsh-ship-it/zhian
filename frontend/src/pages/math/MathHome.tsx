@@ -1,28 +1,21 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import Navbar from '../../components/Navbar'
+import { CHAPTERS, SUB_ITEMS } from './chapters'
 import './MathHome.css'
 
-interface NavItem {
-  id: string
-  label: string
-  icon: string
-  path: string
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'videos', label: '视频讲解', icon: '📺', path: '/math/videos' },
-  { id: 'notes', label: '知识点梳理', icon: '📖', path: '/math/notes' },
-  { id: 'practice', label: '例题练习', icon: '✏️', path: '/math/practice' },
-]
-
 /**
- * 数学模块外壳：顶部导航 + 左侧功能导航，右侧内容由嵌套路由渲染。
+ * 数学模块外壳：顶部导航 + 章节树左侧导航，右侧内容由嵌套路由渲染。
  * 与英语模块（EnglishHome）保持一致的布局与配色，仅管理员可访问（路由已加守卫）。
  */
 export default function MathHome() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  // 默认展开「一、极限」
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ limit: true })
+
+  const toggle = (id: string) => setExpanded((e) => ({ ...e, [id]: !e[id] }))
 
   return (
     <div className="math-page">
@@ -39,7 +32,7 @@ export default function MathHome() {
       />
 
       <div className="math-layout">
-        {/* 左侧导航 */}
+        {/* 左侧章节导航 */}
         <aside className="math-sidebar">
           <div className="math-sidebar-title">
             <button className="math-back" onClick={() => navigate('/dashboard')}>
@@ -51,18 +44,44 @@ export default function MathHome() {
           </div>
 
           <nav className="math-menu">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                className={({ isActive }) =>
-                  isActive ? 'math-menu-item math-menu-item-active' : 'math-menu-item'
-                }
-              >
-                <span className="math-menu-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
+            <div className="math-menu-caption">📚 高等数学</div>
+
+            {CHAPTERS.map((chapter) => {
+              const isOpen = expanded[chapter.id] === true
+              return (
+                <div className="math-chapter" key={chapter.id}>
+                  <button
+                    className="math-chapter-head"
+                    onClick={() => toggle(chapter.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="math-chapter-arrow" aria-hidden="true">
+                      {isOpen ? '▾' : '▸'}
+                    </span>
+                    <span className="math-chapter-name">{chapter.label}</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="math-chapter-items">
+                      {SUB_ITEMS.map((sub) => (
+                        <NavLink
+                          key={sub.id}
+                          to={`/math/${chapter.id}/${sub.id}`}
+                          className={({ isActive }) =>
+                            isActive
+                              ? 'math-menu-item math-menu-item-active math-subitem'
+                              : 'math-menu-item math-subitem'
+                          }
+                        >
+                          <span className="math-menu-icon">{sub.icon}</span>
+                          <span>{sub.label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </nav>
         </aside>
 

@@ -1,0 +1,23 @@
+/* 内容整理中占位页 */
+
+.coming-soon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 240px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.coming-soon-emoji {
+  font-size: 40px;
+}
+
+.coming-soon-text {
+  margin: 0;
+  font-size: 15px;
+  color: #999;
+}

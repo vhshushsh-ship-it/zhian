@@ -95,10 +95,10 @@ export default function App() {
             </Protected>
           }
         >
-          <Route index element={<Navigate to="/math/videos" replace />} />
-          <Route path="videos" element={<Videos />} />
-          <Route path="notes" element={<Notes />} />
-          <Route path="practice" element={<Practice />} />
+          <Route index element={<Navigate to="/math/limit/videos" replace />} />
+          <Route path=":chapter/videos" element={<Videos />} />
+          <Route path=":chapter/notes" element={<Notes />} />
+          <Route path=":chapter/practice" element={<Practice />} />
         </Route>
         {/* 计算机网络占位页的短路径别名（普通用户直接访问会重定向到英语学习页） */}
         <Route path="/cs" element={<Navigate to="/subject/cs" replace />} />

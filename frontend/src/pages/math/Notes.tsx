@@ -1,9 +1,12 @@
 import { useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import Markdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import chapter1Raw from '../../../content/chapter1-limit.md?raw'
+import ComingSoon from './ComingSoon'
+import { READY_CHAPTER_IDS } from './chapters'
 import './Notes.css'
 
 /** 解析后的四级结构（# 章节 / ## 小节 / ### 步骤 / #### 类型） */
@@ -112,7 +115,10 @@ function Md({ source }: { source: string }) {
 
 /** 知识点梳理：内容由 content/chapter1-limit.md 驱动（静态解析，后续可换数据库） */
 export default function Notes() {
+  const { chapter } = useParams()
   const doc = useMemo(() => parseMarkdown(chapter1Raw), [])
+
+  if (!READY_CHAPTER_IDS.has(chapter ?? '')) return <ComingSoon chapterId={chapter} />
 
   return (
     <div className="math-content">

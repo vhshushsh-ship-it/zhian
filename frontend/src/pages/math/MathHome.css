@@ -127,6 +127,61 @@
   font-size: 18px;
 }
 
+/* ===== 章节树：课程标题 + 章节 + 子项 ===== */
+.math-menu-caption {
+  padding: 12px 20px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.math-chapter {
+  display: flex;
+  flex-direction: column;
+}
+
+.math-chapter-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 20px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.math-chapter-head:hover {
+  background: #f5f5f5;
+}
+
+.math-chapter-arrow {
+  width: 16px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.math-chapter-name {
+  font-weight: 600;
+}
+
+/* 子项：复用 .math-menu-item 选中样式，追加缩进 */
+.math-subitem {
+  height: 40px;
+  padding-left: 48px;
+  font-size: 14px;
+}
+
+.math-subitem .math-menu-icon {
+  font-size: 16px;
+}
+
 /* ===== 右侧内容 ===== */
 .math-content-area {
   flex: 1;
