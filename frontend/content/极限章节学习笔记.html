@@ -1,5 +1,24 @@
 <html style="margin:0;padding:0;">
+<head>
+<meta charset="utf-8" />
 <title>高等数学·极限章节学习笔记</title>
+<link rel="stylesheet" href="/katex/katex.min.css" />
+<script defer src="/katex/katex.min.js"></script>
+<script defer src="/katex/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof renderMathInElement === 'function') {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+});
+</script>
+</head>
 <div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f1f5f9;padding:14px;color:#1f2937;line-height:1.75;">
   <style>
     .nb-h2{font-weight:700;font-size:14.5px;color:#111827;margin:16px 0 4px;padding-left:8px;border-left:3px solid #94a3b8;}
@@ -50,28 +69,28 @@
       <div style="padding:10px 14px;font-size:14px;">
 
         <div class="nb-h2" style="border-color:#16a34a;">1. 定义：ε-N 语言</div>
-        <div class="nb-li">lim<sub>n→∞</sub> a<sub>n</sub> = A ⇔ ∀ε&gt;0，∃N∈N<sup>+</sup>，当 n&gt;N 时，恒有 |a<sub>n</sub>−A|&lt;ε</div>
-        <div class="nb-li"><b>理解要点</b>：ε 要能"任意小"；N 只要求存在、不要求唯一</div>
+        <div class="nb-li">$\displaystyle\lim_{n\to\infty} a_n = A \iff \forall\,\varepsilon\gt0,\ \exists\,N\in\mathbb{N}^{+}$，当 $n\gt N$ 时，恒有 $|a_n-A|\lt\varepsilon$</div>
+        <div class="nb-li"><b>理解要点</b>：$\varepsilon$ 要能"任意小"；$N$ 只要求存在、不要求唯一</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fef08a;color:#854d0e;">高频</span>考"对定义表述的正误判断"</div>
 
         <div class="nb-h2" style="border-color:#16a34a;">2. 极限的性质</div>
         <div class="nb-li">• 唯一性：若极限存在，则必唯一</div>
         <div class="nb-li">• 有界性：收敛数列必有界（局部有界）</div>
-        <div class="nb-li">• 保号性（设 lim<sub>n→∞</sub> a<sub>n</sub> = A）：</div>
-        <div class="nb-li2">① 由极限符号推数列符号：若 A&gt;0（或 A&lt;0），则 ∃N∈N<sup>+</sup>，当 n&gt;N 时，a<sub>n</sub>&gt;0（或 a<sub>n</sub>&lt;0）</div>
-        <div class="nb-li2">② 由数列符号推极限符号：若 ∃N∈N<sup>+</sup>，当 n&gt;N 时，a<sub>n</sub>≥0（或 a<sub>n</sub>≤0），则 A≥0（或 A≤0）</div>
-        <div class="nb-li2"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">前提</span>极限 A 得存在（lim<sub>n→∞</sub> a<sub>n</sub> = A 必须成立，才能由数列符号推出极限符号）</div>
+        <div class="nb-li">• 保号性（设 $\displaystyle\lim_{n\to\infty} a_n = A$）：</div>
+        <div class="nb-li2">① 由极限符号推数列符号：若 $A\gt0$（或 $A\lt0$），则 $\exists\,N\in\mathbb{N}^{+}$，当 $n\gt N$ 时，$a_n\gt0$（或 $a_n\lt0$）</div>
+        <div class="nb-li2">② 由数列符号推极限符号：若 $\exists\,N\in\mathbb{N}^{+}$，当 $n\gt N$ 时，$a_n\ge0$（或 $a_n\le0$），则 $A\ge0$（或 $A\le0$）</div>
+        <div class="nb-li2"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">前提</span>极限 $A$ 得存在（$\displaystyle\lim_{n\to\infty} a_n = A$ 必须成立，才能由数列符号推出极限符号）</div>
         <div class="nb-li2"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>②方向（逆命题）结论只能到"或等于 0"，不能推出严格大于 0</div>
 
         <div class="nb-h2" style="border-color:#16a34a;">3. 收敛与子列 <span class="nb-tag" style="background:#fef08a;color:#854d0e;">高频</span></div>
-        <div class="nb-li">• 数列 {a<sub>n</sub>} 收敛 ⇒ 其任一子列都收敛且极限相同</div>
+        <div class="nb-li">• 数列 $\{a_n\}$ 收敛 ⇒ 其任一子列都收敛且极限相同</div>
         <div class="nb-li">• 判发散：找一个子列发散，或找两个极限不同的子列（常用奇、偶子列）</div>
-        <div class="nb-li">• 若奇数项子列 {a<sub>2k−1</sub>} 与偶数项子列 {a<sub>2k</sub>} 都收敛且极限相等 ⇒ 原数列 {a<sub>n</sub>} 收敛</div>
+        <div class="nb-li">• 若奇数项子列 $\{a_{2k-1}\}$ 与偶数项子列 $\{a_{2k}\}$ 都收敛且极限相等 ⇒ 原数列 $\{a_n\}$ 收敛</div>
 
         <div class="nb-h2" style="border-color:#16a34a;">4. 两个准则的条件</div>
         <div class="nb-li">• 单调有界准则：单调递增且有上界（或单调递减且有下界）⇒ 收敛</div>
-        <div class="nb-li">• 夹逼准则：若 a<sub>n</sub>≤b<sub>n</sub>≤c<sub>n</sub>，且 lim<sub>n→∞</sub> a<sub>n</sub> = lim<sub>n→∞</sub> c<sub>n</sub> = A，则 lim<sub>n→∞</sub> b<sub>n</sub> = A（两边极限要相等）</div>
-        <div class="nb-li">• 注意：有界不一定收敛（如 a<sub>n</sub> = (−1)<sup>n</sup>）；单调不一定收敛（要有界）</div>
+        <div class="nb-li">• 夹逼准则：若 $a_n\le b_n\le c_n$，且 $\displaystyle\lim_{n\to\infty} a_n = \lim_{n\to\infty} c_n = A$，则 $\displaystyle\lim_{n\to\infty} b_n = A$（两边极限要相等）</div>
+        <div class="nb-li">• 注意：有界不一定收敛（如 $a_n = (-1)^n$）；单调不一定收敛（要有界）</div>
       </div>
     </div>
 
@@ -81,34 +100,34 @@
       <div style="padding:10px 14px;font-size:14px;">
 
         <div class="nb-h2" style="border-color:#2563eb;">1. 定义：ε-δ、ε-X 语言</div>
-        <div class="nb-li">x→x₀：lim<sub>x→x₀</sub> f(x) = A ⇔ ∀ε&gt;0，∃δ&gt;0，当 0&lt;|x−x₀|&lt;δ 时，恒有 |f(x)−A|&lt;ε</div>
-        <div class="nb-li">x→∞：lim<sub>x→∞</sub> f(x) = A ⇔ ∀ε&gt;0，∃X&gt;0，当 |x|&gt;X 时，恒有 |f(x)−A|&lt;ε</div>
+        <div class="nb-li">$x\to x_0$：$\displaystyle\lim_{x\to x_0} f(x) = A \iff \forall\,\varepsilon\gt0,\ \exists\,\delta\gt0$，当 $0\lt|x-x_0|\lt\delta$ 时，恒有 $|f(x)-A|\lt\varepsilon$</div>
+        <div class="nb-li">$x\to\infty$：$\displaystyle\lim_{x\to\infty} f(x) = A \iff \forall\,\varepsilon\gt0,\ \exists\,X\gt0$，当 $|x|\gt X$ 时，恒有 $|f(x)-A|\lt\varepsilon$</div>
 
         <div class="nb-h2" style="border-color:#2563eb;">2. 左右极限</div>
-        <div class="nb-li">lim<sub>x→x₀</sub> f(x) 存在 ⇔ 左极限 lim<sub>x→x₀⁻</sub> f(x) 与右极限 lim<sub>x→x₀⁺</sub> f(x) 都存在且相等</div>
+        <div class="nb-li">$\displaystyle\lim_{x\to x_0} f(x)$ 存在 $\iff$ 左极限 $\displaystyle\lim_{x\to x_0^-} f(x)$ 与右极限 $\displaystyle\lim_{x\to x_0^+} f(x)$ 都存在且相等</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>用于分段点、绝对值、取整点</div>
-        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>极限存在与该点函数值 f(x₀) 无关（甚至可以没定义）</div>
+        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>极限存在与该点函数值 $f(x_0)$ 无关（甚至可以没定义）</div>
 
         <div class="nb-h2" style="border-color:#2563eb;">3. 局部有界性</div>
-        <div class="nb-li">定理：若 lim<sub>x→x₀</sub> f(x) 存在，则 ∃δ&gt;0，f(x) 在去心邻域 Ů(x₀, δ) 内有界（即局部有界）</div>
+        <div class="nb-li">定理：若 $\displaystyle\lim_{x\to x_0} f(x)$ 存在，则 $\exists\,\delta\gt0$，$f(x)$ 在去心邻域 $\mathring{U}(x_0,\delta)$ 内有界（即局部有界）</div>
         <div class="nb-li">• 极限存在 ⇒ 局部有界；反之不成立</div>
-        <div class="nb-li">• 反例：f(x) = sin(1/x)，在 x₀ = 0 附近有界，但 lim<sub>x→0</sub> sin(1/x) 不存在</div>
+        <div class="nb-li">• 反例：$f(x) = \sin\dfrac{1}{x}$，在 $x_0 = 0$ 附近有界，但 $\displaystyle\lim_{x\to0} \sin\dfrac{1}{x}$ 不存在</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">注意</span>是"去心邻域"内局部有界，不是整个定义域上有界</div>
 
-        <div class="nb-h2" style="border-color:#2563eb;">4. 保号性（设 lim<sub>x→x₀</sub> f(x) = A）</div>
-        <div class="nb-li">① 由极限符号推函数符号：若 A&gt;0（或 A&lt;0），则 ∃δ&gt;0，当 x∈Ů(x₀, δ) 时，f(x)&gt;0（或 f(x)&lt;0）</div>
-        <div class="nb-li">② 由函数符号推极限符号：若 ∃δ&gt;0，当 x∈Ů(x₀, δ) 时，f(x)≥0（或 f(x)≤0），则 A≥0（或 A≤0）</div>
-        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">前提</span>极限 A 得存在（lim<sub>x→x₀</sub> f(x) = A 必须成立，才能由函数符号推出极限符号）</div>
-        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>保号性逆推只能得到 f ≥ 0（或 f ≤ 0），不能得 f &gt; 0（或 f &lt; 0）</div>
+        <div class="nb-h2" style="border-color:#2563eb;">4. 保号性（设 $\displaystyle\lim_{x\to x_0} f(x) = A$）</div>
+        <div class="nb-li">① 由极限符号推函数符号：若 $A\gt0$（或 $A\lt0$），则 $\exists\,\delta\gt0$，当 $x\in\mathring{U}(x_0,\delta)$ 时，$f(x)\gt0$（或 $f(x)\lt0$）</div>
+        <div class="nb-li">② 由函数符号推极限符号：若 $\exists\,\delta\gt0$，当 $x\in\mathring{U}(x_0,\delta)$ 时，$f(x)\ge0$（或 $f(x)\le0$），则 $A\ge0$（或 $A\le0$）</div>
+        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">前提</span>极限 $A$ 得存在（$\displaystyle\lim_{x\to x_0} f(x) = A$ 必须成立，才能由函数符号推出极限符号）</div>
+        <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>保号性逆推只能得到 $f \ge 0$（或 $f \le 0$），不能得 $f \gt 0$（或 $f \lt 0$）</div>
 
         <div class="nb-h2" style="border-color:#2563eb;">5. 保号性的推论</div>
-        <div class="nb-li">若 f(x)&gt;g(x)，且 lim<sub>x→x₀</sub> f(x) = A、lim<sub>x→x₀</sub> g(x) = B，则 A≥B（前提：A、B 存在）</div>
-        <div class="nb-li">推导：f(x)&gt;g(x) ⇒ f(x)−g(x)&gt;0 ⇒ lim<sub>x→x₀</sub> [f(x)−g(x)] ≥ 0 ⇒ A−B≥0 ⇒ A≥B</div>
+        <div class="nb-li">若 $f(x)\gt g(x)$，且 $\displaystyle\lim_{x\to x_0} f(x) = A$、$\displaystyle\lim_{x\to x_0} g(x) = B$，则 $A\ge B$（前提：$A$、$B$ 存在）</div>
+        <div class="nb-li">推导：$f(x)\gt g(x) \Rightarrow f(x)-g(x)\gt0 \Rightarrow \displaystyle\lim_{x\to x_0}\,[f(x)-g(x)] \ge 0 \Rightarrow A-B\ge0 \Rightarrow A\ge B$</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错陷阱</span>严格大于推出的是<b>大于等于</b>，不是严格大于！</div>
-        <div class="nb-tip" style="border-color:#ef4444;background:#fef2f2;color:#991b1b;">一句话记住：<b>函数推极限，严格变非严</b>——不管函数那边是 &gt; 还是 ≥，极限这边都只能到 ≥，等号"落"在极限上。</div>
+        <div class="nb-tip" style="border-color:#ef4444;background:#fef2f2;color:#991b1b;">一句话记住：<b>函数推极限，严格变非严</b>——不管函数那边是 $\gt$ 还是 $\ge$，极限这边都只能到 $\ge$，等号"落"在极限上。</div>
 
         <div class="nb-h2" style="border-color:#2563eb;">6. 极限不存在 ≠ 和/积不存在</div>
-        <div class="nb-li">两个极限都不存在的函数，其和/积极限可能存在。例：f(x) = sin(1/x)、g(x) = −sin(1/x)（x→0 均无极限），但 f+g = 0，lim<sub>x→0</sub> [f(x)+g(x)] = 0 存在。</div>
+        <div class="nb-li">两个极限都不存在的函数，其和/积极限可能存在。例：$f(x) = \sin\dfrac{1}{x}$、$g(x) = -\sin\dfrac{1}{x}$（$x\to0$ 均无极限），但 $f+g = 0$，$\displaystyle\lim_{x\to0}\,[f(x)+g(x)] = 0$ 存在。</div>
       </div>
     </div>
 
@@ -118,30 +137,30 @@
       <div style="padding:10px 14px;font-size:14px;">
 
         <div class="nb-h2" style="border-color:#dc2626;">1. 无穷小量的概念</div>
-        <div class="nb-li">定义：若函数 f(x) 当 x→x₀（或 x→∞）时的极限为零，即 lim<sub>x→x₀</sub> f(x) = 0，则称 f(x) 为该趋向过程下的无穷小量。</div>
+        <div class="nb-li">定义：若函数 $f(x)$ 当 $x\to x_0$（或 $x\to\infty$）时的极限为零，即 $\displaystyle\lim_{x\to x_0} f(x) = 0$，则称 $f(x)$ 为该趋向过程下的无穷小量。</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">注意</span>无穷小是一个<b>变量</b>（极限为 0 的函数），不是"很小的数"；必须指明趋向过程；0 是无穷小量，但无穷小量不只是 0。</div>
 
         <div class="nb-h2" style="border-color:#dc2626;">2. 无穷小的比较（设 α(x)→0，β(x)→0，同一极限过程下）</div>
         <table class="nb-table" style="margin-left:6px;">
           <tr style="background:#fef2f2;"><th style="border-color:#fecaca;color:#7f1d1d;">类型</th><th style="border-color:#fecaca;color:#7f1d1d;">条件</th><th style="border-color:#fecaca;color:#7f1d1d;">记号 / 读法</th></tr>
-          <tr><td style="border-color:#fecaca;">高阶无穷小</td><td style="border-color:#fecaca;">lim α(x)/β(x) = 0</td><td style="border-color:#fecaca;">α(x) = o(β(x))，读作 α 是 β 的高阶无穷小</td></tr>
-          <tr><td style="border-color:#fecaca;">低阶无穷小</td><td style="border-color:#fecaca;">lim α(x)/β(x) = ∞</td><td style="border-color:#fecaca;">—</td></tr>
-          <tr><td style="border-color:#fecaca;">同阶无穷小</td><td style="border-color:#fecaca;">lim α(x)/β(x) = C ≠ 0</td><td style="border-color:#fecaca;">—</td></tr>
-          <tr><td style="border-color:#fecaca;">等价无穷小</td><td style="border-color:#fecaca;">lim α(x)/β(x) = 1</td><td style="border-color:#fecaca;">α(x) ~ β(x)</td></tr>
-          <tr><td style="border-color:#fecaca;">k 阶无穷小</td><td style="border-color:#fecaca;">lim α(x)/[β(x)]<sup>k</sup> = C ≠ 0</td><td style="border-color:#fecaca;">α 是 β 的 k 阶无穷小</td></tr>
+          <tr><td style="border-color:#fecaca;">高阶无穷小</td><td style="border-color:#fecaca;">$\displaystyle\lim\dfrac{\alpha(x)}{\beta(x)} = 0$</td><td style="border-color:#fecaca;">$\alpha(x) = o(\beta(x))$，读作 $\alpha$ 是 $\beta$ 的高阶无穷小</td></tr>
+          <tr><td style="border-color:#fecaca;">低阶无穷小</td><td style="border-color:#fecaca;">$\displaystyle\lim\dfrac{\alpha(x)}{\beta(x)} = \infty$</td><td style="border-color:#fecaca;">—</td></tr>
+          <tr><td style="border-color:#fecaca;">同阶无穷小</td><td style="border-color:#fecaca;">$\displaystyle\lim\dfrac{\alpha(x)}{\beta(x)} = C \ne 0$</td><td style="border-color:#fecaca;">—</td></tr>
+          <tr><td style="border-color:#fecaca;">等价无穷小</td><td style="border-color:#fecaca;">$\displaystyle\lim\dfrac{\alpha(x)}{\beta(x)} = 1$</td><td style="border-color:#fecaca;">$\alpha(x) \sim \beta(x)$</td></tr>
+          <tr><td style="border-color:#fecaca;">k 阶无穷小</td><td style="border-color:#fecaca;">$\displaystyle\lim\dfrac{\alpha(x)}{[\beta(x)]^{k}} = C \ne 0$</td><td style="border-color:#fecaca;">$\alpha$ 是 $\beta$ 的 $k$ 阶无穷小</td></tr>
         </table>
         <div class="nb-li">本质：阶的比较 = 求两个无穷小比值的极限。</div>
 
         <div class="nb-tip" style="border-color:#ca8a04;background:#fefce8;color:#713f12;">
           <div style="font-weight:700;color:#854d0e;margin-bottom:3px;">比较阶时只看主项，非主项可省略</div>
-          <div style="color:#374151;">若 α(x) 展开后是多项之和，如 α(x) = A·x<sup>p</sup> + B·x<sup>q</sup>（p&lt;q，A≠0），比较阶时只取最低次幂的主项 A·x<sup>p</sup>，更高阶的小项 B·x<sup>q</sup> 可以省略。</div>
-          <div style="color:#374151;margin-top:3px;"><b>为什么：</b>lim<sub>x→0</sub> α(x)/(A·x<sup>p</sup>) = lim<sub>x→0</sub> [A·x<sup>p</sup> + B·x<sup>q</sup>]/(A·x<sup>p</sup>) = 1 + (B/A)·x<sup>q−p</sup> → 1（因 q−p&gt;0，x<sup>q−p</sup>→0）。即 α(x) ~ A·x<sup>p</sup>，高阶小项在比值中趋于 0、自动消失，不影响阶的判定。</div>
-          <div style="color:#374151;margin-top:3px;"><b>例子（x→0）</b>：sinx + x² ~ x（x² 是高阶项，省略）；x² + x³ ~ x²（x³ 省略）；x − 2x³ ~ x</div>
-          <div style="margin-top:3px;"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错</span><span style="color:#374151;">省略非主项的前提是<b>主项不抵消</b>。若主项互相抵消（如 x − sinx），主项 x 与 sinx ~ x 抵消后，次项才升格为主项：x − sinx ~ x³/6——必须往下再拆一项，不能笼统说"x − sinx 等价于 0"。</span></div>
-          <div style="font-size:12px;color:#854d0e;margin-top:3px;">说明：推导以 x→0 为例，本质对同一趋向过程（如 x→∞）都成立；"主项抵消"是 ⑤ 求极限时泰勒展开的伏笔，务必保留。</div>
+          <div style="color:#374151;">若 $\alpha(x)$ 展开后是多项之和，如 $\alpha(x) = A\cdot x^{p} + B\cdot x^{q}$（$p\lt q$，$A\ne0$），比较阶时只取最低次幂的主项 $A\cdot x^{p}$，更高阶的小项 $B\cdot x^{q}$ 可以省略。</div>
+          <div style="color:#374151;margin-top:3px;"><b>为什么：</b>$\displaystyle\lim_{x\to0}\dfrac{\alpha(x)}{A\cdot x^{p}} = \displaystyle\lim_{x\to0}\dfrac{A\cdot x^{p} + B\cdot x^{q}}{A\cdot x^{p}} = 1 + \dfrac{B}{A}\cdot x^{q-p} \to 1$（因 $q-p\gt0$，$x^{q-p}\to0$）。即 $\alpha(x) \sim A\cdot x^{p}$，高阶小项在比值中趋于 0、自动消失，不影响阶的判定。</div>
+          <div style="color:#374151;margin-top:3px;"><b>例子（$x\to0$）</b>：$\sin x + x^2 \sim x$（$x^2$ 是高阶项，省略）；$x^2 + x^3 \sim x^2$（$x^3$ 省略）；$x - 2x^3 \sim x$</div>
+          <div style="margin-top:3px;"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">易错</span><span style="color:#374151;">省略非主项的前提是<b>主项不抵消</b>。若主项互相抵消（如 $x - \sin x$），主项 $x$ 与 $\sin x \sim x$ 抵消后，次项才升格为主项：$x - \sin x \sim \dfrac{x^3}{6}$——必须往下再拆一项，不能笼统说"$x - \sin x$ 等价于 0"。</span></div>
+          <div style="font-size:12px;color:#854d0e;margin-top:3px;">说明：推导以 $x\to0$ 为例，本质对同一趋向过程（如 $x\to\infty$）都成立；"主项抵消"是 ⑤ 求极限时泰勒展开的伏笔，务必保留。</div>
         </div>
 
-        <div class="nb-li"><span class="nb-tag" style="background:#fef08a;color:#854d0e;">振荡因子</span>若极限过程中含振荡因子（如 sin(1/x)）且整个极限存在，则振荡因子前的系数必须 →0，否则极限不存在（振荡不收敛）。<b>振荡 × 趋于 0 = 0</b>。例：lim<sub>x→0</sub> x·sin(1/x) = 0（x→0，sin(1/x) 振荡有界）。</div>
+        <div class="nb-li"><span class="nb-tag" style="background:#fef08a;color:#854d0e;">振荡因子</span>若极限过程中含振荡因子（如 $\sin\dfrac{1}{x}$）且整个极限存在，则振荡因子前的系数必须 $\to0$，否则极限不存在（振荡不收敛）。<b>振荡 × 趋于 0 = 0</b>。例：$\displaystyle\lim_{x\to0} x\cdot\sin\dfrac{1}{x} = 0$（$x\to0$，$\sin\dfrac{1}{x}$ 振荡有界）。</div>
 
         <div class="nb-h2" style="border-color:#dc2626;">3. 无穷小的性质</div>
         <table class="nb-table" style="margin-left:6px;">
@@ -149,15 +168,15 @@
           <tr><td style="border-color:#fecaca;">有限个无穷小的和</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">✓ <span style="color:#991b1b;">（必须是有限个！）</span></td></tr>
           <tr><td style="border-color:#fecaca;">有限个无穷小的积</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">✓</td></tr>
           <tr><td style="border-color:#fecaca;">无穷小量与有界量的积</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">✓ <span style="color:#b91c1c;">（非常重要！）</span></td></tr>
-          <tr><td style="border-color:#fecaca;">无穷多个无穷小的和</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：n 个 1/n 相加 = 1（n→∞，每个 1/n 都是无穷小，但和不为 0）</span></td></tr>
-          <tr><td style="border-color:#fecaca;">无穷小量 × 无界量</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：(1/x)·x = 1（x→∞，1/x 为无穷小、x 无界）</span></td></tr>
-          <tr><td style="border-color:#fecaca;">两个无穷小的商</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：x/x = 1（x→0，分子分母均为无穷小）</span></td></tr>
+          <tr><td style="border-color:#fecaca;">无穷多个无穷小的和</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：$n$ 个 $\dfrac{1}{n}$ 相加 $= 1$（$n\to\infty$，每个 $\dfrac{1}{n}$ 都是无穷小，但和不为 0）</span></td></tr>
+          <tr><td style="border-color:#fecaca;">无穷小量 × 无界量</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：$\dfrac{1}{x}\cdot x = 1$（$x\to\infty$，$\dfrac{1}{x}$ 为无穷小、$x$ 无界）</span></td></tr>
+          <tr><td style="border-color:#fecaca;">两个无穷小的商</td><td style="border-color:#fecaca;">仍是无穷小</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：$\dfrac{x}{x} = 1$（$x\to0$，分子分母均为无穷小）</span></td></tr>
         </table>
 
         <div class="nb-h2" style="border-color:#dc2626;">4. 无穷大与无界的辨析 <span class="nb-tag" style="background:#fee2e2;color:#991b1b;">必考陷阱</span></div>
         <div class="nb-li">• 无穷大 ⇒ 一定无界</div>
         <div class="nb-li">• 无界不一定是无穷大（无界允许"偶尔跑回来"，无穷大要求"一直大下去"）</div>
-        <div class="nb-li">• 典型反例：f(x) = x·sinx（x→∞）无界但不是无穷大</div>
+        <div class="nb-li">• 典型反例：$f(x) = x\cdot\sin x$（$x\to\infty$）无界但不是无穷大</div>
 
         <div class="nb-h2" style="border-color:#dc2626;">5. 无穷小与无穷大的关系</div>
         <div class="nb-li">非零无穷小的倒数是无穷大（同一趋向过程下）。</div>
@@ -167,28 +186,28 @@
           <tr style="background:#fef2f2;"><th style="border-color:#fecaca;color:#7f1d1d;">运算</th><th style="border-color:#fecaca;color:#7f1d1d;">结论</th><th style="border-color:#fecaca;color:#7f1d1d;">正误</th></tr>
           <tr><td style="border-color:#fecaca;">两个无穷大的积</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">✓</td></tr>
           <tr><td style="border-color:#fecaca;">无穷大 + 有界变量</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">✓</td></tr>
-          <tr><td style="border-color:#fecaca;">两个无穷大的和</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：f(x)=x，g(x)=1−x（x→∞ 均无穷大，但 f+g=1）</span></td></tr>
-          <tr><td style="border-color:#fecaca;">无穷大 × 有界量</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：x·sinx（x→∞，sinx 有界）</span></td></tr>
+          <tr><td style="border-color:#fecaca;">两个无穷大的和</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：$f(x)=x$，$g(x)=1-x$（$x\to\infty$ 均无穷大，但 $f+g=1$）</span></td></tr>
+          <tr><td style="border-color:#fecaca;">无穷大 × 有界量</td><td style="border-color:#fecaca;">仍为无穷大</td><td style="border-color:#fecaca;">× <span style="color:#991b1b;">反例：$x\cdot\sin x$（$x\to\infty$，$\sin x$ 有界）</span></td></tr>
         </table>
 
         <div class="nb-h2" style="border-color:#dc2626;">7. 常用无穷大量的比较（增长速度排序） <span class="nb-tag" style="background:#fee2e2;color:#991b1b;">∞/∞ 判型用</span></div>
-        <div class="nb-li"><b>x→+∞ 时</b>：ln<sup>α</sup>x &lt;&lt; x<sup>β</sup> &lt;&lt; a<sup>x</sup>（α&gt;0, β&gt;0, a&gt;1）——对数增长 &lt;&lt; 幂函数增长 &lt;&lt; 指数增长。</div>
-        <div class="nb-li">验证：lim<sub>x→+∞</sub> ln x / x<sup>0.0…01</sup> = 0 ✓</div>
-        <div class="nb-li"><b>n→∞ 时</b>：ln<sup>α</sup>n &lt;&lt; n<sup>β</sup> &lt;&lt; a<sup>n</sup> &lt;&lt; n! &lt;&lt; n<sup>n</sup>——对数 &lt;&lt; 幂 &lt;&lt; 指数 &lt;&lt; 阶乘 &lt;&lt; n<sup>n</sup>。</div>
-        <div class="nb-li">验证举例：lim<sub>n→∞</sub> 2<sup>n</sup>/n! = 0 ✓（指数比阶乘慢）；lim<sub>n→∞</sub> n<sup>10000</sup>/2<sup>n</sup> = 0 ✓（幂比指数慢）；lim<sub>n→∞</sub> ln n/√n = 0 ✓（对数比幂慢）。</div>
-        <div class="nb-li">用法：分子分母都是无穷大时，谁的"增长档"靠后谁主导结果（高档/低档 → ∞；低档/高档 → 0）。</div>
+        <div class="nb-li"><b>$x\to+\infty$ 时</b>：$\ln^{\alpha}x \ll x^{\beta} \ll a^{x}$（$\alpha\gt0,\ \beta\gt0,\ a\gt1$）——对数增长 $\ll$ 幂函数增长 $\ll$ 指数增长。</div>
+        <div class="nb-li">验证：$\displaystyle\lim_{x\to+\infty}\dfrac{\ln x}{x^{0.0\ldots01}} = 0$ ✓</div>
+        <div class="nb-li"><b>$n\to\infty$ 时</b>：$\ln^{\alpha}n \ll n^{\beta} \ll a^{n} \ll n! \ll n^{n}$——对数 $\ll$ 幂 $\ll$ 指数 $\ll$ 阶乘 $\ll$ $n^{n}$。</div>
+        <div class="nb-li">验证举例：$\displaystyle\lim_{n\to\infty}\dfrac{2^{n}}{n!} = 0$ ✓（指数比阶乘慢）；$\displaystyle\lim_{n\to\infty}\dfrac{n^{10000}}{2^{n}} = 0$ ✓（幂比指数慢）；$\displaystyle\lim_{n\to\infty}\dfrac{\ln n}{\sqrt{n}} = 0$ ✓（对数比幂慢）。</div>
+        <div class="nb-li">用法：分子分母都是无穷大时，谁的"增长档"靠后谁主导结果（高档/低档 $\to\infty$；低档/高档 $\to0$）。</div>
 
         <div class="nb-h2" style="border-color:#dc2626;">8. ∞−∞ 型未定式的处理 <span class="nb-tag" style="background:#fee2e2;color:#991b1b;">化成 0/0</span></div>
         <div class="nb-li">四项选一种：</div>
-        <div class="nb-li">• 两项是分式（A/B − C/D）→ <b>通分</b>；</div>
+        <div class="nb-li">• 两项是分式（$\dfrac{A}{B} - \dfrac{C}{D}$）→ <b>通分</b>；</div>
         <div class="nb-li">• 含根号差（√−√ 或 √−x）→ <b>有理化</b>（乘共轭因式）；</div>
-        <div class="nb-li">• x→∞ 含根号且次数高 → <b>提公因式 x</b>；</div>
-        <div class="nb-li">• x→∞ 含 1/x → <b>倒代换 t=1/x</b>。</div>
+        <div class="nb-li">• $x\to\infty$ 含根号且次数高 → <b>提公因式 $x$</b>；</div>
+        <div class="nb-li">• $x\to\infty$ 含 $\dfrac{1}{x}$ → <b>倒代换 $t=\dfrac{1}{x}$</b>。</div>
         <div class="nb-tip" style="border-color:#dc2626;background:#fef2f2;color:#7f1d1d;">
-          <div style="font-weight:700;color:#991b1b;">例题：lim<sub>x→∞</sub> [∛((x+a)(x+b)(x+c)) − x]</div>
-          <div style="color:#374151;">① 提 x 出来：三次根号化成 x·[(1+u)<sup>1/3</sup> − 1]；</div>
-          <div style="color:#374151;">② 等价无穷小：(1+u)<sup>α</sup> − 1 ~ αu，这里 α=1/3；</div>
-          <div style="color:#374151;">③ 乘积展开只取一次项：(1+at)(1+bt)(1+ct) = 1 + (a+b+c)t + o(t)，高次项 t→0 时可忽略。</div>
+          <div style="font-weight:700;color:#991b1b;">例题：$\displaystyle\lim_{x\to\infty}\left[\sqrt[3]{(x+a)(x+b)(x+c)} - x\right]$</div>
+          <div style="color:#374151;">① 提 $x$ 出来：三次根号化成 $x\cdot[(1+u)^{1/3} - 1]$；</div>
+          <div style="color:#374151;">② 等价无穷小：$(1+u)^{\alpha} - 1 \sim \alpha u$，这里 $\alpha=\dfrac{1}{3}$；</div>
+          <div style="color:#374151;">③ 乘积展开只取一次项：$(1+at)(1+bt)(1+ct) = 1 + (a+b+c)t + o(t)$，高次项 $t\to0$ 时可忽略。</div>
         </div>
 
         <div class="nb-h2" style="border-color:#dc2626;">9. 极限结果的判定（x→∞）</div>
@@ -197,21 +216,21 @@
         <div class="nb-li">• 能任意大但会回到小值、极限不存在 → 无界但非无穷</div>
         <div class="nb-li">• x→有限点时，无穷大通常来自分母趋于 0（或 tan 之类）</div>
 
-        <div class="nb-h2" style="border-color:#dc2626;">10. 分式极限判定（一张表背下来）：lim<sub>x→x₀</sub> f(x)/g(x) = A（有限）</div>
+        <div class="nb-h2" style="border-color:#dc2626;">10. 分式极限判定（一张表背下来）：$\displaystyle\lim_{x\to x_0}\dfrac{f(x)}{g(x)} = A$（有限）</div>
         <table class="nb-table" style="margin-left:6px;">
-          <tr style="background:#fef2f2;"><th style="border-color:#fecaca;color:#7f1d1d;">已知 \ 推出</th><th style="border-color:#fecaca;color:#7f1d1d;">A ≠ 0</th><th style="border-color:#fecaca;color:#7f1d1d;">A = 0</th></tr>
-          <tr><td style="border-color:#fecaca;">分母 g(x)→0</td><td style="border-color:#fecaca;">分子 f(x)→0（同阶）</td><td style="border-color:#fecaca;">分子 f(x)→0（高阶）</td></tr>
-          <tr><td style="border-color:#fecaca;">分子 f(x)→0</td><td style="border-color:#fecaca;">分母 g(x)→0（同阶）</td><td style="border-color:#fecaca;">分母 g(x) 任意（推不出）</td></tr>
+          <tr style="background:#fef2f2;"><th style="border-color:#fecaca;color:#7f1d1d;">已知 \ 推出</th><th style="border-color:#fecaca;color:#7f1d1d;">$A \ne 0$</th><th style="border-color:#fecaca;color:#7f1d1d;">$A = 0$</th></tr>
+          <tr><td style="border-color:#fecaca;">分母 $g(x)\to0$</td><td style="border-color:#fecaca;">分子 $f(x)\to0$（同阶）</td><td style="border-color:#fecaca;">分子 $f(x)\to0$（高阶）</td></tr>
+          <tr><td style="border-color:#fecaca;">分子 $f(x)\to0$</td><td style="border-color:#fecaca;">分母 $g(x)\to0$（同阶）</td><td style="border-color:#fecaca;">分母 $g(x)$ 任意（推不出）</td></tr>
         </table>
-        <div class="nb-h3">卡片一：A ≠ 0（极限为非零常数），lim<sub>x→x₀</sub> f(x)/g(x) = A ≠ 0</div>
-        <div class="nb-li">① 已知分母 g(x)→0 ⇒ 分子 f(x) 必→0（反证：若 f(x)→C≠0，则 f/g→C/0=∞，不是有限数，矛盾）</div>
-        <div class="nb-li">② 已知分子 f(x)→0 ⇒ 分母 g(x) 必→0（反证：若 g(x)→C≠0，则 f/g→0/C=0，与 A≠0 矛盾）</div>
-        <div class="nb-h3">卡片二：A = 0（极限等于 0），lim<sub>x→x₀</sub> f(x)/g(x) = 0</div>
-        <div class="nb-li">① 已知分母 g(x)→0 ⇒ 分子 f(x) 必→0（反证同卡片一）；但此时 f 缩得比 g 快，f 是 g 的高阶无穷小。例：x²/x→0</div>
-        <div class="nb-li">② 已知分子 f(x)→0 ⇒ 分母 g(x) 随便，推不出（分子缩得太快，分母配不配合都行）：</div>
-        <div class="nb-li2">• 分母也→0（比分子慢）：x²/x→0，g→0</div>
-        <div class="nb-li2">• 分母不动：x²/(x+1)→0，g→1</div>
-        <div class="nb-li2">• 分母甚至→∞：x²/(1/x) = x³→0，g→∞</div>
+        <div class="nb-h3">卡片一：$A \ne 0$（极限为非零常数），$\displaystyle\lim_{x\to x_0}\dfrac{f(x)}{g(x)} = A \ne 0$</div>
+        <div class="nb-li">① 已知分母 $g(x)\to0$ ⇒ 分子 $f(x)$ 必 $\to0$（反证：若 $f(x)\to C\ne0$，则 $\dfrac{f}{g}\to\dfrac{C}{0}=\infty$，不是有限数，矛盾）</div>
+        <div class="nb-li">② 已知分子 $f(x)\to0$ ⇒ 分母 $g(x)$ 必 $\to0$（反证：若 $g(x)\to C\ne0$，则 $\dfrac{f}{g}\to\dfrac{0}{C}=0$，与 $A\ne0$ 矛盾）</div>
+        <div class="nb-h3">卡片二：$A = 0$（极限等于 0），$\displaystyle\lim_{x\to x_0}\dfrac{f(x)}{g(x)} = 0$</div>
+        <div class="nb-li">① 已知分母 $g(x)\to0$ ⇒ 分子 $f(x)$ 必 $\to0$（反证同卡片一）；但此时 $f$ 缩得比 $g$ 快，$f$ 是 $g$ 的高阶无穷小。例：$\dfrac{x^2}{x}\to0$</div>
+        <div class="nb-li">② 已知分子 $f(x)\to0$ ⇒ 分母 $g(x)$ 随便，推不出（分子缩得太快，分母配不配合都行）：</div>
+        <div class="nb-li2">• 分母也 $\to0$（比分子慢）：$\dfrac{x^2}{x}\to0$，$g\to0$</div>
+        <div class="nb-li2">• 分母不动：$\dfrac{x^2}{x+1}\to0$，$g\to1$</div>
+        <div class="nb-li2">• 分母甚至 $\to\infty$：$\dfrac{x^2}{1/x} = x^3\to0$，$g\to\infty$</div>
       </div>
     </div>
 
@@ -221,7 +240,7 @@
       <div style="padding:10px 14px;font-size:14px;">
 
         <div class="nb-h2" style="border-color:#ca8a04;">1. 连续的定义</div>
-        <div class="nb-li">lim<sub>x→x₀</sub> f(x) = f(x₀)，三要素：① 在 x₀ 有定义 ② lim<sub>x→x₀</sub> f(x) 存在 ③ 二者相等。</div>
+        <div class="nb-li">$\displaystyle\lim_{x\to x_0} f(x) = f(x_0)$，三要素：① 在 $x_0$ 有定义 ② $\displaystyle\lim_{x\to x_0} f(x)$ 存在 ③ 二者相等。</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fef08a;color:#854d0e;">推出关系</span>可导 ⇒ 连续 ⇒ 极限存在（反之均不成立）</div>
 
         <div class="nb-h2" style="border-color:#ca8a04;">2. 间断点分类 <span class="nb-tag" style="background:#fef08a;color:#854d0e;">高频选择</span></div>
@@ -229,8 +248,8 @@
           <tr style="background:#fefce8;"><th style="border-color:#fde047;color:#713f12;">类型</th><th style="border-color:#fde047;color:#713f12;">判定</th></tr>
           <tr><td style="border-color:#fde047;">第一类 · 可去</td><td style="border-color:#fde047;">左右极限存在且相等，但不等于函数值或无定义</td></tr>
           <tr><td style="border-color:#fde047;">第一类 · 跳跃</td><td style="border-color:#fde047;">左右极限都存在但不相等</td></tr>
-          <tr><td style="border-color:#fde047;">第二类 · 无穷</td><td style="border-color:#fde047;">至少一侧极限为 ∞</td></tr>
-          <tr><td style="border-color:#fde047;">第二类 · 振荡</td><td style="border-color:#fde047;">极限不存在且振荡（如 sin(1/x)）</td></tr>
+          <tr><td style="border-color:#fde047;">第二类 · 无穷</td><td style="border-color:#fde047;">至少一侧极限为 $\infty$</td></tr>
+          <tr><td style="border-color:#fde047;">第二类 · 振荡</td><td style="border-color:#fde047;">极限不存在且振荡（如 $\sin\dfrac{1}{x}$）</td></tr>
         </table>
         <div class="nb-li">第一类共同点：左右极限存在；第二类共同点：<b>左右极限至少有一个不存在</b>。</div>
 
@@ -239,56 +258,56 @@
         <div class="nb-h3">一、无定义的点（初等函数间断点的唯一来源）：初等函数在定义域内处处连续，间断点只在定义域外。</div>
         <table class="nb-table" style="margin-left:6px;">
           <tr style="background:#fefce8;"><th style="border-color:#fde047;color:#713f12;">函数形式</th><th style="border-color:#fde047;color:#713f12;">可疑点</th></tr>
-          <tr><td style="border-color:#fde047;">分式 P/Q</td><td style="border-color:#fde047;">分母 Q(x) = 0</td></tr>
-          <tr><td style="border-color:#fde047;">tanx、secx</td><td style="border-color:#fde047;">cosx = 0（x = π/2 + kπ）</td></tr>
-          <tr><td style="border-color:#fde047;">cotx、cscx</td><td style="border-color:#fde047;">sinx = 0（x = kπ）</td></tr>
-          <tr><td style="border-color:#fde047;">lnu、log<sub>a</sub>u</td><td style="border-color:#fde047;">真数 u = 0（或 ≤ 0）</td></tr>
-          <tr><td style="border-color:#fde047;">1/x、1/(x−a)</td><td style="border-color:#fde047;">x = 0、x = a</td></tr>
-          <tr><td style="border-color:#fde047;">e<sup>1/x</sup>、sin(1/x)</td><td style="border-color:#fde047;">x = 0</td></tr>
-          <tr><td style="border-color:#fde047;">偶次根号 √u</td><td style="border-color:#fde047;">u &lt; 0 的边界</td></tr>
+          <tr><td style="border-color:#fde047;">分式 $\dfrac{P}{Q}$</td><td style="border-color:#fde047;">分母 $Q(x) = 0$</td></tr>
+          <tr><td style="border-color:#fde047;">$\tan x$、$\sec x$</td><td style="border-color:#fde047;">$\cos x = 0$（$x = \dfrac{\pi}{2} + k\pi$）</td></tr>
+          <tr><td style="border-color:#fde047;">$\cot x$、$\csc x$</td><td style="border-color:#fde047;">$\sin x = 0$（$x = k\pi$）</td></tr>
+          <tr><td style="border-color:#fde047;">$\ln u$、$\log_a u$</td><td style="border-color:#fde047;">真数 $u = 0$（或 $\le 0$）</td></tr>
+          <tr><td style="border-color:#fde047;">$\dfrac{1}{x}$、$\dfrac{1}{x-a}$</td><td style="border-color:#fde047;">$x = 0$、$x = a$</td></tr>
+          <tr><td style="border-color:#fde047;">$e^{1/x}$、$\sin\dfrac{1}{x}$</td><td style="border-color:#fde047;">$x = 0$</td></tr>
+          <tr><td style="border-color:#fde047;">偶次根号 $\sqrt{u}$</td><td style="border-color:#fde047;">$u \lt 0$ 的边界</td></tr>
         </table>
         <div class="nb-h3">二、分段函数的分段点（最主要来源）：表达式发生切换的点必须重点判断，例如：</div>
-        <div class="nb-li">• 绝对值展开处：|x| 在 x = 0</div>
-        <div class="nb-li">• 取整函数 [x]：每个整数点</div>
+        <div class="nb-li">• 绝对值展开处：$|x|$ 在 $x = 0$</div>
+        <div class="nb-li">• 取整函数 $[x]$：每个整数点</div>
         <div class="nb-li">• 分段定义的衔接点</div>
         <div class="nb-li">• 由极限式定义的函数的分界点</div>
 
-        <div class="nb-h2" style="border-color:#ca8a04;">4. 极限式定义函数题型：f(x) = lim<sub>n→∞</sub> g<sub>n</sub>(x) <span class="nb-tag" style="background:#fef08a;color:#854d0e;">高频题型</span></div>
-        <div class="nb-li">极限式中含 x（x 是参数，n→∞ 是极限变量）：先求出 f(x)，再定定义域 I 与连续区间 J。</div>
+        <div class="nb-h2" style="border-color:#ca8a04;">4. 极限式定义函数题型：$f(x) = \displaystyle\lim_{n\to\infty} g_n(x)$ <span class="nb-tag" style="background:#fef08a;color:#854d0e;">高频题型</span></div>
+        <div class="nb-li">极限式中含 $x$（$x$ 是参数，$n\to\infty$ 是极限变量）：先求出 $f(x)$，再定定义域 $I$ 与连续区间 $J$。</div>
 
         <div class="nb-tip" style="border-color:#ca8a04;background:#fefce8;color:#713f12;">
           <div style="font-weight:700;color:#854d0e;">本质思路（先想通这个再做题）</div>
-          <div style="color:#374151;">函数的定义要求：定义域内每个 <b>x 对应唯一确定的实数 y = f(x)</b>。而 f(x) = lim<sub>n→∞</sub> g<sub>n</sub>(x) 中，这个"y"是由 n→∞ 的极限给出来的——所以要先对每个 x 确认：n→∞ 时 g<sub>n</sub>(x) 能不能给出<b>唯一一个确切的数</b>。</div>
-          <div style="color:#374151;margin-top:3px;">两种"给不出"的情况，对应的 x 都不能进定义域：</div>
-          <div style="color:#374151;padding-left:6px;">① <b>没有一个确切的数</b>：极限不存在（振荡不收敛、趋于 ∞）；</div>
-          <div style="color:#374151;padding-left:6px;">② <b>对应了两个值</b>：不同子列趋于不同值（如奇偶子列），一个 x 同时对应两个 y，破坏"唯一确定"。</div>
+          <div style="color:#374151;">函数的定义要求：定义域内每个 <b>$x$ 对应唯一确定的实数 $y = f(x)$</b>。而 $f(x) = \displaystyle\lim_{n\to\infty} g_n(x)$ 中，这个"$y$"是由 $n\to\infty$ 的极限给出来的——所以要先对每个 $x$ 确认：$n\to\infty$ 时 $g_n(x)$ 能不能给出<b>唯一一个确切的数</b>。</div>
+          <div style="color:#374151;margin-top:3px;">两种"给不出"的情况，对应的 $x$ 都不能进定义域：</div>
+          <div style="color:#374151;padding-left:6px;">① <b>没有一个确切的数</b>：极限不存在（振荡不收敛、趋于 $\infty$）；</div>
+          <div style="color:#374151;padding-left:6px;">② <b>对应了两个值</b>：不同子列趋于不同值（如奇偶子列），一个 $x$ 同时对应两个 $y$，破坏"唯一确定"。</div>
         </div>
 
         <div class="nb-h3">第一步：求极限，写分段表达式（先找分界点，再分类讨论）</div>
         <table class="nb-table" style="margin-left:6px;">
           <tr style="background:#fefce8;"><th style="border-color:#fde047;color:#713f12;">极限式中含有</th><th style="border-color:#fde047;color:#713f12;">分界点</th><th style="border-color:#fde047;color:#713f12;">分类依据</th></tr>
-          <tr><td style="border-color:#fde047;">x<sup>n</sup>、x<sup>2n</sup>（最常见）</td><td style="border-color:#fde047;">x = ±1</td><td style="border-color:#fde047;">|x|&lt;1 时 x<sup>n</sup>→0；|x|&gt;1 时 x<sup>n</sup>→∞</td></tr>
-          <tr><td style="border-color:#fde047;">指数 a<sup>(·)</sup></td><td style="border-color:#fde047;">底数 = 1</td><td style="border-color:#fde047;">底数 &gt;1 发散、&lt;1 趋于 0</td></tr>
-          <tr><td style="border-color:#fde047;">分式</td><td style="border-color:#fde047;">分母为 0 的点</td><td style="border-color:#fde047;">该点单独讨论</td></tr>
+          <tr><td style="border-color:#fde047;">$x^n$、$x^{2n}$（最常见）</td><td style="border-color:#fde047;">$x = \pm1$</td><td style="border-color:#fde047;">$|x|\lt1$ 时 $x^n\to0$；$|x|\gt1$ 时 $x^n\to\infty$</td></tr>
+          <tr><td style="border-color:#fde047;">指数 $a^{(\cdot)}$</td><td style="border-color:#fde047;">底数 $= 1$</td><td style="border-color:#fde047;">底数 $\gt1$ 发散、$\lt1$ 趋于 $0$</td></tr>
+          <tr><td style="border-color:#fde047;">分式</td><td style="border-color:#fde047;">分母为 $0$ 的点</td><td style="border-color:#fde047;">该点单独讨论</td></tr>
         </table>
-        <div class="nb-li">三个必须单独算的点：① 分界点本身（如 x=±1）直接代入；② 分母为 0 的点（可能无定义）；③ |x|&gt;1 时注意 x<sup>n</sup> 奇偶子列符号相反，可能极限不存在。</div>
+        <div class="nb-li">三个必须单独算的点：① 分界点本身（如 $x=\pm1$）直接代入；② 分母为 $0$ 的点（可能无定义）；③ $|x|\gt1$ 时注意 $x^n$ 奇偶子列符号相反，可能极限不存在。</div>
 
         <div class="nb-h3">第二步：定定义域 I（逐点筛选）</div>
-        <div class="nb-li"><b>I = { x ｜ 极限存在且唯一（有限值）且表达式有意义 }</b>。</div>
-        <div class="nb-li">✗ 排除：振荡、子列不等（一个 x 对应两个值）、趋于 ∞（无穷大不是确切的数）、表达式无定义（分母为 0）。</div>
-        <div class="nb-li" style="font-size:12px;color:#854d0e;">依据：函数要求每个 x 对应唯一确定的 f(x)——极限给不出唯一值的 x 不能进定义域（振荡、子列不等、趋于 ∞ 都属于"给不出唯一值"）。</div>
+        <div class="nb-li"><b>$I = \{ x \mid$ 极限存在且唯一（有限值）且表达式有意义 $\}$</b>。</div>
+        <div class="nb-li">✗ 排除：振荡、子列不等（一个 $x$ 对应两个值）、趋于 $\infty$（无穷大不是确切的数）、表达式无定义（分母为 $0$）。</div>
+        <div class="nb-li" style="font-size:12px;color:#854d0e;">依据：函数要求每个 $x$ 对应唯一确定的 $f(x)$——极限给不出唯一值的 $x$ 不能进定义域（振荡、子列不等、趋于 $\infty$ 都属于"给不出唯一值"）。</div>
 
         <div class="nb-h3">第三步：定连续区间 J（查三要素）</div>
-        <div class="nb-li">每个分段点：f(x₀) ＝ lim<sub>x→x₀⁻</sub> f(x) ＝ lim<sub>x→x₀⁺</sub> f(x)？</div>
-        <div class="nb-li">• 三者相等 → 连续；不等或无定义 → 间断，从 J 中剔除该点。</div>
+        <div class="nb-li">每个分段点：$f(x_0) = \displaystyle\lim_{x\to x_0^-} f(x) = \displaystyle\lim_{x\to x_0^+} f(x)$？</div>
+        <div class="nb-li">• 三者相等 → 连续；不等或无定义 → 间断，从 $J$ 中剔除该点。</div>
         <div class="nb-li">• 分段区间内部（常数或连续初等函数）→ 直接连续。</div>
 
         <div class="nb-tip" style="border-color:#ca8a04;background:#fefce8;color:#713f12;">
-          <div style="font-weight:700;color:#854d0e;">例题落点：f(x) = lim<sub>n→∞</sub> (x<sup>2n</sup>−x)/(x<sup>2n</sup>+1)</div>
-          <div style="color:#374151;">分段：|x|&lt;1 时 f = −x；x = 1 时 f(1) = 0；x = −1 时 f(−1) = 1；|x|&gt;1 时 f → 1。</div>
-          <div style="color:#374151;"><b>I = (−∞,+∞)</b>（分母 x<sup>2n</sup>+1 ≥ 1 永不为 0，各点极限都存在）。</div>
-          <div style="color:#374151;">x = 1：左极限 −1、右极限 1、f(1) = 0，左右不等 → <b>跳跃间断（第一类）</b>；x = −1：左极限 1、右极限 −1→1、f(−1) = 1，三者相等 → 连续。</div>
-          <div style="color:#374151;"><b>J = (−∞,1) ∪ (1,+∞)</b>。</div>
+          <div style="font-weight:700;color:#854d0e;">例题落点：$f(x) = \displaystyle\lim_{n\to\infty}\dfrac{x^{2n}-x}{x^{2n}+1}$</div>
+          <div style="color:#374151;">分段：$|x|\lt1$ 时 $f = -x$；$x = 1$ 时 $f(1) = 0$；$x = -1$ 时 $f(-1) = 1$；$|x|\gt1$ 时 $f \to 1$。</div>
+          <div style="color:#374151;"><b>$I = (-\infty,+\infty)$</b>（分母 $x^{2n}+1 \ge 1$ 永不为 $0$，各点极限都存在）。</div>
+          <div style="color:#374151;">$x = 1$：左极限 $-1$、右极限 $1$、$f(1) = 0$，左右不等 → <b>跳跃间断（第一类）</b>；$x = -1$：左极限 $1$、右极限 $-1\to1$、$f(-1) = 1$，三者相等 → 连续。</div>
+          <div style="color:#374151;"><b>$J = (-\infty,1) \cup (1,+\infty)$</b>。</div>
         </div>
       </div>
     </div>
@@ -304,44 +323,44 @@
         <div class="nb-li">做题按三步走；第三步没算出结果就回第二步（化简 ⇄ 判型迭代）。</div>
 
         <div class="nb-h3">第一步：看是否需要分左右极限</div>
-        <div class="nb-li"><b>需要分左右的情形</b>（不能写一个极限，必须分别求 f(x₀−0)、f(x₀+0)，相等才存在）：</div>
+        <div class="nb-li"><b>需要分左右的情形</b>（不能写一个极限，必须分别求 $f(x_0-0)$、$f(x_0+0)$，相等才存在）：</div>
         <div class="nb-li">• 分段函数在分段点</div>
-        <div class="nb-li">• e<sup>∞</sup> 型（如 e<sup>1/x</sup> 在 x→0，左右极限不同）</div>
-        <div class="nb-li">• arctan∞（x→∞ 时左右不同：arctan(+∞)=π/2、arctan(−∞)=−π/2）</div>
-        <div class="nb-li">• 含 |x|、取整 [x]</div>
+        <div class="nb-li">• $e^{\infty}$ 型（如 $e^{1/x}$ 在 $x\to0$，左右极限不同）</div>
+        <div class="nb-li">• $\arctan\infty$（$x\to\infty$ 时左右不同：$\arctan(+\infty)=\dfrac{\pi}{2}$、$\arctan(-\infty)=-\dfrac{\pi}{2}$）</div>
+        <div class="nb-li">• 含 $|x|$、取整 $[x]$</div>
 
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
-          <div style="font-weight:700;color:#7e22ce;">例题：lim<sub>x→0</sub> (e<sup>1/x</sup>−1)/(e<sup>1/x</sup>+1)</div>
-          <div style="color:#374151;"><b>右极限（x→0<sup>+</sup>）</b>：1/x→+∞，e<sup>1/x</sup>→+∞，分子分母同除以 e<sup>1/x</sup>：lim<sub>x→0<sup>+</sup></sub> (1−e<sup>−1/x</sup>)/(1+e<sup>−1/x</sup>) = (1−0)/(1+0) = 1</div>
-          <div style="color:#374151;"><b>左极限（x→0<sup>−</sup>）</b>：1/x→−∞，e<sup>1/x</sup>→0，直接代：(0−1)/(0+1) = −1</div>
-          <div style="color:#374151;"><b>结论</b>：lim<sub>x→0<sup>+</sup></sub> f(x)=1、lim<sub>x→0<sup>−</sup></sub> f(x)=−1，左右不相等 ⇒ 原极限不存在。</div>
+          <div style="font-weight:700;color:#7e22ce;">例题：$\displaystyle\lim_{x\to0}\dfrac{e^{1/x}-1}{e^{1/x}+1}$</div>
+          <div style="color:#374151;"><b>右极限（$x\to0^+$）</b>：$\dfrac{1}{x}\to+\infty$，$e^{1/x}\to+\infty$，分子分母同除以 $e^{1/x}$：$\displaystyle\lim_{x\to0^+}\dfrac{1-e^{-1/x}}{1+e^{-1/x}} = \dfrac{1-0}{1+0} = 1$</div>
+          <div style="color:#374151;"><b>左极限（$x\to0^-$）</b>：$\dfrac{1}{x}\to-\infty$，$e^{1/x}\to0$，直接代：$\dfrac{0-1}{0+1} = -1$</div>
+          <div style="color:#374151;"><b>结论</b>：$\displaystyle\lim_{x\to0^+} f(x)=1$、$\displaystyle\lim_{x\to0^-} f(x)=-1$，左右不相等 ⇒ 原极限不存在。</div>
         </div>
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
           <div style="font-weight:700;color:#7e22ce;">概念辨析：不要把"含参数、结果随参数分情况"误判为"极限不存在"</div>
-          <div style="color:#374151;">• <b>极限不存在</b>：对同一个固定的 a，x→∞ 时函数不趋于任何确定值。</div>
-          <div style="color:#374151;">• <b>分情况</b>：对不同的固定 a，结果不同；但每个 a 自己的极限都存在。</div>
-          <div style="color:#374151;">关键：题目说"设常数 a&gt;0"，a 是固定常数、不是变量；对每个固定的 a，极限都存在，只是值取决于 a。</div>
+          <div style="color:#374151;">• <b>极限不存在</b>：对同一个固定的 $a$，$x\to\infty$ 时函数不趋于任何确定值。</div>
+          <div style="color:#374151;">• <b>分情况</b>：对不同的固定 $a$，结果不同；但每个 $a$ 自己的极限都存在。</div>
+          <div style="color:#374151;">关键：题目说"设常数 $a\gt0$"，$a$ 是固定常数、不是变量；对每个固定的 $a$，极限都存在，只是值取决于 $a$。</div>
         </div>
 
         <div class="nb-h3">第二步：先化简 <span style="font-size:12px;color:#7e22ce;">（黄金原则：先化简再动手——不要上来就洛必达/泰勒）</span></div>
         <div class="nb-li"><b>化简两板斧</b>：</div>
-        <div class="nb-li">① 非零极限因子先算出来扔掉（如 1+cosx→2，直接提走）；</div>
+        <div class="nb-li">① 非零极限因子先算出来扔掉（如 $1+\cos x\to2$，直接提走）；</div>
         <div class="nb-li">② 乘除因子优先等价无穷小替换。</div>
 
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
           <div style="font-weight:700;color:#7e22ce;">【重点】等价无穷小替换 —— 只对乘除因子成立</div>
           <table class="nb-table">
-            <tr style="background:#f3e8ff;"><th style="border-color:#d8b4fe;color:#581c87;">常用等价无穷小（x→0）</th><th style="border-color:#d8b4fe;color:#581c87;">阶数</th></tr>
-            <tr><td style="border-color:#d8b4fe;">x ~ sinx ~ tanx ~ arcsinx ~ arctanx ~ ln(1+x) ~ e<sup>x</sup>−1</td><td style="border-color:#d8b4fe;">1 阶</td></tr>
-            <tr><td style="border-color:#d8b4fe;">a<sup>x</sup>−1 ~ x·lna；(1+x)<sup>α</sup>−1 ~ αx</td><td style="border-color:#d8b4fe;">1 阶</td></tr>
-            <tr><td style="border-color:#d8b4fe;">1−cosx ~ (1/2)x<sup>2</sup></td><td style="border-color:#d8b4fe;">2 阶</td></tr>
-            <tr><td style="border-color:#d8b4fe;">x−sinx ~ x<sup>3</sup>/6；arcsinx−x ~ x<sup>3</sup>/6</td><td style="border-color:#d8b4fe;">3 阶</td></tr>
-            <tr><td style="border-color:#d8b4fe;">tanx−x ~ x<sup>3</sup>/3；x−arctanx ~ x<sup>3</sup>/3</td><td style="border-color:#d8b4fe;">3 阶</td></tr>
-            <tr><td style="border-color:#d8b4fe;">x−ln(1+x) ~ (1/2)x<sup>2</sup></td><td style="border-color:#d8b4fe;">2 阶</td></tr>
+            <tr style="background:#f3e8ff;"><th style="border-color:#d8b4fe;color:#581c87;">常用等价无穷小（$x\to0$）</th><th style="border-color:#d8b4fe;color:#581c87;">阶数</th></tr>
+            <tr><td style="border-color:#d8b4fe;">$x \sim \sin x \sim \tan x \sim \arcsin x \sim \arctan x \sim \ln(1+x) \sim e^{x}-1$</td><td style="border-color:#d8b4fe;">1 阶</td></tr>
+            <tr><td style="border-color:#d8b4fe;">$a^{x}-1 \sim x\cdot\ln a$；$(1+x)^{\alpha}-1 \sim \alpha x$</td><td style="border-color:#d8b4fe;">1 阶</td></tr>
+            <tr><td style="border-color:#d8b4fe;">$1-\cos x \sim \dfrac{1}{2}x^{2}$</td><td style="border-color:#d8b4fe;">2 阶</td></tr>
+            <tr><td style="border-color:#d8b4fe;">$x-\sin x \sim \dfrac{x^{3}}{6}$；$\arcsin x-x \sim \dfrac{x^{3}}{6}$</td><td style="border-color:#d8b4fe;">3 阶</td></tr>
+            <tr><td style="border-color:#d8b4fe;">$\tan x-x \sim \dfrac{x^{3}}{3}$；$x-\arctan x \sim \dfrac{x^{3}}{3}$</td><td style="border-color:#d8b4fe;">3 阶</td></tr>
+            <tr><td style="border-color:#d8b4fe;">$x-\ln(1+x) \sim \dfrac{1}{2}x^{2}$</td><td style="border-color:#d8b4fe;">2 阶</td></tr>
           </table>
-          <div style="color:#374151;">推广：x→a 时，若 □→1，则 ln□ ~ □−1（如 x→1 时 lnx ~ x−1）。</div>
+          <div style="color:#374151;">推广：$x\to a$ 时，若 $\Box\to1$，则 $\ln\Box \sim \Box-1$（如 $x\to1$ 时 $\ln x \sim x-1$）。</div>
           <div style="font-weight:700;color:#7e22ce;margin-top:6px;">主项规则：替换要保留"第一个非零项（主项）"，0 不是主项</div>
-          <div style="color:#374151;">主项 = 泰勒展开里幂次最低、数值最大、起决定作用的那一项（x→0 时 x&gt;x<sup>2</sup>&gt;x<sup>3</sup>，幂次最低的非零项说了算）。</div>
+          <div style="color:#374151;">主项 = 泰勒展开里幂次最低、数值最大、起决定作用的那一项（$x\to0$ 时 $x\gt x^{2}\gt x^{3}$，幂次最低的非零项说了算）。</div>
           <div style="color:#374151;">• <b>主项不抵消</b>（两项主项不同、不等价）→ 能直接等价替换；</div>
           <div style="color:#374151;">• <b>主项抵消</b>（相减两项主项相同、等价）→ 不能直接换，要多展一阶。</div>
         </div>
@@ -350,77 +369,77 @@
           <div style="font-weight:700;color:#854d0e;">经典的坑：∞−∞ 型主项抵消时，不能把非主项因子随手扔掉</div>
           <div style="color:#854d0e;font-size:12px;margin:2px 0 4px;">本质：这里是<b>加减项</b>，不是乘除因子；<b>只有乘除因子才能做等价无穷小替换</b>——这个坑说白了就是"在加减项里错误地用了等价无穷小"。</div>
           <table class="nb-table">
-            <tr style="background:#fef9c3;"><th style="border-color:#fde047;color:#854d0e;">情况</th><th style="border-color:#fde047;color:#854d0e;">能否去掉非主项因子（如 1−t）</th></tr>
-            <tr><td style="border-color:#fde047;">乘除关系单独存在（如 A/[t<sup>2</sup>(1−t)] 单独出现）</td><td style="border-color:#fde047;">✓ 可以，1−t→1</td></tr>
+            <tr style="background:#fef9c3;"><th style="border-color:#fde047;color:#854d0e;">情况</th><th style="border-color:#fde047;color:#854d0e;">能否去掉非主项因子（如 $1-t$）</th></tr>
+            <tr><td style="border-color:#fde047;">乘除关系单独存在（如 $\dfrac{A}{t^{2}(1-t)}$ 单独出现）</td><td style="border-color:#fde047;">✓ 可以，$1-t\to1$</td></tr>
             <tr><td style="border-color:#fde047;">加减关系（∞−∞ 型，主项抵消）</td><td style="border-color:#fde047;">✗ 不行，必须保留高阶项</td></tr>
           </table>
-          <div style="color:#374151;">反例：lim<sub>t→0<sup>+</sup></sub> (e<sup>t</sup>/t<sup>2</sup> − 1/[t<sup>2</sup>(1−t)])。直接把 1/[t<sup>2</sup>(1−t)] 换成 1/t<sup>2</sup> 会错——主项 1/t<sup>2</sup> 抵消后，次项（高阶项）决定结果，必须多展一阶。</div>
+          <div style="color:#374151;">反例：$\displaystyle\lim_{t\to0^+}\left(\dfrac{e^{t}}{t^{2}} - \dfrac{1}{t^{2}(1-t)}\right)$。直接把 $\dfrac{1}{t^{2}(1-t)}$ 换成 $\dfrac{1}{t^{2}}$ 会错——主项 $\dfrac{1}{t^{2}}$ 抵消后，次项（高阶项）决定结果，必须多展一阶。</div>
         </div>
 
         <div class="nb-h3">第三步：看式子类型，选工具</div>
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
-          <div style="color:#7e22ce;font-weight:700;">总纲：0/0、∞/∞ 是"母型"；其余未定式（0·∞、∞−∞、1<sup>∞</sup>、0<sup>0</sup>、∞<sup>0</sup>）本质都是先化成 0/0 或 ∞/∞，再回第二步化简 / 上工具。</div>
+          <div style="color:#7e22ce;font-weight:700;">总纲：$0/0$、$\infty/\infty$ 是"母型"；其余未定式（$0\cdot\infty$、$\infty-\infty$、$1^{\infty}$、$0^{0}$、$\infty^{0}$）本质都是先化成 $0/0$ 或 $\infty/\infty$，再回第二步化简 / 上工具。</div>
 
-          <div class="font-weight:700;color:#7e22ce;margin-top:6px;">0/0 或 ∞/∞（母型，直接上工具）</div>
+          <div class="font-weight:700;color:#7e22ce;margin-top:6px;">$0/0$ 或 $\infty/\infty$（母型，直接上工具）</div>
           <div style="color:#374151;padding-left:10px;">• 有乘除因子 → 先等价无穷小（再回第二步化简）；</div>
           <div style="color:#374151;padding-left:10px;">• 出现加减、高阶项消不掉 → 泰勒公式（首选，比洛必达稳）；</div>
-          <div style="color:#374151;padding-left:10px;">• 不好展开 → 洛必达（洛完仍 0/0 可再洛，但最多 2~3 次）；</div>
-          <div style="color:#9333ea;font-size:12px;padding-left:10px;">（∞/∞ 型的快速判型：无穷大增长速度排序，见 ③.7）</div>
+          <div style="color:#374151;padding-left:10px;">• 不好展开 → 洛必达（洛完仍 $0/0$ 可再洛，但最多 2~3 次）；</div>
+          <div style="color:#9333ea;font-size:12px;padding-left:10px;">（$\infty/\infty$ 型的快速判型：无穷大增长速度排序，见 ③.7）</div>
 
           <div style="margin-top:6px;background:#ffffff;border:1px solid #d8b4fe;border-radius:6px;padding:6px 8px;font-size:12px;color:#581c87;">
             <div style="font-weight:700;color:#7e22ce;">泰勒公式工具（加减、高阶项消不掉时用它）</div>
-            <div style="color:#374151;">定理（皮亚诺余项）：f(x) = f(x₀) + f′(x₀)(x−x₀) + … + f<sup>(n)</sup>(x₀)/n!·(x−x₀)<sup>n</sup> + o((x−x₀)<sup>n</sup>)。</div>
+            <div style="color:#374151;">定理（皮亚诺余项）：$f(x) = f(x_0) + f'(x_0)(x-x_0) + \cdots + \dfrac{f^{(n)}(x_0)}{n!}\cdot(x-x_0)^{n} + o((x-x_0)^{n})$。</div>
             <table class="nb-table" style="font-size:12px;">
-              <tr style="background:#f3e8ff;"><th style="border-color:#d8b4fe;color:#581c87;">函数（x→0）</th><th style="border-color:#d8b4fe;color:#581c87;">展开</th></tr>
-              <tr><td style="border-color:#d8b4fe;">e<sup>x</sup></td><td style="border-color:#d8b4fe;">1 + x + x<sup>2</sup>/2! + x<sup>3</sup>/3! + … + x<sup>n</sup>/n! + o(x<sup>n</sup>)</td></tr>
-              <tr><td style="border-color:#d8b4fe;">sinx</td><td style="border-color:#d8b4fe;">x − x<sup>3</sup>/3! + x<sup>5</sup>/5! − … + o(x<sup>2n</sup>)</td></tr>
-              <tr><td style="border-color:#d8b4fe;">cosx</td><td style="border-color:#d8b4fe;">1 − x<sup>2</sup>/2! + x<sup>4</sup>/4! − … + o(x<sup>2n</sup>)</td></tr>
-              <tr><td style="border-color:#d8b4fe;">ln(1+x)</td><td style="border-color:#d8b4fe;">x − x<sup>2</sup>/2 + x<sup>3</sup>/3 − … + o(x<sup>n</sup>)</td></tr>
-              <tr><td style="border-color:#d8b4fe;">(1+x)<sup>α</sup></td><td style="border-color:#d8b4fe;">1 + αx + α(α−1)/2!·x<sup>2</sup> + … + o(x<sup>n</sup>)</td></tr>
+              <tr style="background:#f3e8ff;"><th style="border-color:#d8b4fe;color:#581c87;">函数（$x\to0$）</th><th style="border-color:#d8b4fe;color:#581c87;">展开</th></tr>
+              <tr><td style="border-color:#d8b4fe;">$e^x$</td><td style="border-color:#d8b4fe;">$1 + x + \dfrac{x^2}{2!} + \dfrac{x^3}{3!} + \cdots + \dfrac{x^n}{n!} + o(x^n)$</td></tr>
+              <tr><td style="border-color:#d8b4fe;">$\sin x$</td><td style="border-color:#d8b4fe;">$x - \dfrac{x^3}{3!} + \dfrac{x^5}{5!} - \cdots + o(x^{2n})$</td></tr>
+              <tr><td style="border-color:#d8b4fe;">$\cos x$</td><td style="border-color:#d8b4fe;">$1 - \dfrac{x^2}{2!} + \dfrac{x^4}{4!} - \cdots + o(x^{2n})$</td></tr>
+              <tr><td style="border-color:#d8b4fe;">$\ln(1+x)$</td><td style="border-color:#d8b4fe;">$x - \dfrac{x^2}{2} + \dfrac{x^3}{3} - \cdots + o(x^n)$</td></tr>
+              <tr><td style="border-color:#d8b4fe;">$(1+x)^{\alpha}$</td><td style="border-color:#d8b4fe;">$1 + \alpha x + \dfrac{\alpha(\alpha-1)}{2!}\cdot x^2 + \cdots + o(x^n)$</td></tr>
             </table>
-            <div style="color:#374151;"><b>嵌套展开（复合函数，合法标准做法）</b>：先展内层 u=sinx 到够用的阶，再展外层 e<sup>u</sup>，代入合并、只保留到需要的阶。例：e<sup>sinx</sup> 展到 x<sup>4</sup>，内层 sinx 展到 x<sup>3</sup> 就够（更高次代入后超过 x<sup>4</sup>）。</div>
-            <div style="color:#374151;"><b>x→+∞ 时别硬套 x→0 的公式</b>：如 arctanx 在 x→0 是 x−x<sup>3</sup>/3+…，x→+∞ 却是 π/2−1/x+1/(3x<sup>3</sup>)−…；核心是利用 arctanx + arctan(1/x) = π/2 倒推。</div>
+            <div style="color:#374151;"><b>嵌套展开（复合函数，合法标准做法）</b>：先展内层 $u=\sin x$ 到够用的阶，再展外层 $e^{u}$，代入合并、只保留到需要的阶。例：$e^{\sin x}$ 展到 $x^{4}$，内层 $\sin x$ 展到 $x^{3}$ 就够（更高次代入后超过 $x^{4}$）。</div>
+            <div style="color:#374151;"><b>$x\to+\infty$ 时别硬套 $x\to0$ 的公式</b>：如 $\arctan x$ 在 $x\to0$ 是 $x-\dfrac{x^3}{3}+\cdots$，$x\to+\infty$ 却是 $\dfrac{\pi}{2}-\dfrac{1}{x}+\dfrac{1}{3x^3}-\cdots$；核心是利用 $\arctan x + \arctan\dfrac{1}{x} = \dfrac{\pi}{2}$ 倒推。</div>
           </div>
 
           <div style="margin-top:6px;background:#ffffff;border:1px solid #d8b4fe;border-radius:6px;padding:6px 8px;font-size:12px;color:#581c87;">
             <div style="font-weight:700;color:#7e22ce;">洛必达法则工具（不好展开时用）</div>
             <table class="nb-table" style="font-size:12px;">
               <tr style="background:#f3e8ff;"><th style="border-color:#d8b4fe;color:#581c87;">4 个条件</th><th style="border-color:#d8b4fe;color:#581c87;">说明</th></tr>
-              <tr><td style="border-color:#d8b4fe;">① 0/0 或 ∞/∞</td><td style="border-color:#d8b4fe;">类型要对</td></tr>
-              <tr><td style="border-color:#d8b4fe;">② 去心邻域可导</td><td style="border-color:#d8b4fe;">x₀ 本身可不可导不管（极限只管邻域）</td></tr>
-              <tr><td style="border-color:#d8b4fe;">③ 分母导数 ≠ 0</td><td style="border-color:#d8b4fe;">不能恒为 0（g′ 可以为 ∞）</td></tr>
-              <tr><td style="border-color:#d8b4fe;">④ lim f′/g′ 存在</td><td style="border-color:#d8b4fe;">关键！A 为有限数或 ∞ 都成立，可推出 lim f/g = A</td></tr>
+              <tr><td style="border-color:#d8b4fe;">① $0/0$ 或 $\infty/\infty$</td><td style="border-color:#d8b4fe;">类型要对</td></tr>
+              <tr><td style="border-color:#d8b4fe;">② 去心邻域可导</td><td style="border-color:#d8b4fe;">$x_0$ 本身可不可导不管（极限只管邻域）</td></tr>
+              <tr><td style="border-color:#d8b4fe;">③ 分母导数 $\ne 0$</td><td style="border-color:#d8b4fe;">不能恒为 $0$（$g'$ 可以为 $\infty$）</td></tr>
+              <tr><td style="border-color:#d8b4fe;">④ $\lim \dfrac{f'}{g'}$ 存在</td><td style="border-color:#d8b4fe;">关键！$A$ 为有限数或 $\infty$ 都成立，可推出 $\lim \dfrac{f}{g} = A$</td></tr>
             </table>
-            <div style="color:#374151;"><b>补充</b>：洛完一次看 lim f′/g′ 的结果——① 有限数 → 直接得答案；② 是 ∞ 但 f′/g′ 不是未定式（如 f′ 非零、g′→0）→ 原极限就是 ∞，结束，<b>不能再洛</b>；③ f′/g′ 仍是 0/0 或 ∞/∞ 未定式 → 可继续对 f′/g′ 再洛（最多 2~3 次，避免死循环）。</div>
-            <div style="color:#374151;"><b>数列不能直接用洛必达</b>：n 只取正整数、离散，对 n 无法求导。<b>正确做法（间接用）</b>：① 把 n 换成连续变量 x，得 f(x)；② 对 lim<sub>x→+∞</sub> f(x) 用洛必达；③ 由海涅定理（归结原则）：函数极限存在（或为 ∞）⇒ 数列极限等于它。</div>
-            <div style="color:#374151;">例：求 lim<sub>n→∞</sub> ln n/n。令 f(x) = ln x/x：lim<sub>x→∞</sub> ln x/x = lim<sub>x→∞</sub> (1/x)/1 = 0，故数列极限 = 0。</div>
+            <div style="color:#374151;"><b>补充</b>：洛完一次看 $\lim \dfrac{f'}{g'}$ 的结果——① 有限数 → 直接得答案；② 是 $\infty$ 但 $\dfrac{f'}{g'}$ 不是未定式（如 $f'$ 非零、$g'\to0$）→ 原极限就是 $\infty$，结束，<b>不能再洛</b>；③ $\dfrac{f'}{g'}$ 仍是 $0/0$ 或 $\infty/\infty$ 未定式 → 可继续对 $\dfrac{f'}{g'}$ 再洛（最多 2~3 次，避免死循环）。</div>
+            <div style="color:#374151;"><b>数列不能直接用洛必达</b>：$n$ 只取正整数、离散，对 $n$ 无法求导。<b>正确做法（间接用）</b>：① 把 $n$ 换成连续变量 $x$，得 $f(x)$；② 对 $\displaystyle\lim_{x\to+\infty} f(x)$ 用洛必达；③ 由海涅定理（归结原则）：函数极限存在（或为 $\infty$）⇒ 数列极限等于它。</div>
+            <div style="color:#374151;">例：求 $\displaystyle\lim_{n\to\infty}\dfrac{\ln n}{n}$。令 $f(x) = \dfrac{\ln x}{x}$：$\displaystyle\lim_{x\to\infty}\dfrac{\ln x}{x} = \displaystyle\lim_{x\to\infty}\dfrac{1/x}{1} = 0$，故数列极限 $= 0$。</div>
           </div>
 
           <div class="font-weight:700;color:#7e22ce;margin-top:6px;">其他五类 → 先化成 0/0 或 ∞/∞</div>
-          <div style="color:#374151;padding-left:10px;">• <b>0·∞</b>：倒一个变 0/0 或 ∞/∞（把简单的那个放分母）；</div>
-          <div style="color:#374151;padding-left:10px;">• <b>∞−∞</b>：选一种化成 0/0——</div>
-          <div style="color:#374151;padding-left:24px;">— 两项是分式（A/B − C/D）→ <b>通分</b>；</div>
+          <div style="color:#374151;padding-left:10px;">• <b>$0\cdot\infty$</b>：倒一个变 $0/0$ 或 $\infty/\infty$（把简单的那个放分母）；</div>
+          <div style="color:#374151;padding-left:10px;">• <b>$\infty-\infty$</b>：选一种化成 $0/0$——</div>
+          <div style="color:#374151;padding-left:24px;">— 两项是分式（$\dfrac{A}{B} - \dfrac{C}{D}$）→ <b>通分</b>；</div>
           <div style="color:#374151;padding-left:24px;">— 含根号差（√−√ 或 √−x）→ <b>有理化</b>（乘共轭因式）；</div>
-          <div style="color:#374151;padding-left:24px;">— x→∞ 含根号且次数高 → <b>提公因式 x</b>；</div>
-          <div style="color:#374151;padding-left:24px;">— x→∞ 含 1/x → <b>倒代换 t=1/x</b>。</div>
-          <div style="color:#7e22ce;padding-left:24px;font-size:12px;">例：lim<sub>x→∞</sub> [∛((x+a)(x+b)(x+c)) − x]：</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">① 提 x 出来：三次根号化成 x·[(1+u)<sup>1/3</sup> − 1]；</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">② 等价无穷小：(1+u)<sup>α</sup> − 1 ~ αu，这里 α=1/3；</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">③ 乘积展开只取一次项：(1+at)(1+bt)(1+ct) = 1 + (a+b+c)t + o(t)，高次项 t→0 可忽略。</div>
-          <div style="color:#374151;padding-left:10px;">• <b>1<sup>∞</sup></b>：【专项】lim u<sup>v</sup> = e<sup>lim v(u−1)</sup>，一步出结果（本质是 u→1 时 ln u ~ u−1 用了等价代换）；</div>
-          <div style="color:#374151;padding-left:10px;">• <b>0<sup>0</sup> / ∞<sup>0</sup></b>：幂指函数 u<sup>v</sup> 直接代是未定式，取对数化成 0·∞：</div>
+          <div style="color:#374151;padding-left:24px;">— $x\to\infty$ 含根号且次数高 → <b>提公因式 $x$</b>；</div>
+          <div style="color:#374151;padding-left:24px;">— $x\to\infty$ 含 $\dfrac{1}{x}$ → <b>倒代换 $t=\dfrac{1}{x}$</b>。</div>
+          <div style="color:#7e22ce;padding-left:24px;font-size:12px;">例：$\displaystyle\lim_{x\to\infty}\left[\sqrt[3]{(x+a)(x+b)(x+c)} - x\right]$：</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">① 提 $x$ 出来：三次根号化成 $x\cdot[(1+u)^{1/3} - 1]$；</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">② 等价无穷小：$(1+u)^{\alpha} - 1 \sim \alpha u$，这里 $\alpha=\dfrac{1}{3}$；</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">③ 乘积展开只取一次项：$(1+at)(1+bt)(1+ct) = 1 + (a+b+c)t + o(t)$，高次项 $t\to0$ 可忽略。</div>
+          <div style="color:#374151;padding-left:10px;">• <b>$1^{\infty}$</b>：【专项】$\lim u^{v} = e^{\lim v(u-1)}$，一步出结果（本质是 $u\to1$ 时 $\ln u \sim u-1$ 用了等价代换）；</div>
+          <div style="color:#374151;padding-left:10px;">• <b>$0^{0} / \infty^{0}$</b>：幂指函数 $u^{v}$ 直接代是未定式，取对数化成 $0\cdot\infty$：</div>
           <div style="color:#374151;padding-left:24px;">— 五步通用流程：</div>
-          <div style="color:#374151;padding-left:38px;">① 直接代是 0<sup>0</sup> / ∞<sup>0</sup>（未定式）；</div>
-          <div style="color:#374151;padding-left:38px;">② 令 y = u<sup>v</sup>，取对数 ln y = v·ln u；</div>
-          <div style="color:#374151;padding-left:38px;">③ 指数 v 被拉下来，变 0·∞ 型；</div>
-          <div style="color:#374151;padding-left:38px;">④ 倒代换 / 通分变 0/0 或 ∞/∞，洛必达；</div>
-          <div style="color:#374151;padding-left:38px;">⑤ 求出 lim ln y = A，则 lim y = e<sup>A</sup>。</div>
-          <div style="color:#374151;padding-left:24px;">— 关键：e<sup>u</sup> 处处连续，极限号可拿进函数：lim e<sup>g(x)</sup> = e<sup>lim g(x)</sup>（前提 lim g(x) 存在）。</div>
-          <div style="color:#7e22ce;padding-left:24px;font-size:12px;">例：lim<sub>x→0<sup>+</sup></sub> x<sup>x</sup>：</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">① ln y = x ln x；</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">② 0·∞ → lnx/(1/x)（∞/∞）；</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">③ 洛必达 = (1/x)/(−1/x<sup>2</sup>) = −x → 0；</div>
-          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">④ 还原 lim y = e<sup>0</sup> = 1。</div>
+          <div style="color:#374151;padding-left:38px;">① 直接代是 $0^{0} / \infty^{0}$（未定式）；</div>
+          <div style="color:#374151;padding-left:38px;">② 令 $y = u^{v}$，取对数 $\ln y = v\cdot\ln u$；</div>
+          <div style="color:#374151;padding-left:38px;">③ 指数 $v$ 被拉下来，变 $0\cdot\infty$ 型；</div>
+          <div style="color:#374151;padding-left:38px;">④ 倒代换 / 通分变 $0/0$ 或 $\infty/\infty$，洛必达；</div>
+          <div style="color:#374151;padding-left:38px;">⑤ 求出 $\lim \ln y = A$，则 $\lim y = e^{A}$。</div>
+          <div style="color:#374151;padding-left:24px;">— 关键：$e^{u}$ 处处连续，极限号可拿进函数：$\lim e^{g(x)} = e^{\lim g(x)}$（前提 $\lim g(x)$ 存在）。</div>
+          <div style="color:#7e22ce;padding-left:24px;font-size:12px;">例：$\displaystyle\lim_{x\to0^+} x^{x}$：</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">① $\ln y = x\ln x$；</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">② $0\cdot\infty \to \dfrac{\ln x}{1/x}$（$\infty/\infty$）；</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">③ 洛必达 $= \dfrac{1/x}{-1/x^{2}} = -x \to 0$；</div>
+          <div style="color:#7e22ce;padding-left:38px;font-size:12px;">④ 还原 $\lim y = e^{0} = 1$。</div>
         </div>
 
         <!-- 新 B = 旧 C 数列求极限 -->
@@ -430,37 +449,37 @@
           <div style="font-weight:700;color:#7e22ce;">拿到数列极限，先按四步决策树判类</div>
           <div style="color:#374151;padding-left:10px;">① <b>能不能直接算</b>？能 → 代入 / 公式直接出。</div>
           <div style="color:#374151;padding-left:10px;">② <b>是 n 项和 / n 项积？</b></div>
-          <div style="color:#374151;padding-left:28px;">— 能提出 1/n、剩下 f(k/n) → <b>定积分定义</b>；</div>
-          <div style="color:#374151;padding-left:28px;">— 提不出 1/n → 只能放缩 → <b>夹逼准则</b>。</div>
-          <div style="color:#374151;padding-left:10px;">③ <b>是递推 x<sub>n+1</sub>=f(x<sub>n</sub>)？</b> → <b>单调有界定理</b>（证有界 → 证单调 → 设极限解方程）。</div>
+          <div style="color:#374151;padding-left:28px;">— 能提出 $\dfrac{1}{n}$、剩下 $f\left(\dfrac{k}{n}\right)$ → <b>定积分定义</b>；</div>
+          <div style="color:#374151;padding-left:28px;">— 提不出 $\dfrac{1}{n}$ → 只能放缩 → <b>夹逼准则</b>。</div>
+          <div style="color:#374151;padding-left:10px;">③ <b>是递推 $x_{n+1}=f(x_n)$？</b> → <b>单调有界定理</b>（证有界 → 证单调 → 设极限解方程）。</div>
           <div style="color:#374151;padding-left:10px;">④ <b>都不像？</b> → 化函数极限（海涅定理，间接洛必达 / 泰勒）/ Stolz 定理。</div>
         </div>
 
         <div class="nb-h3">方法一　n 项和 / n 项积</div>
-        <div class="nb-li"><b>判据</b>：通项是 Σ 或 Π 形式，项数随 n 增长。</div>
+        <div class="nb-li"><b>判据</b>：通项是 $\Sigma$ 或 $\Pi$ 形式，项数随 $n$ 增长。</div>
 
-        <div class="nb-li"><b>分支 A：能提出 1/n → 定积分定义</b></div>
+        <div class="nb-li"><b>分支 A：能提出 $\dfrac{1}{n}$ → 定积分定义</b></div>
         <div style="margin:6px 0 6px 36px;padding:8px 12px;background:#f5f3ff;border-left:3px solid #a78bfa;border-radius:4px;text-align:center;font-size:14.5px;color:#4c1d95;">
-          lim<sub>n→∞</sub> (1/n) · <b>Σ</b><sub>k=1</sub><sup>n</sup> f(k/n) = <b>∫</b><sub>0</sub><sup>1</sup> f(x) dx
+          $$\lim_{n\to\infty}\dfrac{1}{n}\sum_{k=1}^{n} f\left(\dfrac{k}{n}\right) = \int_{0}^{1} f(x)\,dx$$
         </div>
-        <div class="nb-li2"><b>本质</b>：把 [0,1] 切成 n 等份</div>
-        <div class="nb-li3">— 每份宽度 = 1/n</div>
-        <div class="nb-li3">— 右端点 = k/n</div>
+        <div class="nb-li2"><b>本质</b>：把 $[0,1]$ 切成 $n$ 等份</div>
+        <div class="nb-li3">— 每份宽度 $= \dfrac{1}{n}$</div>
+        <div class="nb-li3">— 右端点 $= \dfrac{k}{n}$</div>
         <div class="nb-li3">— 矩形面积和 → 定积分</div>
 
-        <div class="nb-li2" style="margin-top:8px;"><b>凑法一：标准型（直接提 1/n）</b></div>
-        <div class="nb-li3">原式：<b>Σ</b><sub>k=1</sub><sup>n</sup> 1/(n+k)</div>
-        <div class="nb-li3">提出 1/n：(1/n)·<b>Σ</b><sub>k=1</sub><sup>n</sup> 1/(1+k/n)</div>
-        <div class="nb-li3">写成积分：<b>∫</b><sub>0</sub><sup>1</sup> 1/(1+x) dx</div>
-        <div class="nb-li3">结果：= ln2</div>
+        <div class="nb-li2" style="margin-top:8px;"><b>凑法一：标准型（直接提 $\dfrac{1}{n}$）</b></div>
+        <div class="nb-li3">原式：$\displaystyle\sum_{k=1}^{n}\dfrac{1}{n+k}$</div>
+        <div class="nb-li3">提出 $\dfrac{1}{n}$：$\dfrac{1}{n}\cdot\displaystyle\sum_{k=1}^{n}\dfrac{1}{1+k/n}$</div>
+        <div class="nb-li3">写成积分：$\displaystyle\int_{0}^{1}\dfrac{1}{1+x}\,dx$</div>
+        <div class="nb-li3">结果：$= \ln 2$</div>
 
         <div class="nb-li2" style="margin-top:8px;"><b>凑法二：分母有小扰动（小项忽略）</b></div>
-        <div class="nb-li3">原式：<b>Σ</b><sub>k=1</sub><sup>n</sup> k/(n²+k)</div>
-        <div class="nb-li3">忽略分母小扰动 k：≈ (1/n)·<b>Σ</b><sub>k=1</sub><sup>n</sup> (k/n)</div>
-        <div class="nb-li3">写成积分：<b>∫</b><sub>0</sub><sup>1</sup> x dx</div>
-        <div class="nb-li3">结果：= 1/2</div>
+        <div class="nb-li3">原式：$\displaystyle\sum_{k=1}^{n}\dfrac{k}{n^2+k}$</div>
+        <div class="nb-li3">忽略分母小扰动 $k$：$\approx \dfrac{1}{n}\cdot\displaystyle\sum_{k=1}^{n}\dfrac{k}{n}$</div>
+        <div class="nb-li3">写成积分：$\displaystyle\int_{0}^{1} x\,dx$</div>
+        <div class="nb-li3">结果：$= \dfrac{1}{2}$</div>
 
-        <div class="nb-li" style="margin-top:8px;"><b>分支 B：提不出 1/n → 夹逼准则</b></div>
+        <div class="nb-li" style="margin-top:8px;"><b>分支 B：提不出 $\dfrac{1}{n}$ → 夹逼准则</b></div>
         <div class="nb-li2">把通项放缩成两头能算出相同极限的式子</div>
         <div class="nb-li3">— 一头放大</div>
         <div class="nb-li3">— 一头缩小</div>
@@ -470,67 +489,67 @@
         <div class="nb-li2">先取对数：把乘积化成和</div>
         <div class="nb-li2">再走分支 A 或 B</div>
 
-        <div class="nb-h3">方法二　递推数列 x<sub>n+1</sub> = f(x<sub>n</sub>)</div>
+        <div class="nb-h3">方法二　递推数列 $x_{n+1} = f(x_n)$</div>
         <div class="nb-li"><b>判据</b>：通项不是显式公式，而是由前一项递推给出。</div>
 
         <div class="nb-li"><b>大题写法（必须证明，否则扣分）</b></div>
         <div class="nb-li2">① <b>证有界</b></div>
-        <div class="nb-li3">— x<sub>1</sub> 有界</div>
-        <div class="nb-li3">— 假设 x<sub>n</sub> 有界 ⇒ x<sub>n+1</sub>=f(x<sub>n</sub>) 也有界</div>
+        <div class="nb-li3">— $x_1$ 有界</div>
+        <div class="nb-li3">— 假设 $x_n$ 有界 ⇒ $x_{n+1}=f(x_n)$ 也有界</div>
         <div class="nb-li3">— 归纳成立</div>
         <div class="nb-li2">② <b>证单调</b></div>
-        <div class="nb-li3">— 算 x<sub>n+1</sub> − x<sub>n</sub> 的符号</div>
-        <div class="nb-li3">— 或看 f 是否单调</div>
+        <div class="nb-li3">— 算 $x_{n+1} - x_n$ 的符号</div>
+        <div class="nb-li3">— 或看 $f$ 是否单调</div>
         <div class="nb-li2">③ <b>设极限解方程</b></div>
-        <div class="nb-li3">— 设 lim<sub>n→∞</sub> x<sub>n</sub> = A</div>
-        <div class="nb-li3">— 代入递推式：A = f(A)</div>
+        <div class="nb-li3">— 设 $\displaystyle\lim_{n\to\infty} x_n = A$</div>
+        <div class="nb-li3">— 代入递推式：$A = f(A)$</div>
         <div class="nb-li3">— 解方程求根</div>
 
         <div class="nb-li" style="margin-top:8px;"><b>选择填空（不用写证明，心算）</b></div>
-        <div class="nb-li2">① 直接设 lim<sub>n→∞</sub> x<sub>n</sub> = A</div>
-        <div class="nb-li2">② 代入 A = f(A)，解方程</div>
+        <div class="nb-li2">① 直接设 $\displaystyle\lim_{n\to\infty} x_n = A$</div>
+        <div class="nb-li2">② 代入 $A = f(A)$，解方程</div>
         <div class="nb-li2">③ 心算前 2–3 项，看单调方向</div>
         <div class="nb-li2">④ 选合理的根（排除矛盾根）</div>
         <div class="nb-li2">⑤（可选）快速验有界</div>
 
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
-          <div style="font-weight:700;color:#7e22ce;">例题：x<sub>1</sub> = √2，x<sub>n+1</sub> = √(2+x<sub>n</sub>)，求极限</div>
-          <div style="color:#374151;padding-left:10px;"><b>第 1 步</b>　设极限为 A</div>
-          <div style="color:#374151;padding-left:28px;">A = √(2+A)</div>
+          <div style="font-weight:700;color:#7e22ce;">例题：$x_1 = \sqrt{2}$，$x_{n+1} = \sqrt{2+x_n}$，求极限</div>
+          <div style="color:#374151;padding-left:10px;"><b>第 1 步</b>　设极限为 $A$</div>
+          <div style="color:#374151;padding-left:28px;">$A = \sqrt{2+A}$</div>
           <div style="color:#374151;padding-left:10px;"><b>第 2 步</b>　两边平方解方程</div>
-          <div style="color:#374151;padding-left:28px;">A² = 2 + A</div>
-          <div style="color:#374151;padding-left:28px;">A² − A − 2 = 0</div>
-          <div style="color:#374151;padding-left:28px;">A = 2　或　A = −1</div>
+          <div style="color:#374151;padding-left:28px;">$A^2 = 2 + A$</div>
+          <div style="color:#374151;padding-left:28px;">$A^2 - A - 2 = 0$</div>
+          <div style="color:#374151;padding-left:28px;">$A = 2$　或　$A = -1$</div>
           <div style="color:#374151;padding-left:10px;"><b>第 3 步</b>　心算前几项，看方向</div>
-          <div style="color:#374151;padding-left:28px;">x<sub>1</sub> ≈ 1.414</div>
-          <div style="color:#374151;padding-left:28px;">x<sub>2</sub> ≈ 1.848</div>
-          <div style="color:#374151;padding-left:28px;">x<sub>3</sub> ≈ 1.962</div>
-          <div style="color:#374151;padding-left:28px;">递增，向 2 靠拢</div>
+          <div style="color:#374151;padding-left:28px;">$x_1 \approx 1.414$</div>
+          <div style="color:#374151;padding-left:28px;">$x_2 \approx 1.848$</div>
+          <div style="color:#374151;padding-left:28px;">$x_3 \approx 1.962$</div>
+          <div style="color:#374151;padding-left:28px;">递增，向 $2$ 靠拢</div>
           <div style="color:#374151;padding-left:10px;"><b>第 4 步</b>　选根</div>
-          <div style="color:#374151;padding-left:28px;">选 A = 2</div>
-          <div style="color:#374151;padding-left:28px;">舍 A = −1（数列恒正）</div>
+          <div style="color:#374151;padding-left:28px;">选 $A = 2$</div>
+          <div style="color:#374151;padding-left:28px;">舍 $A = -1$（数列恒正）</div>
           <div style="color:#374151;margin-top:6px;padding-left:10px;"><b>依据</b>　极限等式性质</div>
-          <div style="color:#374151;padding-left:28px;">若 f(x) = g(x)，且 lim f(x) = A、lim g(x) = B</div>
-          <div style="color:#374151;padding-left:28px;">则 A = B</div>
+          <div style="color:#374151;padding-left:28px;">若 $f(x) = g(x)$，且 $\lim f(x) = A$、$\lim g(x) = B$</div>
+          <div style="color:#374151;padding-left:28px;">则 $A = B$</div>
           <div style="color:#374151;padding-left:28px;">→ 递推式可以两边同时取极限</div>
         </div>
 
         <div class="nb-h3">方法三　不好分类（既不是 n 项和/积，也不是递推）</div>
 
         <div class="nb-li"><b>分支 A：化函数极限（间接用洛必达 / 泰勒）</b></div>
-        <div class="nb-li2"><b>核心</b>：数列 n 是离散整数、不可导，<b>不能直接对数列洛必达</b></div>
+        <div class="nb-li2"><b>核心</b>：数列 $n$ 是离散整数、不可导，<b>不能直接对数列洛必达</b></div>
         <div class="nb-li2"><b>海涅定理（归结原则）</b>：</div>
         <div style="margin:6px 0 6px 52px;padding:6px 10px;background:#f5f3ff;border-left:3px solid #a78bfa;border-radius:4px;text-align:center;font-size:13.5px;color:#4c1d95;">
-          若 lim<sub>x→+∞</sub> f(x) = A　则　lim<sub>n→∞</sub> f(n) = A
+          若 $\displaystyle\lim_{x\to+\infty} f(x) = A$　则　$\displaystyle\lim_{n\to\infty} f(n) = A$
         </div>
         <div class="nb-li2"><b>三步做法</b>：</div>
-        <div class="nb-li3">① 把 n 换成连续变量 x</div>
-        <div class="nb-li3">② 写成 lim<sub>x→+∞</sub> f(x)</div>
-        <div class="nb-li3">③ 对 f(x) 用洛必达 / 泰勒（满足 0/0 或 ∞/∞）</div>
-        <div class="nb-li3">④ 函数极限 = A ⇒ 数列极限也 = A</div>
+        <div class="nb-li3">① 把 $n$ 换成连续变量 $x$</div>
+        <div class="nb-li3">② 写成 $\displaystyle\lim_{x\to+\infty} f(x)$</div>
+        <div class="nb-li3">③ 对 $f(x)$ 用洛必达 / 泰勒（满足 $0/0$ 或 $\infty/\infty$）</div>
+        <div class="nb-li3">④ 函数极限 $= A$ ⇒ 数列极限也 $= A$</div>
 
         <div class="nb-li" style="margin-top:8px;"><b>分支 B：Stolz 定理</b></div>
-        <div class="nb-li2">适用 —0/0 或 ∞/∞ 型数列</div>
+        <div class="nb-li2">适用 —$0/0$ 或 $\infty/\infty$ 型数列</div>
         <div class="nb-li2">相当于"数列版洛必达"</div>
         <div class="nb-li2">具体公式待后续补充</div>
 
@@ -542,41 +561,41 @@
 
         <div class="nb-tip" style="border-color:#9333ea;background:#faf5ff;color:#581c87;">
           <div style="font-weight:700;color:#7e22ce;">解题总流程（两步）</div>
-          <div style="color:#374151;padding-left:10px;"><b>① 读题</b>：f(x) 给了什么条件？——极限等式 / 函数值导数值 / 待求参数 / 递推式</div>
+          <div style="color:#374151;padding-left:10px;"><b>① 读题</b>：$f(x)$ 给了什么条件？——极限等式 / 函数值导数值 / 待求参数 / 递推式</div>
           <div style="color:#374151;padding-left:10px;"><b>② 选方法</b>：按下表对号入座，每个题型内部自带展开与计算细节</div>
         </div>
 
         <div class="nb-h3">题型 1　已知一个极限等式 → 求另一个极限</div>
-        <div class="nb-li"><b>特征</b>：已知 lim [A(x)+B(x)f(x)]/C(x) = L，求 lim [D(x)+E(x)f(x)]/F(x)</div>
+        <div class="nb-li"><b>特征</b>：已知 $\lim \dfrac{A(x)+B(x)f(x)}{C(x)} = L$，求 $\lim \dfrac{D(x)+E(x)f(x)}{F(x)}$</div>
         <div class="nb-li"><b>方法一：拆分凑形法（优先，快）</b>：在分子上加减同一项，把已知式拆成"已知函数部分 + 目标式部分"，移项直接算出目标极限。</div>
         <div class="nb-li"><b>方法二：泰勒对比系数法（通用，稳）</b>：</div>
         <div class="nb-li2">1. 把已知函数按分母阶数泰勒展开；</div>
-        <div class="nb-li2">2. 与已知极限式对比系数，反推出 f(x) 的渐近行为；</div>
+        <div class="nb-li2">2. 与已知极限式对比系数，反推出 $f(x)$ 的渐近行为；</div>
         <div class="nb-li2">3. 代入目标式，约掉无穷小即得结果。</div>
-        <div class="nb-li"><b>典型例题</b>：已知 lim<sub>x→0</sub> [sin3x<sup>2</sup> + x<sup>2</sup>f(x)]/x<sup>6</sup> = 0，求 lim<sub>x→0</sub> [3+f(x)]/x<sup>4</sup>。</div>
+        <div class="nb-li"><b>典型例题</b>：已知 $\displaystyle\lim_{x\to0}\dfrac{\sin3x^{2} + x^{2}f(x)}{x^{6}} = 0$，求 $\displaystyle\lim_{x\to0}\dfrac{3+f(x)}{x^{4}}$。</div>
 
-        <div class="nb-h3">题型 2　已知 f(0), f′(0) → 求含 f(x) 的极限</div>
-        <div class="nb-li"><b>特征</b>：题目给出 f(0)=a、f′(0)=b，且 f 连续或可导。</div>
-        <div class="nb-li"><b>方法一：导数定义法（一阶简单题）</b>：凑出 [f(x)−f(0)]/x = f′(0)，直接代入即可。</div>
+        <div class="nb-h3">题型 2　已知 $f(0)$, $f'(0)$ → 求含 $f(x)$ 的极限</div>
+        <div class="nb-li"><b>特征</b>：题目给出 $f(0)=a$、$f'(0)=b$，且 $f$ 连续或可导。</div>
+        <div class="nb-li"><b>方法一：导数定义法（一阶简单题）</b>：凑出 $\dfrac{f(x)-f(0)}{x} = f'(0)$，直接代入即可。</div>
         <div class="nb-li"><b>方法二：泰勒展开法（高阶 / 复合题）</b>：按目标式所需阶数展开：</div>
-        <div class="nb-li2">f(x) = f(0) + f′(0)x + f″(0)/2·x<sup>2</sup> + o(x<sup>2</sup>)</div>
+        <div class="nb-li2">$f(x) = f(0) + f'(0)x + \dfrac{f''(0)}{2}\cdot x^{2} + o(x^{2})$</div>
         <div class="nb-li2">展开后代入极限式，消去非零常数项，保留目标阶数的系数。</div>
-        <div class="nb-li"><b>典型例题</b>：已知 f(0)=0, f′(0)=2，求 lim<sub>x→0</sub> f(x)/x。</div>
+        <div class="nb-li"><b>典型例题</b>：已知 $f(0)=0$, $f'(0)=2$，求 $\displaystyle\lim_{x\to0}\dfrac{f(x)}{x}$。</div>
 
         <div class="nb-h3">题型 3　反求参数</div>
-        <div class="nb-li"><b>特征</b>：已知极限存在、或等于某定值，求 a, b 等参数。</div>
+        <div class="nb-li"><b>特征</b>：已知极限存在、或等于某定值，求 $a$, $b$ 等参数。</div>
         <div class="nb-li"><b>方法</b>：把含参数的式子泰勒展开到目标阶数——</div>
         <div class="nb-li2">• 若"极限存在" → 令所有低阶项系数 = 0；</div>
         <div class="nb-li2">• 若"极限 = 某定值" → 低阶项系数 = 0，目标阶系数 = 该定值。</div>
-        <div class="nb-li">逐项列方程，解出 a, b。</div>
-        <div class="nb-li"><b>典型例题</b>：求 a, b 使 lim<sub>x→0</sub> [∛(1−x<sup>6</sup>) − ax<sup>2</sup> − b] = 0。</div>
+        <div class="nb-li">逐项列方程，解出 $a$, $b$。</div>
+        <div class="nb-li"><b>典型例题</b>：求 $a$, $b$ 使 $\displaystyle\lim_{x\to0}\left[\sqrt[3]{1-x^{6}} - ax^{2} - b\right] = 0$。</div>
 
         <div class="nb-h3">题型 4　递推数列求极限</div>
-        <div class="nb-li"><b>特征</b>：x<sub>n+1</sub> = g(x<sub>n</sub>)，求 lim<sub>n→∞</sub> x<sub>n</sub>。</div>
-        <div class="nb-li"><b>方法</b>：设 lim<sub>n→∞</sub> x<sub>n</sub> = A，对递推式两边取极限：A = g(A)，解方程求根。</div>
+        <div class="nb-li"><b>特征</b>：$x_{n+1} = g(x_n)$，求 $\displaystyle\lim_{n\to\infty} x_n$。</div>
+        <div class="nb-li"><b>方法</b>：设 $\displaystyle\lim_{n\to\infty} x_n = A$，对递推式两边取极限：$A = g(A)$，解方程求根。</div>
         <div class="nb-li"><span class="nb-tag" style="background:#fee2e2;color:#991b1b;">高频易错</span></div>
         <div class="nb-li2">• <b>大题</b>：必须先证单调有界，再取极限，否则扣分。</div>
-        <div class="nb-li2">• <b>选择填空</b>：可直接设 A 解方程 + 心算选根，不用证明。</div>
+        <div class="nb-li2">• <b>选择填空</b>：可直接设 $A$ 解方程 + 心算选根，不用证明。</div>
       </div>
     </div>
 
